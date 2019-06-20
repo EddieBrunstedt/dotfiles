@@ -1,6 +1,6 @@
 # Basic binds
 
-super + r
+super + e
 	$TERMINAL -e $FILE
 
 super + shift + x
