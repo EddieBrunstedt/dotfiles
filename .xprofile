@@ -10,8 +10,7 @@ sxhkd &
 slstatus &
 
 # Set keyboard layout and set Caps as Mod/Escape
-setxkbmap -layout us,se,dk &
-setxkbmap -option caps:super &
+setxkbmap -layout us,se,dk -option caps:super &
 
 # Speed xrate up
 xset r rate 300 50 &
