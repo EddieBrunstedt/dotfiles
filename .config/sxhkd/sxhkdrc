@@ -1,0 +1,44 @@
+# Basic binds
+
+super + r
+	$TERMINAL -e $FILE
+
+super + shift + x
+	prompt "Shutdown computer?" "sudo -A shutdown -h now"
+super + shift + BackSpace
+	prompt "Reboot computer?" "sudo -A shutdown -r now"
+# Hibernate
+super + F4
+	prompt 'Hibernate computer?' 'sudo systemctl suspend'
+
+XF86MonBrightnessDown
+	xbacklight -dec 15
+XF86MonBrightnessUp
+	xbacklight -inc 15
+
+# Recording
+# Take screenshot
+Print
+	maim pic-full-$(date '+%y%m%d-%H%M-%S').png
+# Pick screenshot type
+shift + Print
+	maimpick
+
+# Function keys
+super + F3
+	displayselect
+# Restart/rescan wifi/eth networks
+super + F5
+	sudo -A systemctl restart NetworkManager
+# Mount a USB drive or Android device
+super + F9
+	dmenumount
+# Unmount a USB drive or Android device
+super + F10
+	dmenuumount
+# Search with Duckduckgo
+super + F11
+	ducksearch
+# Network Manager interface
+super + F12
+	$TERMINAL -e sudo -A nmtui
