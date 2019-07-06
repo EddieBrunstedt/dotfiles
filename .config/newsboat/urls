@@ -48,3 +48,6 @@ https://www.rollingstone.com/feed/ "music"
 
 # Art
 http://toucharcade.com/feed/ "art"
+
+# Youtube
+https://www.youtube.com/feeds/videos.xml?channel_id=UC-2YHgc363EdcusLIBbgxzg "science" "youtube" "~Joe Scott (YouTube)"
