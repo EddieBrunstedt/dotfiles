@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Load .Xresources.
+xrdb $HOME/.Xresources &
+
 # Set the background
 setbg &
 
