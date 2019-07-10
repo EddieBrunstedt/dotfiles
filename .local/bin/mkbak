@@ -1,0 +1,4 @@
+#!/bin/sh
+# Create a copy of a file and add suffix .bak in filename. Overwrites existing files.
+[ -z "$1" ] && echo "makebak: missing file operand" && exit 1
+cp "$1" ./"$1".bak && echo "$1.bak successfully created" && exit 0
