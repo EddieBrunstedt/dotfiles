@@ -7,7 +7,7 @@ export EDITOR="nvim"
 export TERMINAL="st"
 export BROWSER="firefox"
 export READER="zathura"
-export FILE="vifm"
+export FILE="lf"
 export SUDO_ASKPASS="$HOME/.local/bin/tools/dmenupass"
 
 # less/man colors

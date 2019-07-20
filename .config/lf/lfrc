@@ -49,7 +49,6 @@ cmd copyto ${{
 }}
 
 # Bindings
-map c $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
 map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
 map gh
 map g top
