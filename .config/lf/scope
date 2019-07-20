@@ -65,7 +65,7 @@ handle_extension() {
             exit 1;;
 
         # Text file
-        txt)
+        txt|conf)
             # Preview as text conversion
             less "${FILE_PATH}"
             exit 1;;
