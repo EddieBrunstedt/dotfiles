@@ -1,7 +1,7 @@
 #!/bin/sh
 #Set white temperatature with redshift and dmenu
 
-list="4500 K (default)\n4000 K\n3500 K\n3000 K\n2500 K\n2000 K "
+list="6500 K (default day)\n4500 K (default night)\n4000 K\n3500 K\n3000 K\n2500 K "
 
 chosen=$(echo -e $list | dmenu -i -b -l 6 -fn Monospace-12)
 
