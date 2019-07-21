@@ -10,7 +10,7 @@ shopt -s autocd
 HISTSIZE= HISTFILESIZE= # Infinite history.
 
 # PS1 colors
-export PS1="\[$(tput bold)\]\[$(tput setaf 1)\][\[$(tput setaf 3)\]\u\[$(tput setaf 2)\]@\[$(tput setaf 4)\]\h \[$(tput setaf 5)\]\W\[$(tput setaf 1)\]]\[$(tput setaf 7)\]\\$ \[$(tput sgr0)\]"
+export PS1='\[\033[1;33m\]\u\[\033[1;37m\]@\[\033[1;32m\]\h\[\033[1;37m\]:\[\033[1;31m\]\w \[\033[1;36m\]\$ \[\033[0m\]'
 
 # Load aliases
 [ -f "$HOME/.config/aliasrc" ] && source "$HOME/.config/aliasrc"
