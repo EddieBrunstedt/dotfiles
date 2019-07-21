@@ -56,11 +56,13 @@ map D delete
 map C copyto
 map M moveto
 map a push %mkdir<space>
-map r push :rename<space>
+map rc push :rename<space>
+map ra $lf -remote "send $id push :rename<space>$f"
+map re $lf -remote "send $id push :rename<space>$f<a-b><a-d>"
 map <enter> shell
 map R reload
 map x $$f
 map X !$f
 map o &mimeopen $f
 map O $mimeopen --ask $f
-
+map f $lf -remote "send $id select '$(fzf)'"
