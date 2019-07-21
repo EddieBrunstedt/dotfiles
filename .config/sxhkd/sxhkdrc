@@ -46,3 +46,7 @@ super + F12
 # Lock computer
 super + shift + l
 	slock -m "$(cowsay "$(fortune)")"
+
+# Set White Temperature
+super + shift + r
+	whitetemp

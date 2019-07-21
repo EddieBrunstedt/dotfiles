@@ -1,0 +1,14 @@
+#!/bin/sh
+#Set white temperatature with redshift and dmenu
+
+list="4500 K (default)\n4000 K\n3500 K\n3000 K\n2500 K\n2000 K "
+
+chosen=$(echo -e $list | dmenu -i -b -l 6 -fn Monospace-12)
+
+[ "$chosen" != "" ] || exit
+
+echo $chosen | head -n1 | awk '{print $1;}'
+
+center=$(echo $chosen | head -n1 | awk '{print $1;}')
+
+redshift -P -O $center
