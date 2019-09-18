@@ -18,7 +18,7 @@ export PS1='\[\033[1;33m\]\u\[\033[1;37m\]@\[\033[1;32m\]\h\[\033[1;37m\]:\[\033
 #Force tmux to assume that the terminal support 256 colors
 alias tmux="tmux -2"
 
-Start tmux if dwm is started
+#Start tmux if dwm is started
 if [[ $DISPLAY ]]; then
     # If not running interactively, do not do anything
     [[ $- != *i* ]] && return
