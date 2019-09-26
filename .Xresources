@@ -1,4 +1,4 @@
-*.font:	monospace:pixelsize=16:antialias=true:autohint=true;
+*.font:	monospace:pixelsize=15:antialias=true:autohint=true;
 
 ! special
 *.foreground:   #c5c8c6
