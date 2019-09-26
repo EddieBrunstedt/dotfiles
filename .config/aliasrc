@@ -21,7 +21,8 @@ alias ka="killall" \
       YT="youtube-viewer" \
       lsp="pacman -Qett --color=always | less" \
       ffmpeg="ffmpeg -hide_banner" \
-      bt="bluetoothctl"
+      bt="bluetoothctl" \
+      t="tmux"
 
 command -v nvim >/dev/null && alias vim="nvim" vimdiff="nvim -d" # Use neovim for vim if present.
 
