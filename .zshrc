@@ -10,7 +10,7 @@ export ZSH="/home/nilo/.oh-my-zsh"
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 # ZSH_THEME="robbyrussell"
 # ZSH_THEME="awesomepanda"
-ZSH_THEME="norm"
+ZSH_THEME="spaceship"
 # ZSH_THEME="agnoster"
 # ZSH_THEME="avit"
 # Set list of themes to pick from when loading at random
