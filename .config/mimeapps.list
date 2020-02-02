@@ -12,3 +12,6 @@ image/gif=img.desktop;
 application/rss+xml=rss.desktop
 text/html=surf.desktop
 x-scheme-handler/sgnl=signal-desktop.desktop
+x-scheme-handler/discord-610508934456934412=discord-610508934456934412.desktop
+x-scheme-handler/http=firefox.desktop
+x-scheme-handler/https=firefox.desktop
