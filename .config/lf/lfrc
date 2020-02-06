@@ -8,12 +8,13 @@ set ifs "\n"
 set scrolloff 10
 set color256
 set icons		# Enable icons. Requires nerd fonts and LF_ICONS variable.
+set drawbox true
 
 # cmds/functions
 cmd open ${{
     case $(file --mime-type $f -b) in
     	text/troff) man ./ $f;;
-        text/*) $EDITOR $fx;;
+        text/*) emacsclient -n $fx & ;;
 	image/x-xcf|image/svg+xml) setsid gimp $f >/dev/null 2>&1 & ;;
 	image/*) rotdir $f | setsid sxiv -aio 2>/dev/null | lf-select & ;;
 	audio/*) mpv --input-ipc-server=/tmp/mpvsoc$(date +%%s) $f ;;
