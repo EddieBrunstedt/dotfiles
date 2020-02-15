@@ -13,7 +13,7 @@ set icons		# Enable icons. Requires nerd fonts and LF_ICONS variable.
 set preview on
 set ratios 1:2
 set info size:time
-set relativenumber on
+# set relativenumber on
 
 # cmds/functions
 cmd open ${{
