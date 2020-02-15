@@ -1,5 +1,6 @@
 # Eddie's zsh config
 
+
 ### Zinit Initialization
 if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
     print -P "%F{33}▓▒░ %F{220}Installing DHARMA Initiative Plugin Manager (zdharma/zinit)…%f"
@@ -19,18 +20,26 @@ zinit load zsh-users/zaw
 zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma/fast-syntax-highlighting
 
+# Enable colors and change prompt:
+autoload -U colors && colors
+
 # Spaceship prompt settings
 SPACESHIP_VI_MODE_SHOW=false
 SPACESHIP_PROMPT_ADD_NEWLINE=false
 SPACESHIP_PROMPT_SEPARATE_LINE=true
 SPACESHIP_CHAR_SUFFIX=" "
 
-# Saw history
-bindkey '^R' zaw-history
+# History in cache directory:
+HISTSIZE=1000
+SAVEHIST=1000
+HISTFILE=~/.zsh_history
 
-# Search history
-#bindkey '^R' history-incremental-search-backward
-#autoload -U colors && colors
+# vi mode
+bindkey -v
+export KEYTIMEOUT=1
+
+# Enable searching through history
+bindkey '^R' history-incremental-pattern-search-backward
 
 # Load aliases if existent
 [ -f "$HOME/.config/aliasrc" ] && source "$HOME/.config/aliasrc"
