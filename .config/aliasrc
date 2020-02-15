@@ -13,14 +13,22 @@ alias \
 	yt="youtube-dl --add-metadata -i" \
 	yta="yt -x -f bestaudio/best" \
 	ffmpeg="ffmpeg -hide_banner" \
-	config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+	config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME' \
+	t="tmux"
 
 # Colorize commands when possible.
 alias \
-	ls="ls -hN --color=auto --group-directories-first" \
 	grep="grep --color=auto" \
 	diff="diff --color=auto" \
 	ccat="highlight --out-format=ansi"
+
+# ls shortcuts
+alias \
+	l="exa" \
+	ls="exa" \
+	ll="exa -l" \
+	la="exa -la" \
+	lt="exa --long --tree"
 
 # These common commands are just too long! Abbreviate them.
 alias \
