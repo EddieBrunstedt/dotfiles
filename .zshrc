@@ -15,11 +15,9 @@ autoload -Uz _zinit
 
 # Plugins
 zinit load denysdovhan/spaceship-prompt
+zinit load zsh-users/zaw
 zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma/fast-syntax-highlighting
-
-# Plugins with tracking
-zinit load zdharma/history-search-multi-word
 
 # Spaceship prompt settings
 SPACESHIP_VI_MODE_SHOW=false
@@ -27,7 +25,12 @@ SPACESHIP_PROMPT_ADD_NEWLINE=false
 SPACESHIP_PROMPT_SEPARATE_LINE=true
 SPACESHIP_CHAR_SUFFIX=" "
 
-autoload -U colors && colors
+# Saw history
+bindkey '^R' zaw-history
+
+# Search history
+#bindkey '^R' history-incremental-search-backward
+#autoload -U colors && colors
 
 # Load aliases if existent
 [ -f "$HOME/.config/aliasrc" ] && source "$HOME/.config/aliasrc"
