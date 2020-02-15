@@ -10,9 +10,10 @@ set color256
 set icons		# Enable icons. Requires nerd fonts and LF_ICONS variable.
 
 # Custom
-# set nopreview
-set ratios 1:1
+set preview on
+set ratios 1:2
 set info size:time
+set relativenumber on
 
 # cmds/functions
 cmd open ${{
@@ -58,12 +59,21 @@ cmd bulkrename ${{
     vidir
 }}
 
+cmd nopreview &{{
+	lf -remote "send $id set nopreview"
+	lf -remote "send $id set ratios 1"
+}}
+
+cmd viewpreview &{{
+	lf -remote "send $id set ratios 1:2"
+	lf -remote "send $id set preview"
+}}
+
 # Bindings
 map c $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
 map <c-f> $lf -remote "send $id select '$(fzf)'"
 map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
-map gh
-map g top
+#map g top
 map D delete
 map C copyto
 map M moveto
@@ -77,3 +87,6 @@ map x $$f
 map X !$f
 map o &mimeopen $f
 map O $mimeopen --ask $f
+map zp viewpreview
+map zo nopreview
+map gh cd ~
