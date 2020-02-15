@@ -1,6 +1,27 @@
-# Eddie's config for the Zoomer Shell
+# Eddie's zsh config
 
-# Spaceship settings
+### Zinit Initialization
+if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
+    print -P "%F{33}▓▒░ %F{220}Installing DHARMA Initiative Plugin Manager (zdharma/zinit)…%f"
+    command mkdir -p "$HOME/.zinit" && command chmod g-rwX "$HOME/.zinit"
+    command git clone https://github.com/zdharma/zinit "$HOME/.zinit/bin" && \
+        print -P "%F{33}▓▒░ %F{34}Installation successful.%f" || \
+        print -P "%F{160}▓▒░ The clone has failed.%f"
+fi
+source "$HOME/.zinit/bin/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+### End of Zinit Initialization
+
+# Plugins
+zinit load denysdovhan/spaceship-prompt
+zinit light zsh-users/zsh-autosuggestions
+zinit light zdharma/fast-syntax-highlighting
+
+# Plugins with tracking
+zinit load zdharma/history-search-multi-word
+
+# Spaceship prompt settings
 SPACESHIP_VI_MODE_SHOW=false
 SPACESHIP_PROMPT_ADD_NEWLINE=false
 SPACESHIP_PROMPT_SEPARATE_LINE=true
@@ -8,7 +29,7 @@ SPACESHIP_CHAR_SUFFIX=" "
 
 autoload -U colors && colors
 
-# Load aliases if existent.
+# Load aliases if existent
 [ -f "$HOME/.config/aliasrc" ] && source "$HOME/.config/aliasrc"
 
 autoload -U compinit
@@ -16,10 +37,10 @@ zstyle ':completion:*' menu select
 zmodload zsh/complist
 compinit
 
-# Include hidden files in autocomplete:
+# Include hidden files in autocomplete
 _comp_options+=(globdots)
 
-# Use vim keys in tab complete menu:
+# Use vim keys in tab complete menu
 bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
@@ -28,7 +49,7 @@ bindkey -v '^?' backward-delete-char
 
 export KEYTIMEOUT=1
 
-# Change cursor shape for different vi modes.
+# Change cursor shape for different vi modes
 function zle-keymap-select {
   if [[ ${KEYMAP} == vicmd ]] ||
      [[ $1 = 'block' ]]; then
@@ -69,29 +90,6 @@ lfcd () {
     fi
 }
 
-bindkey -s '^o' 'lfcd\n'  # zsh
-
-### Zinit Initialization
-if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
-    print -P "%F{33}▓▒░ %F{220}Installing DHARMA Initiative Plugin Manager (zdharma/zinit)…%f"
-    command mkdir -p "$HOME/.zinit" && command chmod g-rwX "$HOME/.zinit"
-    command git clone https://github.com/zdharma/zinit "$HOME/.zinit/bin" && \
-        print -P "%F{33}▓▒░ %F{34}Installation successful.%f" || \
-        print -P "%F{160}▓▒░ The clone has failed.%f"
-fi
-source "$HOME/.zinit/bin/zinit.zsh"
-autoload -Uz _zinit
-(( ${+_comps} )) && _comps[zinit]=_zinit
-### End of Zinit Initialization
-
-# Plugins
-zinit load denysdovhan/spaceship-prompt
-zinit light zsh-users/zsh-autosuggestions
-zinit light zdharma/fast-syntax-highlighting
-
-# Plugin history-search-multi-word loaded with tracking.
-zinit load zdharma/history-search-multi-word
-
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$('/opt/anaconda/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
@@ -106,3 +104,5 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
+
+bindkey -s '^o' 'lfcd\n'  # zsh
