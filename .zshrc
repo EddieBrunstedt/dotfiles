@@ -140,3 +140,4 @@ alias bt="bluetoothctl"
 alias t="tmux"
 alias vim="nvim"
 alias pubip="curl -4 icanhazip.com"
+alias mc='tmux split -h lf; lf'
