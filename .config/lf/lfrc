@@ -8,7 +8,11 @@ set ifs "\n"
 set scrolloff 10
 set color256
 set icons		# Enable icons. Requires nerd fonts and LF_ICONS variable.
-set drawbox true
+
+# Custom
+# set nopreview
+set ratios 1:1
+set info size:time
 
 # cmds/functions
 cmd open ${{
