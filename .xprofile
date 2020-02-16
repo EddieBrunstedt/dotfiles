@@ -34,8 +34,6 @@ blueman-applet &
 
 emacs &
 
-st -e tmux &
-
 firefox &
 
 KeeWeb &
