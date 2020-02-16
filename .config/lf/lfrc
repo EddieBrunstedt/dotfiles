@@ -6,16 +6,14 @@ set previewer ~/.config/lf/scope
 set shellopts '-eu'
 set ifs "\n"
 set scrolloff 10
-#set drawbox true
-set color256
+set color256 true
 set icons true
 set ignorecase true
 
 # Custom
-set preview on
+set preview true
 set ratios 1:1
 set info size:time
-# set relativenumber on
 
 # cmds/functions
 cmd open ${{
@@ -27,6 +25,7 @@ cmd open ${{
 	audio/*) mpv --input-ipc-server=/tmp/mpvsoc$(date +%%s) $f ;;
 	video/*) setsid mpv --input-ipc-server=/tmp/mpvsoc$(date +%%s) $f -quiet >/dev/null 2>&1 & ;;
 	application/pdf) setsid zathura $fx >/dev/null 2>&1 & ;;
+	application/zip) ext $fx >/dev/null 2>&1; lf -remote "send $id reload" &;;
         *) for f in $fx; do setsid $OPENER $f >/dev/null 2>&1 & done;;
     esac
 }}
@@ -72,10 +71,8 @@ cmd viewpreview &{{
 }}
 
 # Bindings
-map c $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
 map <c-f> $lf -remote "send $id select '$(fzf)'"
 map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
-#map g top
 map D delete
 map C copyto
 map M moveto
@@ -91,4 +88,3 @@ map o &mimeopen $f
 map O $mimeopen --ask $f
 map zp viewpreview
 map zo nopreview
-map gh cd ~
