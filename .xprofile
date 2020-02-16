@@ -22,7 +22,7 @@ xset r rate 300 50 &
 unclutter &
 
 # xcompmgr for transparency
-#xcompmgr &
+xcompmgr &
 
 # dunst for notifications
 dunst &
@@ -31,3 +31,11 @@ dunst &
 megasync &
 
 blueman-applet &
+
+emacs &
+
+st -e tmux &
+
+firefox &
+
+KeeWeb &
