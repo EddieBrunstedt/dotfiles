@@ -6,20 +6,22 @@ set previewer ~/.config/lf/scope
 set shellopts '-eu'
 set ifs "\n"
 set scrolloff 10
+#set drawbox true
 set color256
-set icons		# Enable icons. Requires nerd fonts and LF_ICONS variable.
+set icons true
+set ignorecase true
 
 # Custom
 set preview on
-set ratios 1:2
+set ratios 1:1
 set info size:time
 # set relativenumber on
 
 # cmds/functions
 cmd open ${{
     case $(file --mime-type $f -b) in
-    	text/troff) man ./ $f;;
-        text/*) emacsclient -n $fx & ;;
+    text/troff) man ./ $f;;
+    text/*) $EDITOR -n $fx;;
 	image/x-xcf|image/svg+xml) setsid gimp $f >/dev/null 2>&1 & ;;
 	image/*) rotdir $f | setsid sxiv -aio 2>/dev/null | lf-select & ;;
 	audio/*) mpv --input-ipc-server=/tmp/mpvsoc$(date +%%s) $f ;;
@@ -65,7 +67,7 @@ cmd nopreview &{{
 }}
 
 cmd viewpreview &{{
-	lf -remote "send $id set ratios 1:2"
+	lf -remote "send $id set ratios 1:1"
 	lf -remote "send $id set preview"
 }}
 
