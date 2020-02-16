@@ -3,7 +3,7 @@
 
 # Adds `~/.scripts` and all subdirectories to $PATH
 export PATH="$PATH:$(du "$HOME/.local/bin/" | cut -f2 | tr '\n' ':' | sed 's/:*$//'):$(yarn global bin):$HOME/.emacs.d/bin"
-export EDITOR="emacs"
+export EDITOR="emacsclient"
 export TERMINAL="st"
 export BROWSER="firefox"
 export READER="zathura"
