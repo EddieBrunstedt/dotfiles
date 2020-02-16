@@ -32,22 +32,6 @@
 ;; `nil' to disable it:
 (setq display-line-numbers-type `relative)
 
-(after! org
-  (add-to-list 'org-capture-templates
-               '("w" "Work")))
-
-(after! org
-  (add-to-list 'org-capture-templates
-               '("wn" "Note (Work)" entry
-                 (file+headline "notes.org" "Work Inbox")
-                 "* %u %?\n%i\n%a" :prepend t)))
-
-(after! org
-  (add-to-list 'org-capture-templates
-               '("wt" "Todo (Work)" entry
-                 (file+headline "todo.org" "Work Inbox")
-                 "* [ ] %?\n%i\n%a" :prepend t)))
-
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
 ;; - `load!' for loading external *.el files relative to this one
