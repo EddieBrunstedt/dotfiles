@@ -37,3 +37,5 @@ emacs &
 firefox &
 
 KeeWeb &
+
+alacritty -e tmux &
