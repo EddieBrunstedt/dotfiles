@@ -32,6 +32,9 @@
 ;; `nil' to disable it:
 (setq display-line-numbers-type `relative)
 
+;; Set javascript indent level to two spaces
+(setq js-indent-level 2)
+
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
 ;; - `load!' for loading external *.el files relative to this one
