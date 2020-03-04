@@ -35,6 +35,11 @@
 ;; Set javascript indent level to two spaces
 (setq js-indent-level 2)
 
+;; Make comments italic
+(custom-set-faces!
+  '(font-lock-comment-face :slant italic)
+  '(font-lock-doc-face :slant italic))
+
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
 ;; - `load!' for loading external *.el files relative to this one
