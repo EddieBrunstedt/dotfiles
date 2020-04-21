@@ -10,7 +10,7 @@ setbg &
 sxhkd &
 
 # Sets the statusbar in dwm
-slstatus &
+dwmblocks &
 
 # Set keyboard layout and set Caps as Mod/Escape
 setxkbmap -layout us,se,dk -option caps:super -option grp:alt_shift_toggle &
