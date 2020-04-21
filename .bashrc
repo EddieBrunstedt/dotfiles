@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Disable ctrl-s and ctrl-q.
-stty -ixon
+[[ $- == *i* ]] && stty -ixon
 
 #Allows you to cd into directory merely by typing the directory name.
 shopt -s autocd
