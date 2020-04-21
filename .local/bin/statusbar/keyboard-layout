@@ -1,0 +1,4 @@
+#! /bin/bash 
+
+dte="$(xkb-switch) "
+echo -e "$dte"
