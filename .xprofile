@@ -12,6 +12,9 @@ sxhkd &
 # Sets the statusbar in dwm
 dwmblocks &
 
+# Start nitrogen for wallpaper
+nitrogen --restore &
+
 # Set keyboard layout and set Caps as Mod/Escape
 setxkbmap -layout us,se,dk -option caps:super -option grp:alt_shift_toggle &
 

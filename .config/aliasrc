@@ -5,7 +5,6 @@ command -v nvim >/dev/null && alias vim="nvim" vimdiff="nvim -d"
 
 # Verbosity and settings that you pretty much just always are going to want.
 alias \
-	bat="cat /sys/class/power_supply/BAT0/capacity" \
 	cp="cp -iv" \
 	mv="mv -iv" \
 	rm="rm -v" \
@@ -39,13 +38,11 @@ alias \
 	sdn="sudo shutdown -h now" \
 	f="$FILE" \
 	e="$EDITOR" \
-	v="$EDITOR" \
 	p="sudo pacman" \
 
-# This alias is important. It enables the `pauseallmpv` command.
-alias mpv="mpv --input-ipc-server=/tmp/mpvsoc$(date +%s)"
+	# This alias is important. It enables the `pauseallmpv` command.
+	alias mpv="mpv --input-ipc-server=/tmp/mpvsoc$(date +%s)"
 
 # Some other stuff
 alias \
-	magit="nvim -c MagitOnly" \
 	weath="less -S ~/.local/share/weatherreport" \
