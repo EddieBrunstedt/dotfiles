@@ -17,7 +17,7 @@ appendpath "$HOME/.emacs.d/bin"
 appendpath "$HOME/.deno/bin"
 unset appendpath
 
-export EDITOR="emacsclient"
+export EDITOR="emacsclient -n"
 export TERMINAL="alacritty"
 export BROWSER="firefox"
 export READER="zathura"
