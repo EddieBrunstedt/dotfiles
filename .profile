@@ -14,6 +14,7 @@ appendpath () {
 appendpath "$(du "$HOME/.local/bin/" | cut -f2 | tr '\n' ':' | sed 's/:*$//')"
 appendpath "$(yarn global bin)"
 appendpath "$HOME/.emacs.d/bin"
+appendpath "$HOME/.deno/bin"
 unset appendpath
 
 export EDITOR="emacsclient"
