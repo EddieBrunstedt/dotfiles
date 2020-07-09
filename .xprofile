@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# sets the correct DPI for your monitor
+set-dpi &
+
 # Load .Xresources.
 xrdb $HOME/.Xresources &
 
