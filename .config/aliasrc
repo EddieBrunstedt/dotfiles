@@ -23,10 +23,10 @@ alias \
 
 # ls shortcuts
 alias \
-	l="exa" \
-	ls="exa" \
-	ll="exa -l" \
-	la="exa -la" \
+	l="exa --group-directories-first" \
+	ls="exa --group-directories-first" \
+	ll="exa -l --group-directories-first" \
+	la="exa -la --group-directories-first" \
 	lt="exa --long --tree"
 
 # These common commands are just too long! Abbreviate them.
