@@ -45,7 +45,7 @@ super + F12
 
 # Lock computer
 super + shift + l
-	betterlockscreen -l dim -t "Can't touch this"
+	betterlockscreen -l -t "Can't touch this"
 
 # Set White Temperature
 super + shift + r
