@@ -12,15 +12,16 @@ set ignorecase true
 set drawbox true
 
 # Custom
-set preview true
-set ratios 1:1
+set preview false
+set nopreview
+set ratios 1
 set info size:time
 
 # cmds/functions
 cmd open ${{
     case $(file --mime-type "$f" -bL) in
        image/*) rotdir $f | setsid sxiv -aio 2>/dev/null | lf-select & ;;
-       text/*|application/json) $EDITOR "$f";;
+       text/*|application/json) emacsclient -n "$f";;
        video/*|image/*/application/pdf) xdg-open "$f";;
        *) xdg-open "$f" ;;
     esac
@@ -29,53 +30,30 @@ cmd open ${{
 cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 
 cmd delete ${{
-	set -f
-	printf "%s\n\t" "$fx"
-	printf "delete?[y/N]"
-	read ans
-	[ $ans = "y" ] && rm -rf $fx
-}}
-
-cmd moveto ${{
-	set -f
-	clear; echo "Move to where?"
-	dest="$(cut -d'	' -f2- ~/.config/directories | fzf)" &&
-	eval mv -iv $fx $dest &&
-	notify-send "🚚 File(s) moved." "File(s) moved to $dest."
-}}
-
-cmd copyto ${{
-	set -f
-	clear; echo "Copy to where?"
-	dest="$(cut -d'	' -f2- ~/.config/directories | fzf)" &&
-	eval cp -ivr $fx $dest &&
-	notify-send "📋 File(s) copied." "File(s) copies to $dest."
-}}
-
-cmd bulkrename ${{
-    vidir
+    set -f
+    printf "%s\n\t" "$fx"
+    printf "delete? [y/N] "
+    read ans
+    [ $ans = "y" ] && rm -rf $fx
 }}
 
 cmd nopreview &{{
-	lf -remote "send $id set nopreview"
-	lf -remote "send $id set ratios 1"
+    lf -remote "send $id set nopreview"
+    lf -remote "send $id set ratios 1"
 }}
 
 cmd viewpreview &{{
-	lf -remote "send $id set ratios 1:1"
-	lf -remote "send $id set preview"
+    lf -remote "send $id set ratios 1:1"
+    lf -remote "send $id set preview"
 }}
 
 # Bindings
 map <c-f> $lf -remote "send $id select '$(fzf)'"
 map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
 map D delete
-map C copyto
-map M moveto
 map a push %mkdir<space>
-map r push :rename<space>
-map R $lf -remote "send $id push :rename<space>$f"
-map b bulkrename
+map R push :rename<space>
+map r $lf -remote "send $id push :rename<space>$f"
 map <c-r> reload
 map <enter> shell
 map x $$f
