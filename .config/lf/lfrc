@@ -1,6 +1,3 @@
-# Eddie's lf settings
-
-# Basic vars
 set shell sh
 set previewer ~/.config/lf/preview
 set shellopts '-eu'
@@ -10,8 +7,9 @@ set color256 true
 set icons true
 set ignorecase true
 set drawbox true
+set period 1
 
-# Custom
+# Start without preview active
 set preview false
 set nopreview
 set ratios 1
@@ -19,14 +17,17 @@ set info size:time
 
 # cmds/functions
 cmd open ${{
-    case $(file --mime-type "$f" -bL) in
-       image/*) rotdir $f | setsid sxiv -aio 2>/dev/null | lf-select & ;;
-       text/*|application/json) emacsclient -n "$f";;
-       video/*|image/*/application/pdf) xdg-open "$f";;
-       *) xdg-open "$f" ;;
+    case $(file --mime-type $f -b) in
+    image/vnd.djvu|application/pdf|application/octet-stream) setsid -f zathura $fx >/dev/null 2>&1 ;;
+        text/*) emacsclient -n $fx;;
+        image/x-xcf|image/svg+xml) setsid -f gimp $f >/dev/null 2>&1 ;;
+    image/*) rotdir $f | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|tif\)\(_large\)*$" | sxiv -aio 2>/dev/null | lf-select ;;
+    audio/*) mpv --audio-display=no $f ;;
+    video/*) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
+    application/pdf|application/vnd*|application/epub*) setsid -f zathura $fx >/dev/null 2>&1 ;;
+        *) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
     esac
 }}
-
 cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 
 cmd delete ${{
@@ -48,17 +49,18 @@ cmd viewpreview &{{
 }}
 
 # Bindings
-map <c-f> $lf -remote "send $id select '$(fzf)'"
+map <c-s> $lf -remote "send $id select '$(fzf)'"
 map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
 map D delete
-map a push %mkdir<space>
+map <c-r> push %mkdir<space>
 map R push :rename<space>
 map r $lf -remote "send $id push :rename<space>$f"
 map <c-r> reload
 map <enter> shell
 map x $$f
 map X !$f
-map o $mimeopen $f
-map O $mimeopen --ask $f
-map zp viewpreview
+map o &mimeopen $f
+map O $mimeopen --ask $
+fmap zp viewpreview
 map zo nopreview
+map i $less $f
