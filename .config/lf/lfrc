@@ -28,6 +28,7 @@ cmd open ${{
         *) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
     esac
 }}
+
 cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 
 cmd delete ${{
@@ -59,8 +60,7 @@ map <c-r> reload
 map <enter> shell
 map x $$f
 map X !$f
-map o &mimeopen $f
-map O $mimeopen --ask $
-fmap zp viewpreview
+map o $mimeopen --ask $f
+map zp viewpreview
 map zo nopreview
 map i $less $f
