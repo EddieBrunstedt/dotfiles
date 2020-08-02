@@ -15,7 +15,7 @@ autoload -Uz _zinit
 ### End of Zinit Initialization
 
 # Plugins
-zinit load denysdovhan/spaceship-prompt
+zinit light denysdovhan/spaceship-prompt
 zinit load zsh-users/zaw
 zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma/fast-syntax-highlighting
