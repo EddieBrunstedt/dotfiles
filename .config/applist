@@ -1,3 +1,4 @@
+networkmanager
 alacritty
 arc-solid-gtk-theme
 atool
@@ -9,11 +10,9 @@ fzf
 gnu-netcat
 highlight
 mediainfo
-networkmanager
 nitrogen
 noto-fonts
 odt2txt
-p7zip
 p7zip
 pacutils
 perl-file-mimeinfo
@@ -32,3 +31,4 @@ zathura
 redshift
 thunar
 rustup
+xclip
