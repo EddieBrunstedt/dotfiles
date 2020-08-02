@@ -38,7 +38,8 @@ alias \
 	P="sudo pacman" \
 	yt="youtube-dl --add-metadata -i" \
 	yta="youtube-dl -x -f bestaudio/best" \
-	YT="youtube-viewer"
+	YT="youtube-viewer" \
+	mc="tmux split -h lf; lf"
 
 # Weather
 alias \
