@@ -3,7 +3,7 @@
 
 list="6500 K (default day)\n4500 K (default night)\n4000 K\n3500 K\n3000 K\n2500 K "
 
-chosen=$(echo -e $list | dmenu -i -b -l 6 -fn Monospace-12)
+chosen=$(echo -e $list | dmenu -i -l 6 -fn monospace-12)
 
 [ "$chosen" != "" ] || exit
 
