@@ -13,6 +13,7 @@ alias \
 	mv="mv -iv" \
 	rm="rm -v" \
 	mkd="mkdir -pv" \
+	bat="bat --theme base16" \
 	ffmpeg="ffmpeg -hide_banner" \
 	grep="grep --color=auto" \
 	diff="diff --color=auto" \
@@ -28,6 +29,7 @@ alias \
 
 # Shortcuts
 alias \
+	S="sudo" \
 	draw="krita --new-image RGBA,U8,4096,2160 --workspace Big_Paint_2 --nosplash" \
 	t="tmux" \
 	ka="killall" \
