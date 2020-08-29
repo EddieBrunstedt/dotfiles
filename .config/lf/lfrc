@@ -10,16 +10,16 @@ set drawbox true
 set period 1
 
 # Start without preview active
-set preview false
-set nopreview
-set ratios 1
-set info size:time
+# set preview false
+# set nopreview
+# set ratios 1
+# set info size:time
 
 # cmds/functions
 cmd open ${{
     case $(file --mime-type $f -bL) in
          image/vnd.djvu|application/pdf) setsid -f zathura $fx >/dev/null 2>&1 ;;
-         text/*) emacsclient -n $fx;;
+         text/*|application/json) bat --paging always --theme base64 $fx;;
          image/x-xcf|image/svg+xml) setsid -f gimp $f >/dev/null 2>&1 ;;
          image/*) rotdir $f | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|tif\)\(_large\)*$" | sxiv -aio 2>/dev/null | lf-select ;;
          audio/*) mpv --audio-display=no $f ;;
@@ -63,4 +63,4 @@ map X !$f
 map o $mimeopen --ask $f
 map zp viewpreview
 map zo nopreview
-map i $less $f
+map i $bat $f
