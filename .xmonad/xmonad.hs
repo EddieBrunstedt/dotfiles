@@ -21,7 +21,7 @@ myFocusFollowsMouse = True
 myClickJustFocuses :: Bool
 myClickJustFocuses = False
 -- Width of the window border in pixels.
-myBorderWidth   = 3
+myBorderWidth   = 2
 -- Xmonad mod key
 myModMask       = mod4Mask
  
