@@ -25,6 +25,7 @@ cmd open ${{
          audio/*) mpv --audio-display=no $f ;;
          video/*) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
          application/pdf|application/epub*) setsid -f zathura $fx >/dev/null 2>&1 ;;
+         application/zip) unzip $fx;;
          *) xdg-open "$f" ;;
     esac
 }}
