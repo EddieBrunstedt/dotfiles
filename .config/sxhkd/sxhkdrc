@@ -50,3 +50,7 @@ super + shift + l
 # Set White Temperature
 super + shift + r
 	whitetemp
+
+# Run org-capture
+super + shift + n
+	org-capture
