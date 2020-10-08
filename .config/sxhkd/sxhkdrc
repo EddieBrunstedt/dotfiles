@@ -55,3 +55,7 @@ super + shift + r
 # Run org-capture
 super + shift + n
 	org-capture
+
+# Open terminal with pulsemixer
+super + shift + p
+	$TERMINAL -e pulsemixer
