@@ -7,7 +7,7 @@ set icons true
 set ignorecase true
 set drawbox true
 set period 1
-set ratios 1:2
+set ratios 1:1
 set preview
 
 # Toggle Views
@@ -19,7 +19,7 @@ cmd preview_off :{{
 }}
 
 cmd preview_on :{{
-    set ratios 1:2
+    set ratios 1:1
     set preview
     set info
     map zp preview_off
