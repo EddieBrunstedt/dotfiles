@@ -3,17 +3,30 @@ set shellopts '-eu:--shwordsplit'
 set previewer ~/.config/lf/preview
 set ifs "\n"
 set scrolloff 10
-set color256 true
 set icons true
 set ignorecase true
 set drawbox true
 set period 1
+set ratios 1:2
+set preview
 
-# Start without preview active
-# set preview false
-# set nopreview
-# set ratios 1
-# set info size:time
+# Toggle Views
+cmd preview_off :{{
+    set nopreview
+    set ratios 1
+    set info size:time
+    map zp preview_on
+}}
+
+cmd preview_on :{{
+    set ratios 1:2
+    set preview
+    set info
+    map zp preview_off
+}}
+
+map zp preview_off
+
 
 # cmds/functions
 cmd open ${{
@@ -40,15 +53,6 @@ cmd delete ${{
     [ $ans = "y" ] && rm -rf $fx
 }}
 
-cmd nopreview &{{
-    lf -remote "send $id set nopreview"
-    lf -remote "send $id set ratios 1"
-}}
-
-cmd viewpreview &{{
-    lf -remote "send $id set ratios 1:1"
-    lf -remote "send $id set preview"
-}}
 
 # Bindings
 map <c-s> $lf -remote "send $id select '$(fzf)'"
@@ -62,6 +66,4 @@ map <enter> shell
 map x $$f
 map X !$f
 map o $mimeopen --ask $f
-map zp viewpreview
-map zo nopreview
-map i $bat $f
+map i $bat --paging always --theme base64 $f
