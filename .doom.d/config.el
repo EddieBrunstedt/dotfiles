@@ -18,7 +18,7 @@
 ;;
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
-(setq doom-font (font-spec :family "Roboto Mono Medium" :size 15))
+(setq doom-font (font-spec :family "Roboto Mono Medium" :size 13))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -43,6 +43,32 @@
   '(font-lock-comment-face :slant italic)
   '(font-lock-doc-face :slant italic))
 
+;; LSP related
+;; Complements `find-defintions' (which is `g d')
+(define-key evil-normal-state-map (kbd "g f") 'lsp-ui-peek-find-references)
+
+(after! lsp-ui
+  (define-key lsp-ui-peek-mode-map (kbd "j") 'lsp-ui-peek--select-next)
+  (define-key lsp-ui-peek-mode-map (kbd "k") 'lsp-ui-peek--select-prev)
+  (define-key lsp-ui-peek-mode-map (kbd "C-k") 'lsp-ui-peek--select-prev-file)
+  (define-key lsp-ui-peek-mode-map (kbd "C-j") 'lsp-ui-peek--select-next-file)
+
+  (setq lsp-ui-peek-fontify 'always
+        lsp-ui-peek-list-width 50
+        lsp-ui-peek-peek-height 40
+
+        lsp-ui-doc-enable t
+        ;; Prevents LSP peek to disappear when mouse touches it
+        lsp-ui-doc-show-with-mouse nil
+        lsp-ui-doc-include-signature t
+        lsp-ui-doc-delay 0.5
+        lsp-ui-doc-position 'at-point
+        lsp-ui-doc-max-width 100
+        lsp-ui-doc-max-height 40
+
+        ;; This is just annoying, really
+        lsp-ui-sideline-enable nil))
+
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
 ;; - `load!' for loading external *.el files relative to this one
@@ -58,3 +84,4 @@
 ;;
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
+
