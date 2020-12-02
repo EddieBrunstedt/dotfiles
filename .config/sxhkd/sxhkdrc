@@ -9,7 +9,7 @@ super + F4
 	prompt 'Hibernate computer?' 'sudo systemctl suspend'
 # Lock computer
 super + shift + l
-	betterlockscreen -l -t "Can't touch this"
+	betterlockscreen -l blur -t "Can't touch this"
 
 # Monitor backlight brightness
 XF86MonBrightnessDown
