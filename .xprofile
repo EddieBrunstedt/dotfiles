@@ -31,7 +31,3 @@ dunst &
 megasync &
 
 blueman-applet &
-
-#emacs --daemon &
-
-keeweb &
