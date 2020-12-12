@@ -28,10 +28,6 @@ shift + Print
 super + F3
 	displayselect
 
-# Restart/rescan wifi/eth networks
-super + F5
-	sudo -A systemctl restart NetworkManager
-
 # Mount a USB drive or Android device
 super + F9
 	dmenumount
@@ -59,3 +55,19 @@ super + shift + n
 # Open terminal with pulsemixer
 super + shift + p
 	$TERMINAL -e pulsemixer
+
+# Toggle VPN on
+super + shift + F5
+	prompt "Turn ON Mullvad VPN?" "sudo wg-quick up mullvad-se1"
+
+# Toggle VPN off
+super + shift + F6
+	prompt "Turn OFF Mullvad VPN?" "sudo wg-quick down mullvad-se1"
+
+# Gaming Monitor xrandr settings
+# super + shift + F1
+    # xrandr --output DP-4 --mode 3440x1440 --rate 99.98
+
+# Ultra widea xrandr settings
+super + shift + F2
+    xrandr --output DP-4 --mode 3440x1440 --rate 99.98
