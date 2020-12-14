@@ -1,4 +1,4 @@
-#!/bingsh
+#!/bin/zsh
 
 # Append to PATH
 appendpath () {
@@ -18,12 +18,16 @@ appendpath "$HOME/.deno/bin"
 appendpath "$HOME/.cargo/bin"
 unset appendpath
 
-export EDITOR="emacs"
+export EDITOR="$HOME/.local/bin/start-editor"
+export VISUAL="$HOME/.local/bin/start-editor"
 export TERMINAL="alacritty"
 export BROWSER="firefox"
 export READER="zathura"
 export FILE="lf"
-export SUDO_ASKPASS="$HOME/.local/bin/tools/dmenupass"
+export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
+export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
+
+export FZF_DEFAULT_OPTS="--layout=reverse --height 40%"
 
 # less/man colors
 export LESS=-R
@@ -38,4 +42,13 @@ export LESS_TERMCAP_us=$'\e[1;4;31m'
 # For when not using display manager
 #
 # Start graphical server if dwm not already running.
-#[ "$(tty)" = "/dev/tty1" ] && ! pgrep -x dwm >/dev/null && exec startx
+# [ "$(tty)" = "/dev/tty1" ] && ! pgrep -x dwm >/dev/null && exec startx
+
+# Have QT use gtk2 theme
+export QT_QPA_PLATFORMTHEME="gtk2"
+
+# Fix for Java applications in dwm
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+# Mozilla smooth scrolling/touchpads.
+export MOZ_USE_XINPUT2="1"
