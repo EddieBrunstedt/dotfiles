@@ -30,4 +30,8 @@ dunst &
 # megasync for cloud storage
 megasync &
 
+# fuck you, bluetooth
 blueman-applet &
+
+# emacs daemon for better emacs
+emacs --daemon &
