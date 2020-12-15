@@ -1,5 +1,3 @@
-networkmanager
-powerline-fonts
 alacritty
 arc-solid-gtk-theme
 atool
@@ -11,6 +9,7 @@ fzf
 gnu-netcat
 highlight
 mediainfo
+networkmanager
 nitrogen
 noto-fonts
 odt2txt
@@ -18,8 +17,12 @@ p7zip
 pacutils
 perl-file-mimeinfo
 picom
+powerline-fonts
+redshift
+rustup
 sxhkd
 sxiv
+thunar
 tldr
 transmission-cli
 ttf-roboto
@@ -27,9 +30,6 @@ ttf-roboto-mono
 unclutter
 unrar
 w3m
+xclip
 youtube-viewer
 zathura
-redshift
-thunar
-rustup
-xclip
