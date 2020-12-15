@@ -1,6 +1,5 @@
 # Eddie's zsh config
 
-
 ### Zinit Initialization
 if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
     print -P "%F{33}▓▒░ %F{220}Installing DHARMA Initiative Plugin Manager (zdharma/zinit)…%f"
@@ -14,25 +13,23 @@ autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 ### End of Zinit Initialization
 
-# Plugins
-zinit light denysdovhan/spaceship-prompt
+## Plugins
 zinit load zsh-users/zaw
 zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma/fast-syntax-highlighting
+zinit load zdharma/history-search-multi-word #Multi-word, syntax highlighted history searching for Zsh
 
 # Enable colors and change prompt:
 autoload -U colors && colors
-
-# Spaceship prompt settings
-SPACESHIP_VI_MODE_SHOW=false
-SPACESHIP_PROMPT_ADD_NEWLINE=false
-SPACESHIP_PROMPT_SEPARATE_LINE=true
-SPACESHIP_CHAR_SUFFIX=" "
 
 # History in cache directory:
 HISTSIZE=1000
 SAVEHIST=1000
 HISTFILE=~/.zsh_history
+
+
+ZSH_AUTOSUGGEST_STRATEGY=(history completion) # Auto-suggestion strategy
+ZSH_AUTOSUGGEST_USE_ASYNC=Yespls # Suggestions fetched asynchronously
 
 # vi mode
 bindkey -v
@@ -41,11 +38,14 @@ export KEYTIMEOUT=1
 # Enable searching through history
 bindkey '^R' history-incremental-pattern-search-backward
 
+# Accept autosuggestion
+bindkey '^ ' autosuggest-accept
+
 # Load aliases if existent
 [ -f "$HOME/.config/aliasrc" ] && source "$HOME/.config/aliasrc"
 
-autoload -U compinit
-zstyle ':completion:*' menu select
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu yes select
 zmodload zsh/complist
 compinit
 
@@ -117,3 +117,4 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+eval "$(starship init zsh)"
