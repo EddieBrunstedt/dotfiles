@@ -27,7 +27,9 @@ export FILE="lf"
 export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
 export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
 
-export FZF_DEFAULT_OPTS="--layout=reverse --height 40%"
+# Default options for fzf
+export FZF_DEFAULT_OPTS="--layout=reverse --height 40% --border --inline-info"
+export FZF_DEFAULT_COMMAND='fd --type f --hidden'
 
 # less/man colors
 export LESS=-R

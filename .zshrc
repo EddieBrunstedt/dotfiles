@@ -29,7 +29,7 @@ HISTFILE=~/.zsh_history
 
 
 ZSH_AUTOSUGGEST_STRATEGY=(history completion) # Auto-suggestion strategy
-ZSH_AUTOSUGGEST_USE_ASYNC=Yespls # Suggestions fetched asynchronously
+ZSH_AUTOSUGGEST_USE_ASYNC=YesPls # Suggestions fetched asynchronously
 
 # vi mode
 bindkey -v
