@@ -1,0 +1,3 @@
+#!/bin/bash
+# alacritty -e tmux new-session -s pulsemixer 'pulsemixer'
+alacritty -e tmux new-session -A -s pulsemixer 'pulsemixer'

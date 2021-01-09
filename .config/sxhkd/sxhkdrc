@@ -9,7 +9,7 @@ super + F4
 	prompt 'Hibernate computer?' 'sudo systemctl suspend'
 # Lock computer
 super + shift + l
-	gpgconf --reload gpg-agent; betterlockscreen -l blur -t "Can't touch this"
+	gpgconf --reload gpg-agent; betterlockscreen -l dimblur -t "Can't touch this"
 
 # Monitor backlight brightness
 XF86MonBrightnessDown
@@ -54,7 +54,7 @@ super + shift + n
 
 # Open terminal with pulsemixer
 super + shift + p
-	$TERMINAL -e pulsemixer
+	start-pulsemixer
 
 # Toggle VPN on
 super + shift + F5
