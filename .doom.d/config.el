@@ -18,7 +18,7 @@
 ;;
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
-(setq doom-font (font-spec :family "Roboto Mono Medium" :size 18))
+(setq doom-font (font-spec :family "Roboto Mono Medium" :size 15))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -35,8 +35,9 @@
 ;; Set javascript indent level to two spaces
 (setq js-indent-level 2)
 
-;; Display fill column
-(setq display-fill-column-indicator-column 2)
+;; Setting typescript indent level [EXPERIMENTAL]
+(setq typescript-indent-level 2)
+(setq-hook! 'typescript-tsx-mode-hook web-mode-code-indent-offset 2)
 
 ;; Make comments italic
 (custom-set-faces!
