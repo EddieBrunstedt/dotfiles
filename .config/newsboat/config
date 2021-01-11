@@ -5,13 +5,11 @@ unbind-key H
 unbind-key L
 unbind-key c
 unbind-key ,
-browser "min %u"
+browser "firefox %u"
 
 # Feed settings
 prepopulate-query-feeds yes
 refresh-on-startup yes
-
-macro w set browser "mpv %u" ; open-in-browser ; set browser "min %u"
 
 # bind keys
 bind-key ; macro-prefix
