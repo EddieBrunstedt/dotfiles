@@ -71,3 +71,9 @@ super + shift + F6
 # Ultra widea xrandr settings
 super + shift + F2
     xrandr --output DP-4 --mode 3440x1440 --rate 99.98
+
+# Volume
+super + bracketright
+    pamixer -i 5
+super + bracketleft
+    pamixer -d 5
