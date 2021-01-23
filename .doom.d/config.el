@@ -31,6 +31,44 @@
 ;; Roam directory
 (setq org-roam-directory "~/org-roam")
 
+(setq org-roam-rename-file-on-title-change t)
+
+;; Org capture templates
+(after! org
+  (add-to-list
+   'org-capture-templates
+   '("w" "Work"))
+  (add-to-list
+   'org-capture-templates
+   '("wo" "Onboarding new customer" entry (file "~/org/penneo-customers.org")
+     "* %^{Name of End user account}
+:PROPERTIES:
+:Title: Handover info regarding %\\1 from sales
+:Account: %^{Salesforce Account ID}
+:END:
+** TODO Set up %\\1
+SCHEDULED: %^t
+** Account information at handover
+- Name :: %\\1
+- VATIN :: %^{Vatin}
+- Salesforce Account ID :: [[https://penneo.lightning.force.com/%\\2][%\\2]]
+- Netsuite Org ID :: %^{Netsuite Org ID}
+- Parent - Salesforce Account ID :: %^{Parent - Salesforce Account ID}
+- Parent - Vatin :: %^{Parent - Vatin}
+*** Address
+%^{Address}
+*** Contact person
+- Name :: %^{Name of contact person}
+- Email :: %^{Email to contact person}
+- Phone :: %^{Phone to contact person}
+*** Products
+%?
+*** Misc
+%^{Misc}"
+     :empty-lines 1
+     :prepend t))
+  )
+
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
 (setq display-line-numbers-type `relative)
