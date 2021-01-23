@@ -37,4 +37,4 @@ blueman-applet &
 emacs --daemon &
 
 # ProtonMail Bridge
-protonmail-bridge &
+# protonmail-bridge &
