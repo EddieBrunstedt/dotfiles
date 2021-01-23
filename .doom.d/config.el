@@ -28,6 +28,9 @@
 ;; If you intend to use org, it is recommended you change this!
 (setq org-directory "~/org/")
 
+;; Roam directory
+(setq org-roam-directory "~/org-roam")
+
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
 (setq display-line-numbers-type `relative)
@@ -66,12 +69,14 @@
         lsp-ui-doc-show-with-mouse nil
         lsp-ui-doc-include-signature t
         lsp-ui-doc-delay 0.5
-        lsp-ui-doc-position 'at-point
+        ;; lsp-ui-doc-position 'at-point
+        lsp-ui-doc-position (quote top)
         lsp-ui-doc-max-width 100
-        lsp-ui-doc-max-height 40
+        lsp-ui-doc-max-height 50
 
         ;; This is just annoying, really
-        lsp-ui-sideline-enable nil))
+        lsp-ui-sideline-enable nil)
+  )
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
@@ -88,4 +93,3 @@
 ;;
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
-
