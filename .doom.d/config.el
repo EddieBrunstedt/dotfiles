@@ -18,7 +18,7 @@
 ;;
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
-(setq doom-font (font-spec :family "Roboto Mono Medium" :size 15))
+(setq doom-font (font-spec :family "Roboto Mono Medium" :size 17))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -40,7 +40,7 @@
    '("w" "Work"))
   (add-to-list
    'org-capture-templates
-   '("wo" "Onboarding new customer" entry (file "~/org/penneo-customers.org")
+   '("wc" "customers" entry (file "~/org/penneo-customers.org")
      "* %^{Name of End user account}
 :PROPERTIES:
 :Title: Handover info regarding %\\1 from sales
@@ -53,6 +53,8 @@ SCHEDULED: %^t
 - VATIN :: %^{Vatin}
 - Salesforce Account ID :: [[https://penneo.lightning.force.com/%\\2][%\\2]]
 - Netsuite Org ID :: %^{Netsuite Org ID}
+- Industry :: %^{Industry}
+- Using integration :: %^{Will be using integration?}
 - Parent - Salesforce Account ID :: %^{Parent - Salesforce Account ID}
 - Parent - Vatin :: %^{Parent - Vatin}
 *** Address
