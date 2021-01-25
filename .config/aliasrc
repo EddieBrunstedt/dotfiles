@@ -13,7 +13,7 @@ alias \
 	mv="mv -iv" \
 	rm="rm -v" \
 	mkd="mkdir -pv" \
-	bat="bat --theme base16" \
+	bat="bat --style=header --style auto --paging always --theme base16" \
 	ffmpeg="ffmpeg -hide_banner" \
 	grep="grep --color=auto" \
 	diff="diff --color=auto" \
