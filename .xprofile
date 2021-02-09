@@ -22,7 +22,7 @@ xset r rate 300 50 &
 unclutter &
 
 # picom for transparency
-picom -b &
+# picom -b &
 
 # dunst for notifications
 dunst &
