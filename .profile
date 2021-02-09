@@ -16,12 +16,14 @@ appendpath "$(yarn global bin)"
 appendpath "$HOME/.emacs.d/bin"
 appendpath "$HOME/.deno/bin"
 appendpath "$HOME/.cargo/bin"
+appendpath "$HOME/.deno/"
+appendpath "$HOME/.dvm/bin/"
 unset appendpath
 
 export EDITOR="$HOME/.local/bin/start-editor"
 export VISUAL="$HOME/.local/bin/start-editor"
 export TERMINAL="alacritty"
-export BROWSER="firefox"
+export BROWSER="librewolf"
 export READER="zathura"
 export FILE="lf"
 export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
@@ -40,6 +42,9 @@ export LESS_TERMCAP_se=$'\e[0m'
 export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
+
+# dvm (deno version manager)
+export DENO_INSTALL=$HOME/.deno
 
 # For when not using display manager
 #
