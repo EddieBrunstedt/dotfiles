@@ -82,6 +82,9 @@ SCHEDULED: %^t
 (setq typescript-indent-level 2)
 (setq-hook! 'typescript-tsx-mode-hook web-mode-code-indent-offset 2)
 
+;; Do not start spell-fu by default
+(remove-hook! 'text-mode-hook #'spell-fu-mode)
+
 ;; Make comments italic
 (custom-set-faces!
   '(font-lock-comment-face :slant italic)
