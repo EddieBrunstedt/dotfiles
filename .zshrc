@@ -22,6 +22,10 @@ zinit load zdharma/history-search-multi-word #Multi-word, syntax highlighted his
 # Enable colors and change prompt:
 autoload -U colors && colors
 
+# Use bat as man pager
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+
+
 # History in cache directory:
 HISTSIZE=1000
 SAVEHIST=1000
