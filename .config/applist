@@ -3,6 +3,7 @@ arc-solid-gtk-theme
 atool
 bat
 discord
+dunst
 emacs
 expac
 firefox
@@ -10,11 +11,15 @@ fzf
 gnu-netcat
 highlight
 lightdm
+maim
 mediainfo
+mlocate
+mpv
 networkmanager
 nitrogen
 noto-fonts
 odt2txt
+openresolv
 p7zip
 pacutils
 perl-file-mimeinfo
@@ -22,6 +27,7 @@ picom
 powerline-fonts
 redshift
 rustup
+starship
 sxhkd
 sxiv
 thunar
@@ -33,6 +39,8 @@ ttf-roboto-mono
 unclutter
 unrar
 w3m
+wireguard-tools
 xclip
+youtube-dl
 youtube-viewer
 zathura
