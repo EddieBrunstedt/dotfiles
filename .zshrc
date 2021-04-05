@@ -19,25 +19,27 @@ zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma/fast-syntax-highlighting
 zinit load zdharma/history-search-multi-word #Multi-word, syntax highlighted history searching for Zsh
 
-# Enable colors and change prompt:
+export KEYTIMEOUT=1
+
+# vi mode
+bindkey -v
+
+# Enable colors
 autoload -U colors && colors
 
 # Use bat as man pager
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-
+# Limit the man width
+export MANWIDTH=70
 
 # History in cache directory:
 HISTSIZE=1000
 SAVEHIST=1000
 HISTFILE=~/.zsh_history
 
-
+# Suggestions
 ZSH_AUTOSUGGEST_STRATEGY=(history completion) # Auto-suggestion strategy
 ZSH_AUTOSUGGEST_USE_ASYNC=YesPls # Suggestions fetched asynchronously
-
-# vi mode
-bindkey -v
-export KEYTIMEOUT=1
 
 # Enable searching through history
 bindkey '^R' history-incremental-pattern-search-backward
@@ -61,9 +63,6 @@ bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
-bindkey -v '^?' backward-delete-char
-
-export KEYTIMEOUT=1
 
 # Change cursor shape for different vi modes
 function zle-keymap-select {
@@ -97,7 +96,7 @@ lfcd () {
     lf -last-dir-path="$tmp" "$@"
     if [ -f "$tmp" ]; then
         dir="$(cat "$tmp")"
-        rm -f "$tmp"
+        command rm -f "$tmp"
         if [ -d "$dir" ]; then
             if [ "$dir" != "$(pwd)" ]; then
                 cd "$dir"
@@ -105,20 +104,10 @@ lfcd () {
         fi
     fi
 }
+bindkey -s '^o' lfcd^J
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/opt/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/opt/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/opt/miniconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/opt/miniconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
+# Load Node Version Manager
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 
 eval "$(starship init zsh)"

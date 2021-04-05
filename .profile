@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-# Append to PATH
+# Function to add to PATH
 appendpath () {
     case ":$PATH:" in
         *:"$1":*)
@@ -10,9 +10,9 @@ appendpath () {
     esac
 }
 
-# Adds `~/.scripts` and all subdirectories to $PATH
+# Directories to add to PATH
 appendpath "$(du "$HOME/.local/bin/" | cut -f2 | tr '\n' ':' | sed 's/:*$//')"
-appendpath "$(yarn global bin)"
+appendpath "$HOME/.yarn/bin"
 appendpath "$HOME/.emacs.d/bin"
 appendpath "$HOME/.deno/bin"
 appendpath "$HOME/.cargo/bin"
@@ -46,11 +46,6 @@ export LESS_TERMCAP_us=$'\e[1;4;31m'
 # dvm (deno version manager)
 export DENO_INSTALL=$HOME/.deno
 
-# For when not using display manager
-#
-# Start graphical server if dwm not already running.
-# [ "$(tty)" = "/dev/tty1" ] && ! pgrep -x dwm >/dev/null && exec startx
-
 # Have QT use gtk2 theme
 export QT_QPA_PLATFORMTHEME="gtk2"
 
@@ -59,3 +54,8 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 
 # Mozilla smooth scrolling/touchpads.
 export MOZ_USE_XINPUT2="1"
+
+# For when not using display manager
+#
+# Start graphical server if dwm not already running.
+# [ "$(tty)" = "/dev/tty1" ] && ! pgrep -x dwm >/dev/null && exec startx
