@@ -58,11 +58,11 @@ super + shift + p
 
 # Toggle VPN on
 super + shift + F5
-	prompt "Turn ON Mullvad VPN?" "sudo wg-quick up mullvad-se1"
+	prompt "Turn ON Mullvad VPN?" "sudo wg-quick up mullvad"
 
 # Toggle VPN off
 super + shift + F6
-	prompt "Turn OFF Mullvad VPN?" "sudo wg-quick down mullvad-se1"
+	prompt "Turn OFF Mullvad VPN?" "sudo wg-quick down mullvad"
 
 # Gaming Monitor xrandr settings
 # super + shift + F1
