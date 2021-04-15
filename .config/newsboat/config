@@ -5,7 +5,7 @@ unbind-key H
 unbind-key L
 unbind-key c
 unbind-key ,
-browser "firefox %u"
+browser "$BROWSER %u"
 
 # Feed settings
 prepopulate-query-feeds yes
