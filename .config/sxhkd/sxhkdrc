@@ -73,7 +73,7 @@ super + shift + F2
     xrandr --output DP-4 --mode 3440x1440 --rate 99.98
 
 # Volume
-super + bracketright
+XF86AudioRaiseVolume
     pamixer -i 5
-super + bracketleft
+XF86AudioLowerVolume
     pamixer -d 5
