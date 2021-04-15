@@ -23,6 +23,7 @@ export KEYTIMEOUT=1
 
 # vi mode
 bindkey -v
+bindkey -v '^?' backward-delete-char
 
 # Enable colors
 autoload -U colors && colors
@@ -30,7 +31,7 @@ autoload -U colors && colors
 # Use bat as man pager
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 # Limit the man width
-export MANWIDTH=70
+export MANWIDTH=80
 
 # History in cache directory:
 HISTSIZE=1000
