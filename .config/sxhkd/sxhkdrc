@@ -1,3 +1,15 @@
+# Shortcuts
+super + shift + e
+	$BROWSER
+super + shift + f
+	$TERMINAL -e $FILE
+
+# Volume
+XF86AudioRaiseVolume
+    pamixer -i 5
+XF86AudioLowerVolume
+    pamixer -d 5
+
 # Shutdown computer
 super + shift + x
 	prompt "Shutdown computer?" "sudo -A shutdown -h now"
@@ -7,6 +19,7 @@ super + shift + BackSpace
 # Hibernate computer
 super + F4
 	prompt 'Hibernate computer?' 'sudo systemctl suspend'
+
 # Lock computer
 super + shift + l
 	gpgconf --reload gpg-agent; betterlockscreen -l dimblur -t "Can't touch this na na na na"
@@ -17,14 +30,14 @@ XF86MonBrightnessDown
 XF86MonBrightnessUp
 	xbacklight -inc 15
 
-# Take screenshot
+# Make screenshot
 Print
 	maim pic-full-$(date '+%y%m%d-%H%M-%S').png
-# Pick screenshot type
+# Make screenshot (pick type)
 shift + Print
 	maimpick
 
-# Choose display
+# Choose display [Experimental]
 super + F3
 	displayselect
 
@@ -56,24 +69,6 @@ super + shift + n
 super + shift + p
 	start-pulsemixer
 
-# Toggle VPN on
+# Toggle VPN
 super + shift + F5
-	prompt "Turn ON Mullvad VPN?" "sudo wg-quick up mullvad"
-
-# Toggle VPN off
-super + shift + F6
-	prompt "Turn OFF Mullvad VPN?" "sudo wg-quick down mullvad"
-
-# Gaming Monitor xrandr settings
-# super + shift + F1
-    # xrandr --output DP-4 --mode 3440x1440 --rate 99.98
-
-# Ultra widea xrandr settings
-super + shift + F2
-    xrandr --output DP-4 --mode 3440x1440 --rate 99.98
-
-# Volume
-XF86AudioRaiseVolume
-    pamixer -i 5
-XF86AudioLowerVolume
-    pamixer -d 5
+	toggle-vpn

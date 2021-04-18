@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Toggle Mullvad VPN ON/OFF
+
+case "$(printf "Turn VPN ON\\nTurn VPN OFF" | dmenu -fn monospace-12 -l 2 -i -p "Toggle VPN")" in
+	"Turn VPN ON") sudo wg-quick up mullvad ;;
+	"Turn VPN OFF") sudo wg-quick down mullvad ;;
+esac
