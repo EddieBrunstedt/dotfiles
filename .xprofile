@@ -31,7 +31,10 @@ dunst &
 megasync &
 
 # fuck you, bluetooth
-blueman-applet &
+#blueman-applet &
+
+# Mullvad VPN
+mullvad-vpn &
 
 # emacs daemon for better emacs
 emacs --daemon &
