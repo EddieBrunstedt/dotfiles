@@ -46,13 +46,22 @@ cmd open ${{
 cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 
 cmd delete ${{
+    clear; tput cup $(($(tput lines)/3)); tput bold
     set -f
     printf "%s\n\t" "$fx"
-    printf "delete? [y/N] "
+    printf "delete?[y/N] "
     read ans
-    [ $ans = "y" ] && rm -rf $fx
+    [ $ans = "y" ] && rm -rf -- $fx
 }}
 
+cmd extract ${{
+    clear; tput cup $(($(tput lines)/3)); tput bold
+    set -f
+    printf "%s\n\t" "$fx"
+    printf "extract?[y/N] "
+    read ans
+    [ $ans = "y" ] && ext $fx
+}}
 
 # Bindings
 map <c-s> $lf -remote "send $id select '$(fzf)'"
@@ -68,3 +77,4 @@ map x $$f
 map X !$f
 map o $mimeopen --ask $fx
 map i $bat --paging always --theme=1337 $fx
+map E extract
