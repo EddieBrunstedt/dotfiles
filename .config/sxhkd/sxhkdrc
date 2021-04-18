@@ -4,6 +4,10 @@ super + shift + e
 super + shift + f
 	$TERMINAL -e $FILE
 
+# Set White Temperature
+super + shift + r
+	whitetemp
+
 # Volume
 XF86AudioRaiseVolume
     pamixer -i 5
@@ -19,7 +23,6 @@ super + shift + BackSpace
 # Hibernate computer
 super + F4
 	prompt 'Hibernate computer?' 'sudo systemctl suspend'
-
 # Lock computer
 super + shift + l
 	gpgconf --reload gpg-agent; betterlockscreen -l dimblur -t "Can't touch this na na na na"
@@ -37,10 +40,6 @@ Print
 shift + Print
 	maimpick
 
-# Choose display [Experimental]
-super + F3
-	displayselect
-
 # Mount a USB drive or Android device
 super + F9
 	dmenumount
@@ -49,17 +48,9 @@ super + F9
 super + F10
 	dmenuumount
 
-# Search with Duckduckgo
-super + F11
-	ducksearch
-
 # Network Manager interface
 super + F12
-	$TERMINAL -e sudo -A nmtui
-
-# Set White Temperature
-super + shift + r
-	whitetemp
+	$TERMINAL -e nmtui
 
 # Run org-capture
 super + shift + n
@@ -69,6 +60,10 @@ super + shift + n
 super + shift + p
 	start-pulsemixer
 
-# Toggle VPN
-super + shift + F5
-	toggle-vpn
+# Keyboard Layout
+super + F1
+	setxkbmap -layout us -option caps:super
+super + F2
+	setxkbmap -layout se -option caps:super
+super + F3
+	setxkbmap -layout dk -option caps:super
