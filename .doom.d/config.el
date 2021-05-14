@@ -19,6 +19,11 @@
 ;; `load-theme' function. These are the defaults.
 (setq doom-theme 'doom-one)
 
+;; Show 80 column line
+(global-display-fill-column-indicator-mode +1)
+;; But not in Doom Dashboard
+(add-hook! '+doom-dashboard-mode-hook (display-fill-column-indicator-mode -1))
+
 ;; If you intend to use org, it is recommended you change this!
 (setq org-directory "~/org/")
 
@@ -80,7 +85,8 @@
         lsp-ui-peek-peek-height 40
 
         lsp-ui-doc-enable t
-        lsp-ui-doc-show-with-mouse t ;; Prevents LSP peek to disappear when mouse touches it
+        ;; Prevents LSP peek to disappear when mouse touches it
+        lsp-ui-doc-show-with-mouse t
         lsp-ui-doc-show-with-cursor t
         lsp-ui-doc-include-signature t
         lsp-ui-doc-delay 0.2
