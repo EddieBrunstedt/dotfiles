@@ -88,8 +88,6 @@ alias gsts='git stash save'
 # Git log find by commit message
 function glf() { git log --all --grep="$1"; }
 
-
-
 # Pacman's more sensible half
 pacwoman-list-with-size () { pacman -Qi | awk '/^Name/{name=$3} /^Installed Size/{print $4$5, name}' | sort -h; }
 pacwoman-download-size () { expac -S -H M '%k\t%n' $1;}
