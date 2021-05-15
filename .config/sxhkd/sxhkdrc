@@ -58,7 +58,7 @@ super + shift + n
 
 # Open terminal with pulsemixer
 super + shift + p
-	start-pulsemixer
+	alacritty -e pulsemixer
 
 # Keyboard Layout
 super + F1
