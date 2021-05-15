@@ -24,6 +24,9 @@
 ;; But not in Doom Dashboard
 (add-hook! '+doom-dashboard-mode-hook (display-fill-column-indicator-mode -1))
 
+;; Only format TypeScript on save
+(add-to-list '+format-on-save-enabled-modes 'TypeScript-tsx t)
+
 ;; If you intend to use org, it is recommended you change this!
 (setq org-directory "~/org/")
 
