@@ -31,7 +31,7 @@
 (setq org-directory "~/org/")
 
 ;; Roam directory
-(setq org-roam-directory "~/org-roam")
+(setq org-roam-directory "~/org/roam")
 
 (setq org-roam-rename-file-on-title-change t)
 
