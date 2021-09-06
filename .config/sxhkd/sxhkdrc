@@ -25,7 +25,7 @@ super + F4
 	prompt 'Hibernate computer?' 'sudo systemctl suspend'
 # Lock computer
 super + shift + l
-	gpgconf --reload gpg-agent; betterlockscreen -l dimblur -t "Can't touch this na na na na"
+	gpgconf --reload gpg-agent; betterlockscreen -l
 
 # Monitor backlight brightness
 XF86MonBrightnessDown
