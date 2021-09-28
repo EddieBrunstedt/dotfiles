@@ -21,6 +21,7 @@ x-scheme-handler/about=librewolf.desktop
 x-scheme-handler/unknown=librewolf.desktop
 x-scheme-handler/postman=Postman.desktop
 text/csv=libreoffice-calc.desktop;
+x-scheme-handler/jetbrains=jetbrains-toolbox.desktop
 
 [Added Associations]
 image/png=krita_png.desktop;
