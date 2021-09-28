@@ -29,6 +29,7 @@ alias \
 
 # Shortcuts
 alias \
+	d=devour \
 	S="sudo" \
 	draw="krita --new-image RGBA,U8,4096,2160 --workspace Big_Paint_2 --nosplash" \
 	t="tmux" \
