@@ -14,7 +14,7 @@
 ;; font string. You generally only need these two:
 ;; (setq doom-font (font-spec :family "Dank Mono" :size 18))
 
-(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 18 :weight 'light)
+(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 16 :weight 'light)
       doom-variable-pitch-font (font-spec :family "Noto Serif Nerd Font" :size 16)
       ivy-posframe-font (font-spec :family "JetBrainsMono Nerd font" :size 18))
 
@@ -97,7 +97,7 @@
         lsp-ui-doc-show-with-cursor t
         lsp-ui-doc-include-signature t
         lsp-ui-doc-delay 0.2
-        lsp-ui-doc-position 'at-point
+        lsp-ui-doc-position 'top
         lsp-ui-doc-max-width 100
         lsp-ui-doc-max-height 50
 
