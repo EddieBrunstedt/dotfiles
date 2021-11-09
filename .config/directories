@@ -1,8 +1,10 @@
+/mnt
 ~/
-~/documents
-~/Downloads
-~/media/
-~/work
 ~/.config
 ~/.local/bin
-/mnt
+~/Downloads
+~/code/personal
+~/code/work
+~/documents
+~/media/
+~/work
