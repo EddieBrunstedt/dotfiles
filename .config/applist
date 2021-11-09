@@ -19,13 +19,13 @@ mpv
 networkmanager
 nitrogen
 noto-fonts
+nushell
 odt2txt
 openresolv
 p7zip
 pacutils
 perl-file-mimeinfo
 picom
-powerline-fonts
 redshift
 ripgrep
 rustup
@@ -35,8 +35,6 @@ sxiv
 thunar
 tldr
 tmux
-ttf-roboto
-ttf-roboto-mono
 unclutter
 unrar
 w3m
