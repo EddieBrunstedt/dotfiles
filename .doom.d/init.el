@@ -66,7 +66,8 @@
        ;;word-wrap         ; soft wrapping with language-aware indent
 
        :emacs
-       dired               ; making dired pretty [functional]
+       (dired
+        +icons)            ; making dired pretty [functional]
        electric            ; smarter, keyword-based electric-indent
        ibuffer             ; interactive buffer management
        undo                ; persistent, smarter undo for your inevitable mistakes
@@ -114,7 +115,7 @@
        ;;common-lisp       ; if you've seen one lisp, you've seen them all
        ;;coq               ; proofs-as-programs
        ;;crystal           ; ruby at the speed of c
-       ;;csharp            ; unity, .NET, and mono shenanigans
+       csharp              ; unity, .NET, and mono shenanigans
        data                ; config/data formats
        ;;(dart +flutter)   ; paint ui and not much else
        ;;elixir            ; erlang done right
