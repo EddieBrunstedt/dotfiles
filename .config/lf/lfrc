@@ -78,3 +78,4 @@ map X !$f
 map o $mimeopen --ask $fx
 map i $bat --paging always --theme=1337 $fx
 map E extract
+map gw cd ~/code/work/
