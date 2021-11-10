@@ -33,12 +33,13 @@ XF86MonBrightnessDown
 XF86MonBrightnessUp
 	xbacklight -inc 15
 
-# Make screenshot
+# Make screenshot (screen with mouse pointer)
 Print
-	maim pic-full-$(date '+%y%m%d-%H%M-%S').png
-# Make screenshot (pick type)
+	flameshot screen -p ~/screenshots/
+
+# Make screenshot (using gui)
 shift + Print
-	maimpick
+	flameshot gui -p ~/screenshots/
 
 # Mount a USB drive or Android device
 super + F9
