@@ -9,7 +9,7 @@
 (setq doom-font (font-spec :family "Hack Nerd Font" :size 18))
 
 ;; Theme
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-badger)
 
 ;; Org
 ;; Org root directory
