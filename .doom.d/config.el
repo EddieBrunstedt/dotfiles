@@ -51,7 +51,7 @@
 
 ;; Lsp
 ;; Disable formatting with lsp
-;; (setq +format-with-lsp nil)
+(setq +format-with-lsp nil)
 ;; Find references (`find-defintions per default with "g d")
 (define-key evil-normal-state-map (kbd "g f") 'lsp-ui-peek-find-references)
 (after! lsp-ui
