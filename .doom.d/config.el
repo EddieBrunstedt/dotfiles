@@ -6,7 +6,7 @@
 ;; + `doom-font'
 ;; + `doom-variable-pitch-font'
 ;; + `doom-big-font' -- used for `doom-big-font-mode'
-(setq doom-font (font-spec :family "Hack Nerd Font" :size 18))
+(setq doom-font (font-spec :family "Hack Nerd Font" :size 17))
 
 ;; Theme
 (setq doom-theme 'doom-badger)
