@@ -38,7 +38,7 @@ cmd open ${{
          audio/*) mpv --audio-display=no $f;;
          video/*) setsid -f mpv $f -quiet >/dev/null 2>&1;;
          application/pdf|application/epub*) setsid -f zathura $fx >/dev/null 2>&1;;
-         application/zip) unzip $fx;;
+         application/zip) zipinfo $fx | bat --paging always --theme=1337;;
          *) xdg-open "$f";;
     esac
 }}
@@ -64,17 +64,18 @@ cmd extract ${{
 }}
 
 # Bindings
-map <c-s> $lf -remote "send $id select '$(fzf)'"
-map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
-map <c-j> $lf -remote "send $id cd $(fzf | xargs dirname)"
-map D delete
+map <c-j> $lf -remote "send $id cd $(fzf | xargs -L 1 dirname)"
 map <c-n> push %mkdir<space>
-map R push :rename<space>
-map r $lf -remote "send $id push :rename<space>$f"
 map <c-r> reload
+map <c-s> $lf -remote "send $id select '$(fzf)'"
 map <enter> shell
+map D delete
+map E extract
+map i $bat --paging always --theme=1337 $fx
+map J $lf -remote "send $id cd $(cut -d'    ' -f2 ~/.config/directories | fzf)"
+map o &mimeopen $f
+map O $mimeopen --ask $f
+map r $lf -remote "send $id push :rename<space>$f"
+map R push :rename<space>
 map x $$f
 map X !$f
-map o $mimeopen --ask $fx
-map i $bat --paging always --theme=1337 $fx
-map E extract
