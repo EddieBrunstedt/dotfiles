@@ -9,15 +9,15 @@ alias \
 
 # Flags
 alias \
-	cp="cp -iv" \
-	mv="mv -iv" \
-	rm="rm -v" \
-	mkd="mkdir -pv" \
 	bat="bat --style=header --style=auto --theme base16" \
+	ccat="highlight --out-format=ansi" \
+	cp="cp -iv" \
+	diff="diff --color=auto" \
 	ffmpeg="ffmpeg -hide_banner" \
 	grep="grep --color=auto" \
-	diff="diff --color=auto" \
-	ccat="highlight --out-format=ansi"
+	mkd="mkdir -pv" \
+	mv="mv -iv" \
+	rm="rm -v"
 
 # Use exa instead of ls
 alias \
@@ -29,24 +29,24 @@ alias \
 
 # Shortcuts
 alias \
-	d=devour \
-	S="sudo" \
-	draw="krita --new-image RGBA,U8,4096,2160 --workspace Big_Paint_2 --nosplash" \
-	t="tmux" \
-	ka="killall" \
-	sdn="sudo shutdown -h now" \
-	f="$FILE" \
-	e="$EDITOR" \
-	p="pacman" \
 	P="sudo pacman" \
-	yt="youtube-dl --add-metadata -i" \
-	yta="youtube-dl -x" \
+	S="sudo" \
 	YT="youtube-viewer" \
-	mc="tmux split -h lf; lf"
+	d=devour \
+	draw="devour krita --new-image RGBA,U8,4096,2160 --workspace Big_Paint_2 --nosplash" \
+	e="$EDITOR" \
+	f="$FILE" \
+	ka="killall" \
+	mc="tmux split -h lf; lf" \
+	p="pacman" \
+	sdn="sudo shutdown -h now" \
+	t="tmux" \
+	yt="youtube-dl --add-metadata -i" \
+	yta="youtube-dl -x"
 
 # Weather
 alias \
-	weather="less -S ~/.local/share/weatherreport"
+	weather="curl -s wttr.in/Copenhagen"
 
 # Git Aliases
 alias \
@@ -85,7 +85,6 @@ alias gstp='git stash pop' \
 alias gsts='git stash save'
 
 # Git Functions
-#
 # Git log find by commit message
 function glf() { git log --all --grep="$1"; }
 
