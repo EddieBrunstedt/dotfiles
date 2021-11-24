@@ -13,16 +13,32 @@ window:
   # Blank space added around the window in pixels. This padding is scaled
   # by DPI and the specified value is always added at both opposing sides.
   padding:
-    x: 10
-    y: 10
+    x: 5
+    y: 2
+
+# If `true`, bold text is drawn using the bright color variants.
+draw_bold_text_with_bright_colors: true
+
+cursor:
+# If this is `true`, the cursor will be rendered as a hollow box when the
+# window is not focused.
+  unfocused_hollow: true
 
 scrolling:
   # Maximum number of lines in the scrollback buffer.
   # Specifying '0' will disable scrolling.
   history: 100000
-
   # Scrolling distance multiplier.
-  #multiplier: 3
+  multiplier: 7
+  # Scroll to the bottom when new text is written to the terminal.
+  auto_scroll: true
+
+
+selection:
+  # When set to `true`, selected text will be copied to both the primary and the
+  # selection clipboard. Otherwise, it will only be copied to the selection
+  # clipboard.
+  save_to_clipboard: true
 
 # Font configuration
 font:
