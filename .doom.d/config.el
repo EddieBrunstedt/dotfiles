@@ -22,6 +22,9 @@
 ;; Statusbar
 (display-time-mode 1)
 
+;; Width of left-hand side fringe
+(after! git-gutter-fringe (fringe-mode 20))
+
 ;; Code & Language
 ;; Do not start spell-fu (spelling) by default
 (remove-hook! 'text-mode-hook #'spell-fu-mode)
