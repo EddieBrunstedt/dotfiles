@@ -1,5 +1,3 @@
 #!/bin/sh
 
 paru -Syu --devel --newsonupgrade --combinedupgrade --cleanafter --noconfirm
-paru -Scc --delete --noconfirm
-sudo rm -rf "$HOME/.cache/paru"
