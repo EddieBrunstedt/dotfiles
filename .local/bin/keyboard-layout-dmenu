@@ -1,0 +1,14 @@
+#!/bin/sh
+#Set white temperatature with redshift and dmenu
+
+list="us (English)\nse (Swedish)\ndk (Danish)"
+
+chosen=$(echo -e $list | dmenu -i -l 6 -fn monospace-12)
+
+[ "$chosen" != "" ] || exit
+
+echo $chosen | head -n1 | awk '{print $1;}'
+
+layout=$(echo $chosen | head -n1 | awk '{print $1;}')
+
+setxkbmap -layout $layout -option caps:super

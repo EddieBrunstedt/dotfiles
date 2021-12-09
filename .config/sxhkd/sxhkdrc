@@ -62,9 +62,5 @@ super + shift + p
 	alacritty -e pulsemixer
 
 # Keyboard Layout
-super + F1
-	setxkbmap -layout us -option caps:super
-super + F2
-	setxkbmap -layout se -option caps:super
-super + F3
-	setxkbmap -layout dk -option caps:super
+super + shift + k
+	keyboard-layout-dmenu
