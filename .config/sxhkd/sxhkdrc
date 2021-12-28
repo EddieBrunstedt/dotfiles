@@ -14,18 +14,9 @@ XF86AudioRaiseVolume
 XF86AudioLowerVolume
     pamixer -d 5
 
-# Shutdown computer
-super + shift + x
-	prompt "Shutdown computer?" "sudo -A shutdown -h now"
-# Reboot computer
-super + shift + BackSpace
-	prompt "Reboot computer?" "sudo -A shutdown -r now"
-# Hibernate computer
-super + F4
-	prompt 'Hibernate computer?' 'sudo systemctl suspend'
-# Lock computer
-super + shift + l
-	gpgconf --reload gpg-agent; betterlockscreen -l
+# Lock/Reboot/Power off computer
+super + shift + y
+	afk
 
 # Monitor backlight brightness
 XF86MonBrightnessDown
@@ -64,3 +55,7 @@ super + shift + p
 # Keyboard Layout
 super + shift + k
 	keyboard-layout-dmenu
+
+# Lookup what's in the clipboard
+super + shift + l
+	lookup

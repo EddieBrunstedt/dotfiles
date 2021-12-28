@@ -1,0 +1,26 @@
+#!/bin/sh
+
+list="wiki\ndictionary\ngoogle\nbrave"
+
+chosen=$(echo -e "$list" | dmenu -i -l 6 -fn monospace-12)
+
+[ "$chosen" != "" ] || exit
+
+clipboard=$(xclip -o -selection c;)
+
+echo "$clipboard";
+
+case $chosen in
+  "wiki")
+      librewolf --new-window https://en.wikipedia.org/wiki/Special:Search/"$clipboard";;
+
+  "dictionary")
+       alacritty --hold -e dict "$clipboard";;
+
+  "google")
+      librewolf --new-window http://www.google.com/search?q="$clipboard";;
+
+  "brave")
+      librewolf --new-window https://search.brave.com/search?q="$clipboard";;
+
+esac
