@@ -22,7 +22,8 @@
        company             ; the ultimate code completion backend
        ;;helm              ; the *other* search engine for love and life
        ;;ido               ; the other *other* search engine...
-       ivy                 ; a search engine for love and life
+       ;;ivy               ; a search engine for love and life
+       vertico             ; the search engine of the future
 
        :ui
        deft                ; notational velocity for Emacs
@@ -86,7 +87,7 @@
 
        :tools
        ;;ansible
-       (beancount +lsp)
+       ;;(beancount +lsp)
        ;;debugger          ; FIXME stepping through code, to help you add bugs
        ;;direnv
        ;;docker
