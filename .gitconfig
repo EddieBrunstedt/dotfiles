@@ -1,0 +1,27 @@
+[user]
+	email = eddie.brunstedt@protonmail.com
+	name = Eddie Brunstedt
+
+[core]
+    pager = delta
+	editor = emacs
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+    features = line-numbers decorations
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default
+
+[alias]
+	last = log -1 HEAD
+	sync = checkout master && git fetch --all -p && git pull
+
+[init]
+	defaultBranch = main
