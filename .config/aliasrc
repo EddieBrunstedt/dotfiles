@@ -100,7 +100,7 @@ pacwoman-check-unowned-files-lostfiles () { sudo lostfiles; }
 pacwoman-check-unowned-files-pacreport () { sudo pacreport --unowned-files; }
 pacwoman-remove-orphans () { sudo pacman -Rns $(pacman -Qtdq); }
 pacwoman-patch-notes () { pacolog -l 10 $1; }
-pacwoman-set-up-hq () { sudo paru -S --noconfirm - < $HOME/.config/applist; paru -Sccd --noconfirm; }
-pacwoman-set-up-hq-aur () { paru -S --noconfirm --aur - < $HOME/.config/applist-aur; paru -Sccd;  }
-pacwoman-clean-house () { sudo rm -rf /var/cache/; rm -rf $HOME/.cache/yay; sudo pacman -Scc --noconfirm; }
+pacwoman-set-up-hq () { sudo paru -S --noconfirm - < $HOME/.config/applist; }
+pacwoman-set-up-hq-aur () { paru -S --noconfirm --aur - < $HOME/.config/applist-aur;  }
+pacwoman-clean-house () { sudo rm -rf /var/cache/; rm -rf $HOME/.cache/yay; sudo pacman -Sccd --noconfirm; }
 pacwoman-file-owned-by-which-package () { pacman -Qo $1; }
