@@ -43,7 +43,7 @@ selection:
 # Font configuration
 font:
   # Point size
-  size: 10.0
+  size: 11.0
 
 # Catppuccin
 colors:
