@@ -1,3 +1,5 @@
 #!/bin/sh
 
-paru -Syu --devel --newsonupgrade --combinedupgrade --cleanafter --noconfirm
+paru -Syu --devel --newsonupgrade --combinedupgrade --cleanafter --noconfirm;
+
+rustup update --no-self-update;
