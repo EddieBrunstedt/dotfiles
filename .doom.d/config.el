@@ -6,7 +6,7 @@
 ;; + `doom-font'
 ;; + `doom-variable-pitch-font'
 ;; + `doom-big-font' -- used for `doom-big-font-mode'
-(setq doom-font (font-spec :family "Victor Mono SemiBold" :size 17))
+(setq doom-font (font-spec :family "Hack Nerd Font Mono" :size 17))
 
 ;; Theme
 (setq doom-theme 'doom-tomorrow-night)
