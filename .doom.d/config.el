@@ -31,6 +31,8 @@
 ;; Only format TypeScript on save
 (add-to-list '+format-on-save-enabled-modes 'typescript-mode t)
 
+(setq rustic-lsp-server 'rust-analyzer)
+
 ;; Keybindings
 ;; Mouse thumb buttons for navigating forward/back
 (map! :n [mouse-8] #'better-jumper-jump-backward
@@ -67,19 +69,27 @@
   (setq lsp-ui-peek-fontify 'always
         ;; Peek: window size
         lsp-ui-peek-list-width 80
-        lsp-ui-peek-peek-height 30
+        lsp-ui-peek-peek-height 60
         lsp-ui-doc-enable t
         ;; Peek: Prevent closing when mouse touches it
         lsp-ui-doc-show-with-mouse t
         lsp-ui-doc-show-with-cursor t
         lsp-ui-doc-include-signature t
         lsp-ui-doc-delay 0.2
-        lsp-ui-doc-position 'top
+        lsp-ui-doc-position 'at-point
         ;; Doc: pop-up size
-        ;; lsp-ui-doc-max-width 100
-        ;; lsp-ui-doc-max-height 50
+        lsp-ui-doc-max-width 70
+        lsp-ui-doc-max-height 50
         lsp-ui-imenu-enable t
         lsp-enable-symbol-highlighting t
         ;; UI: Disable inline error messages
         lsp-ui-sideline-enable nil)
   )
+
+;; Breadcrumbs
+(setq lsp-headerline-breadcrumb-enable t)
+(setq lsp-headerline-breadcrumb-segments '(symbols))
+(setq lsp-headerline-breadcrumb-icons-enable t)
+
+;; Code actions icon style
+(setq lsp-modeline-code-actions-segments '(count icon name))
