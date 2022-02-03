@@ -76,7 +76,7 @@
         lsp-ui-doc-show-with-cursor t
         lsp-ui-doc-include-signature t
         lsp-ui-doc-delay 0.2
-        lsp-ui-doc-position 'at-point
+        lsp-ui-doc-position 'top
         ;; Doc: pop-up size
         lsp-ui-doc-max-width 70
         lsp-ui-doc-max-height 50
