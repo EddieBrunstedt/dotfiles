@@ -68,8 +68,8 @@
   ;; Peek: always fontify previewed code
   (setq lsp-ui-peek-fontify 'always
         ;; Peek: window size
-        lsp-ui-peek-list-width 80
-        lsp-ui-peek-peek-height 60
+        lsp-ui-peek-list-width 50
+        lsp-ui-peek-peek-height 30
         lsp-ui-doc-enable t
         ;; Peek: Prevent closing when mouse touches it
         lsp-ui-doc-show-with-mouse t
