@@ -53,3 +53,4 @@
 
 ;; lang/pkgbuild
 (package! pkgbuild-mode)
+(package! lsp-tailwindcss :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))

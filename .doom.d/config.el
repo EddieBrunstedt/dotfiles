@@ -93,3 +93,5 @@
 
 ;; Code actions icon style
 (setq lsp-modeline-code-actions-segments '(count icon name))
+
+(use-package! lsp-tailwindcss)
