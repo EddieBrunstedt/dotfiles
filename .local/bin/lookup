@@ -1,6 +1,6 @@
 #!/bin/sh
 
-list="wiki\ndictionary\ngoogle\nbrave"
+list="duckduckgo\nwiki\ndictionary\ngoogle\nbrave"
 
 chosen=$(echo -e "$list" | dmenu -i -l 6 -fn monospace-12)
 
@@ -11,6 +11,9 @@ clipboard=$(xclip -o -selection c;)
 echo "$clipboard";
 
 case $chosen in
+  "duckduckgo")
+      librewolf --new-window https://duckduckgo.com/?q="$clipboard"\&kl=wt-wt\&kp=-2\&kae=d\&kaj=m\&kw=s\&ko=-1;;
+
   "wiki")
       librewolf --new-window https://en.wikipedia.org/wiki/Special:Search/"$clipboard";;
 

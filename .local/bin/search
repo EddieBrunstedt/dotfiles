@@ -1,0 +1,5 @@
+#!/bin/sh
+
+input="${1:-$(printf "%s" | dmenu -i -l 6 -fn monospace-12 -nb "#1E1D2F" -nf "#D9E0EE" -sb "#4a4a58" -sf "#D9E0EE" -p 'DuckDuckGo ->')}"
+
+librewolf --new-window https://duckduckgo.com/?q="$input"\&kl=wt-wt\&kp=-2\&kae=d\&kaj=m\&kw=s;
