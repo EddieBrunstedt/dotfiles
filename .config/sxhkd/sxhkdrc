@@ -57,9 +57,9 @@ super + shift + k
 	keyboard-layout-dmenu
 
 # Lookup what's in the clipboard
-super + shift + l
+super + S
 	lookup
 
 # Search on DuckDuckGo
-super + shift + s
+super + s
 	search
