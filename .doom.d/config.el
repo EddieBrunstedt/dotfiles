@@ -94,4 +94,7 @@
 ;; Code actions icon style
 (setq lsp-modeline-code-actions-segments '(count icon name))
 
-(use-package! lsp-tailwindcss)
+;; (use-package! lsp-tailwindcss)
+
+;; Use evil-snipe for all windows
+(setq avy-all-windows t)
