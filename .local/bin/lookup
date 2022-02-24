@@ -12,7 +12,7 @@ echo "$clipboard";
 
 case $chosen in
   "duckduckgo")
-      librewolf --new-window https://duckduckgo.com/?q="$clipboard"\&kl=wt-wt\&kp=-2\&kae=d\&kaj=m\&kw=s\&ko=-1;;
+      librewolf --new-window https://duckduckgo.com/?q="$clipboard"\&kl=wt-wt\&kp=-2\&kae=d\&kaj=m\&kw=s\&ko=s;;
 
   "wiki")
       librewolf --new-window https://en.wikipedia.org/wiki/Special:Search/"$clipboard";;

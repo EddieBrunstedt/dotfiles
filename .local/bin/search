@@ -4,4 +4,4 @@ input="${1:-$(printf "%s" | dmenu -i -l 6 -fn monospace-12 -nb "#1E1D2F" -nf "#D
 
 [ "$input" != "" ] || exit
 
-librewolf --new-window https://duckduckgo.com/?q="$input"\&kl=wt-wt\&kp=-2\&kae=d\&kaj=m\&kw=s\&ko=-1;
+librewolf --new-window https://duckduckgo.com/?q="$input"\&kl=wt-wt\&kp=-2\&kae=d\&kaj=m\&kw=s\&ko=s;
