@@ -9,7 +9,7 @@
 (setq doom-font (font-spec :family "Hack Nerd Font Mono" :size 19))
 
 ;; Theme
-(setq doom-theme 'doom-tomorrow-night)
+(setq doom-theme 'doom-city-lights)
 
 ;; Org
 ;; Org root directory
@@ -98,3 +98,4 @@
 
 ;; Use evil-snipe for all windows
 (setq avy-all-windows t)
+(beacon-mode 1)
