@@ -98,4 +98,3 @@
 
 ;; Use evil-snipe for all windows
 (setq avy-all-windows t)
-(beacon-mode 1)
