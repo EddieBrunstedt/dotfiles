@@ -9,7 +9,7 @@
 (setq doom-font (font-spec :family "Hack Nerd Font Mono" :size 19))
 
 ;; Theme
-(setq doom-theme 'doom-city-lights)
+(setq doom-theme 'doom-palenight)
 
 ;; Org
 ;; Org root directory
