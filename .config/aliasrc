@@ -5,7 +5,8 @@ command -v nvim >/dev/null && alias vim="nvim" vimdiff="nvim -d"
 
 # Git helper for dotfiles
 alias \
-	config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+	config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME' \
+	pbpaste='xclip -o -sel primary'
 
 # Flags
 alias \
