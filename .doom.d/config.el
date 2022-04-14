@@ -9,7 +9,7 @@
 (setq doom-font (font-spec :family "Hack Nerd Font Mono" :size 19))
 
 ;; Theme
-(setq doom-theme 'doom-monokai-pro)
+(setq doom-theme 'doom-monokai-spectrum)
 
 ;; Org
 ;; Org root directory
