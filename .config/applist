@@ -2,10 +2,12 @@ alacritty
 arc-solid-gtk-theme
 atool
 bat
+cmake
 discord
 dunst
 dust
 expac
+fd
 firefox
 flameshot
 fzf
@@ -14,6 +16,7 @@ glow
 gnu-netcat
 highlight
 jq
+ledger
 lightdm
 mediainfo
 mlocate
@@ -32,6 +35,7 @@ picom
 redshift
 ripgrep
 rustup
+shellcheck
 starship
 sxhkd
 sxiv
