@@ -2,9 +2,9 @@
 (setq user-full-name "Eddie Brunstedt"
       user-mail-address "eddie.brunstedt@protonmail.com")
 
-;; Font
-(setq doom-font (font-spec :family "FiraCode Nerd Font" :size 19 :weight 'semi-light)
-     doom-variable-pitch-font (font-spec :family "Fira Sans" :size 19))
+(setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 18)
+      doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 24)
+      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 18))
 
 ;; Theme
 (setq doom-theme 'doom-monokai-spectrum)
