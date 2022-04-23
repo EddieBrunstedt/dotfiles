@@ -6,7 +6,7 @@ case "$1" in
     *.md) glow -s dark "$1";;
     *.odt) odt2txt "$1";;
     *.pdf) pdftotext "$1" -;;
-    *.png|*.jpg|*.jpeg|*.mkv|*.mp4) mediainfo "$1";;
+    *.png|*.jpg|*.jpeg|*.mkv|*.mp4|*.webm) mediainfo "$1";;
     *.rar) unrar l "$1";;
     *.tar) tar -tvf "$1";;
     *.tar.bz2) tar -jtvf "$1";;
