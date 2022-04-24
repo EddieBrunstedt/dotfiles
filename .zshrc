@@ -25,6 +25,7 @@ ZSH_AUTOSUGGEST_USE_ASYNC=YesPls # Suggestions fetched asynchronously
 
 # Enable searching through history
 bindkey '^R' history-incremental-pattern-search-backward
+bindkey -s ^f "tmux-sessionizer\n"
 
 # Accept autosuggestion
 bindkey '^ ' autosuggest-accept
