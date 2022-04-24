@@ -44,3 +44,11 @@ selection:
 font:
   # Point size
   size: 13.0
+
+## NEW
+shell:
+  program: /bin/zsh
+  args:
+    - -l
+    - -c
+    - "tmux attach || tmux"
