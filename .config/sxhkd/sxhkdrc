@@ -1,8 +1,8 @@
 # Shortcuts
 super + e
-	$BROWSER
-super + shift + f
-	$TERMINAL -e $FILE
+	  $BROWSER
+super + r
+	  $TERMINAL -e tmux new -A -s lf 'lf';
 
 # Set White Temperature
 super + shift + r
@@ -10,7 +10,7 @@ super + shift + r
 
 # Volume
 XF86AudioRaiseVolume
-    pamixer -i 5
+	pamixer -i 5
 XF86AudioLowerVolume
     pamixer -d 5
 
