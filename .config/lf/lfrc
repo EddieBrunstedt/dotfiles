@@ -1,34 +1,72 @@
 set shell zsh
 set shellopts '-eu:--shwordsplit'
-set previewer ~/.config/lf/preview
+set previewer '~/.config/lf/preview'
 set ifs "\n"
 set scrolloff 10
-set icons true
-set ignorecase true
-set drawbox true
+set icons
+set ignorecase
+set drawbox
+set nopreview
 set period 1
-set ratios 1:1
-set preview
+set ratios 1
+set dircounts
+set timefmt        "2006-01-02 15:04"
+set infotimefmtnew "2006-01-02 15:04"
+set infotimefmtold "2006-01-02 15:04"
+set errorfmt  "\033[31m%s\033[0m"
+set promptfmt "\033[2m%d"
+set hiddenfiles ".*:$RECYCLE.BIN:System Volume Information"
 
-# Toggle preview window
-cmd preview_off :{{
-    set nopreview
-    set ratios 1
-    set info size:time
-    map zp preview_on
-}}
+# Toggle preview
+map t preview-toggle
 
-cmd preview_on :{{
-    set ratios 1:1
-    set preview
-    set info
-    map zp preview_off
-}}
+cmd preview-toggle preview-on
+cmd preview-on push :set<space>ratios<space>1:1;set<space>preview;load;cmd<space>preview-toggle<space>preview-off<enter>
+cmd preview-off push :set<space>nopreview;set<space>ratios<space>1;cmd<space>preview-toggle<space>preview-on;&sxipc<enter>
 
-map zp preview_off
+# Bindings
+map * push :glob-select<space>
+map . set hidden!
+map <c-f> finder
+map <c-n> togglenum
+map <c-r> reload
+map <enter> shell
+map D push :trash<space>
+map E extract
+map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
+map O $mimeopen --ask $f
+map P paste simple
+map R &dragon-drop -a -x $fx
+map S getdirsize
+map T tag-toggle
+map V push $$EDITOR<space>
+map W $setsid -f $TERMINAL >/dev/null 2>&1
+map X !$f
+map Y &printf %s $f | xclip -selection clipboard # copy file's path
+map i $bat --paging always --theme=1337 $fx
+map m mkdir
+map o &mimeopen $f
+map x $$f
+map ~ cd ~
 
+# renaming
+map A rename # at the very end
+map I push A<c-a> # at the very beginning
+map a push A<a-b><a-b><a-f> # before extension
+# map a push A<a-b> # after extension
+
+# avoid 'unknown mapping' error
+map <esc> :echo
+map <tab> :echo
+
+# remove bookmark mappings
+map "'"
+map '"'
 
 # cmds/functions
+cmd getdirsize !printf '\e[?1049h\e[H... '; du -sh 2>/dev/null
+cmd togglenum push :set<space>number!;set<space>relativenumber!<enter>
+
 cmd open ${{
     case $(file --mime-type $f -bL) in
          image/vnd.djvu|application/pdf) setsid -f zathura $fx >/dev/null 2>&1;;
@@ -36,46 +74,81 @@ cmd open ${{
          image/x-xcf|image/svg+xml) setsid -f gimp $f >/dev/null 2>&1;;
          image/*) rotdir $f | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|tif\)\(_large\)*$" | devour sxiv -aio 2>/dev/null | lf-select;;
          audio/*) mpv --audio-display=no $f;;
-         video/*) setsid -f devour mpv $f -quiet >/dev/null 2>&1;;
+         video/*) setsid -f mpv $f -quiet >/dev/null 2>&1;;
          application/pdf|application/epub*) setsid -f zathura $fx >/dev/null 2>&1;;
          application/zip) zipinfo $fx | bat --paging always --theme=1337;;
          *) xdg-open "$f";;
     esac
 }}
 
-cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
+cmd trash &{{
+    lf -remote "send $id echo Trashing..."
+    msg=$(mktemp) || exit
+    trap 'rm -f "$msg"' EXIT
+    if trash-put $fx >$msg 2>&1; then
+        lf -remote "send $id echo Trashing Done."
+    else
+        lf -remote "send $id !printf '\e[?1049h\e[H'; cat \"$msg\""
+        lf -remote "send $id echo Trashing Failed."
+    fi
+    lf -remote 'send load'
+}}
 
 cmd delete ${{
-    clear; tput cup $(($(tput lines)/3)); tput bold
-    set -f
-    printf "%s\n\t" "$fx"
-    printf "delete?[y/N] "
-    read ans
-    [ $ans = "y" ] && rm -rf -- $fx
+    printf '\e[?1049h\e[H'
+    echo 'Permanently Deleting Files:'; echo
+    printf '  %s\n' $fx ""
+    read -p 'Delete? [y/N] ' ans
+    case $ans in y|Y) rm -rfv --one-file-system -- $fx ;;
+    esac || read -p 'Press enter to continue'
+}}
+
+cmd finder ${{
+    f=$(finder) || exit
+    case $(basename -- $f) in
+        .*) lf -remote "send $id set hidden" ;;
+    esac
+    printf '%s\n' $f | lfselect
+}}
+
+cmd archive ${{
+    printf '\e[?1049h\e[H'
+    apack $1 $(realpath -s --relative-base=$PWD -- $fx) ||
+        { read -p 'Press enter to continue'; exit; }
+    printf '%s\n' $1 | lfselect
 }}
 
 cmd extract ${{
-    clear; tput cup $(($(tput lines)/3)); tput bold
-    set -f
-    printf "%s\n\t" "$fx"
-    printf "extract?[y/N] "
-    read ans
-    [ $ans = "y" ] && ext $fx
+    printf '\e[?1049h\e[H'
+    aunpack -De -- $fx || { read -p 'Press enter to continue'; exit ;}
+    f=${f%.*}; printf '%s\n' ${f%.tar} | lfselect
 }}
 
-# Bindings
-map <c-j> $lf -remote "send $id cd $(fzf | xargs -L 1 dirname)"
-map <c-n> push %mkdir<space>
-map <c-r> reload
-map <c-s> $lf -remote "send $id select '$(fzf)'"
-map <enter> shell
-map D delete
-map E extract
-map i $bat --paging always --theme=1337 $fx
-map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
-map o &mimeopen $f
-map O $mimeopen --ask $f
-map r $lf -remote "send $id push :rename<space>$f"
-map R push :rename<space>
-map x $$f
-map X !$f
+cmd mkdir %{{
+    set -e
+    printf ' mkdir '
+    read dir
+    mkdir -p -- $dir
+    lf -remote 'send load'
+    printf '%s\n' $dir | lfselect
+}}
+
+cmd paste ${{
+    printf '\e[?1049h\e[H'
+    list=~/.local/share/lf/files
+    [ ! -f $list ] || [ $(wc -l <$list) -le 1 ] &&
+        { lf -remote "send $id echo nothing to paste."; exit ;}
+    mode=$(head -n1 $list)
+    srcs=$(sed 1d $list)
+    tput civis
+    case $mode/${1:-adv} in
+        copy/adv) advcp -ag --backup=numbered -- ${srcs:?} . ;;
+        move/adv) advmv  -g --backup=numbered -- ${srcs:?} . ;;
+        copy/simple) cp -av --backup=numbered -- ${srcs:?} . ;;
+        move/simple) mv  -v --backup=numbered -- ${srcs:?} . ;;
+    esac || { read -p 'Press enter to continue'; exit ;}
+    rm $list
+    lf -remote 'send clear'
+    lf -remote 'send load'
+    tput cnorm
+}}
