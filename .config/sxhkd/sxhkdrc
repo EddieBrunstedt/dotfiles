@@ -50,7 +50,7 @@ super + shift + n
 
 # Open terminal with pulsemixer
 super + shift + p
-	alacritty -e pulsemixer
+	$TERMINAL -e tmux new -A -s pulsemixer 'pulsemixer';
 
 # Keyboard Layout
 super + shift + k

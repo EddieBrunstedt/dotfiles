@@ -45,7 +45,7 @@ font:
   # Point size
   size: 13.0
 
-## NEW
+# Autostart tmux
 shell:
   program: /bin/zsh
   args:
