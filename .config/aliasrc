@@ -18,7 +18,8 @@ alias \
 	grep="grep --color=auto" \
 	mkd="mkdir -pv" \
 	mv="mv -iv" \
-	rm="rm -v"
+	rm="rm -v" \
+	ledger="ledger -f $HOME/economy/main.dat"
 
 # Use exa instead of ls
 alias \
