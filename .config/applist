@@ -1,6 +1,7 @@
 alacritty
 arc-solid-gtk-theme
 atool
+atuin
 bat
 cmake
 discord
@@ -22,13 +23,13 @@ lightdm
 mediainfo
 mlocate
 mpv
+nerd-fonts-fira-code
 networkmanager
 nitrogen
 noto-fonts
 nushell
 odt2txt
 openresolv
-nerd-fonts-fira-code
 p7zip
 pacutils
 pamixer
