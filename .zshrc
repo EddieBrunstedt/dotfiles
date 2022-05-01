@@ -112,3 +112,4 @@ autoload -Uz _zinit
 # Plugins
 zinit light zsh-users/zsh-autosuggestions
 zinit load z-shell/H-S-MW
+zinit load ellie/atuin
