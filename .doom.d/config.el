@@ -2,9 +2,9 @@
 (setq user-full-name "Eddie Brunstedt"
       user-mail-address "eddie.brunstedt@protonmail.com")
 
-(setq doom-theme 'doom-monokai-spectrum
-      doom-font (font-spec :family "JetBrainsMono" :size 16 :weight 'light)
-      doom-variable-pitch-font (font-spec :family "DejaVu Sans" :size 13))
+(setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 18)
+      doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 24)
+      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 18))
 
 ;;; :editor evil
 ;; Focus new window after splitting
