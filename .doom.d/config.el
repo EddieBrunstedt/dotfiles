@@ -2,12 +2,14 @@
 (setq user-full-name "Eddie Brunstedt"
       user-mail-address "eddie.brunstedt@protonmail.com")
 
-(setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 18)
-      doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 24)
-      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 18))
+(setq doom-theme 'doom-monokai-spectrum
+      doom-font (font-spec :family "JetBrainsMono" :size 16 :weight 'light)
+      doom-variable-pitch-font (font-spec :family "DejaVu Sans" :size 13))
 
-;; Theme
-(setq doom-theme 'doom-monokai-spectrum)
+;;; :editor evil
+;; Focus new window after splitting
+(setq evil-split-window-below t
+      evil-vsplit-window-right t)
 
 ;; Org
 ;; Org root directory
