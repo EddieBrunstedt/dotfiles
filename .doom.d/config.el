@@ -6,9 +6,9 @@
 ;; Theme
 (setq doom-theme 'doom-monokai-spectrum)
 ;; Font
-(setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 18)
-      doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 24)
-      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 18))
+(setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 16)
+      doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 20)
+      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 16))
 
 ;;; :editor evil
 ;; Focus new window after splitting
