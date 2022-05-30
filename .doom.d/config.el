@@ -61,32 +61,10 @@
 ;; Lsp
 ;; Disable formatting with lsp
 (setq +format-with-lsp nil)
-;; Find references (`find-defintions per default with "g d")
-(define-key evil-normal-state-map (kbd "g f") 'lsp-ui-peek-find-references)
+
 (after! lsp-ui
-  ;; Peek: keybindings
-  (define-key lsp-ui-peek-mode-map (kbd "j") 'lsp-ui-peek--select-next)
-  (define-key lsp-ui-peek-mode-map (kbd "k") 'lsp-ui-peek--select-prev)
-  (define-key lsp-ui-peek-mode-map (kbd "C-k") 'lsp-ui-peek--select-prev-file)
-  (define-key lsp-ui-peek-mode-map (kbd "C-j") 'lsp-ui-peek--select-next-file)
-  ;; Peek: always fontify previewed code
-  (setq lsp-ui-peek-fontify 'always
-        ;; Peek: window size
-        lsp-ui-peek-list-width 50
-        lsp-ui-peek-peek-height 30
-        lsp-ui-doc-enable t
-        ;; Peek: Prevent closing when mouse touches it
-        lsp-ui-doc-show-with-mouse t
-        lsp-ui-doc-show-with-cursor t
-        lsp-ui-doc-include-signature t
-        lsp-ui-doc-delay 0.2
-        lsp-ui-doc-position 'top
-        ;; Doc: pop-up size
-        lsp-ui-doc-max-width 70
-        lsp-ui-doc-max-height 50
-        lsp-ui-imenu-enable t
-        lsp-enable-symbol-highlighting t
-        ;; UI: Disable inline error messages
+  (setq lsp-ui-doc-enable nil
+        lsp-enable-symbol-highlighting nil
         lsp-ui-sideline-enable nil)
   )
 
@@ -97,8 +75,6 @@
 
 ;; Code actions icon style
 (setq lsp-modeline-code-actions-segments '(count icon name))
-
-;; (use-package! lsp-tailwindcss)
 
 ;; Use evil-snipe for all windows
 (setq avy-all-windows t)
