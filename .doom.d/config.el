@@ -4,11 +4,15 @@
 
 ;;; UI
 ;; Theme
-(setq doom-theme 'doom-monokai-spectrum)
+(setq doom-theme 'doom-dracula)
 ;; Font
 (setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 16)
       doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 20)
       doom-variable-pitch-font (font-spec :family "Fira Sans" :size 16))
+
+;; Hide the menu for as minimalistic a startup screen as possible.
+(remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
+(remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-footer)
 
 ;;; :editor evil
 ;; Focus new window after splitting
