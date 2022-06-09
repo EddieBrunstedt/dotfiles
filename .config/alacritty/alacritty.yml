@@ -13,8 +13,8 @@ window:
   # Blank space added around the window in pixels. This padding is scaled
   # by DPI and the specified value is always added at both opposing sides.
   padding:
-    x: 5
-    y: 2
+    x: 2
+    y: 0
 
 # If `true`, bold text is drawn using the bright color variants.
 draw_bold_text_with_bright_colors: true
@@ -43,7 +43,7 @@ selection:
 # Font configuration
 font:
   # Point size
-  size: 13.0
+  size: 9.0
 
 # Autostart tmux
 shell:
