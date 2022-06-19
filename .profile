@@ -55,7 +55,11 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 # Mozilla smooth scrolling/touchpads.
 export MOZ_USE_XINPUT2="1"
 
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+
 # For when not using display manager
 #
 # Start graphical server if dwm not already running.
 # [ "$(tty)" = "/dev/tty1" ] && ! pgrep -x dwm >/dev/null && exec startx
+
+
