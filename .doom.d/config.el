@@ -68,7 +68,6 @@
 
 (after! lsp-ui
   (setq lsp-ui-doc-enable nil
-        lsp-enable-symbol-highlighting nil
         lsp-ui-sideline-enable nil)
   )
 
