@@ -107,3 +107,6 @@ pacwoman-set-up-hq () { sudo paru -S --noconfirm - < $HOME/.config/applist; }
 pacwoman-set-up-hq-aur () { paru -S --noconfirm --aur - < $HOME/.config/applist-aur;  }
 pacwoman-clean-house () { sudo rm -rf /var/cache/; rm -rf $HOME/.cache/yay; sudo pacman -Sccd --noconfirm; }
 pacwoman-file-owned-by-which-package () { pacman -Qo $1; }
+
+# use emacsclient
+alias emacs="emacsclient -c -a 'emacs'"

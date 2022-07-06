@@ -1,8 +1,10 @@
 # Shortcuts
+super + shift + e
+	  emacsclient -c -a 'emacs'
 super + e
 	  $BROWSER
 super + r
-	  $TERMINAL -e tmux new -A -s lf 'lf';
+	  $TERMINAL -e tmux new -A -s lf 'lf'
 
 # Set White Temperature
 super + shift + r

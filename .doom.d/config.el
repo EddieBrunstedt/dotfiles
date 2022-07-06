@@ -4,7 +4,7 @@
 
 ;;; UI
 ;; Theme
-(setq doom-theme 'doom-dracula)
+(setq doom-theme 'doom-ayu-mirage)
 ;; Font
 (setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 16)
       doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 20)
@@ -21,9 +21,9 @@
 
 ;; Org
 ;; Org root directory
-(setq org-directory "~/.org/")
+(setq org-directory "~/.notes/org/")
 ;; Roam root directory
-(setq org-roam-directory "~/.org/roam")
+(setq org-roam-directory "~/.notes/org-roam/")
 ;; Roam rename file on title change
 (setq org-roam-rename-file-on-title-change t)
 
