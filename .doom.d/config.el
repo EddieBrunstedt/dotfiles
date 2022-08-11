@@ -21,9 +21,9 @@
 
 ;; Org
 ;; Org root directory
-(setq org-directory "~/.notes/org/")
+(setq org-directory "~/.org/")
 ;; Roam root directory
-(setq org-roam-directory "~/.notes/org-roam/")
+(setq org-roam-directory "~/.org-roam/")
 ;; Roam rename file on title change
 (setq org-roam-rename-file-on-title-change t)
 
