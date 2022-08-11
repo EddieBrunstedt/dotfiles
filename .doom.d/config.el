@@ -21,9 +21,9 @@
 
 ;; Org
 ;; Org root directory
-(setq org-directory "~/.org/")
+(setq org-directory "~/notes/org/")
 ;; Roam root directory
-(setq org-roam-directory "~/.org-roam/")
+(setq org-roam-directory "~/notes/org/org-roam/")
 ;; Roam rename file on title change
 (setq org-roam-rename-file-on-title-change t)
 
@@ -81,3 +81,9 @@
 
 ;; Use evil-snipe for all windows
 (setq avy-all-windows t)
+
+;; (after! org
+;;   (setq org-src-fontify-natively t))
+
+;; (after! org
+;;   (add-to-list 'org-src-lang-modes '("tsx" . typescript-tsx)))
