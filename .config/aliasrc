@@ -33,7 +33,7 @@ alias \
 alias \
 	P="sudo pacman" \
 	S="sudo" \
-	YT="youtube-viewer" \
+	YT="yt-dlp" \
 	d=devour \
 	draw="devour krita --new-image RGBA,U8,4096,2160 --workspace Big_Paint_2 --nosplash" \
 	e="$EDITOR" \
@@ -43,8 +43,8 @@ alias \
 	p="pacman" \
 	sdn="sudo shutdown -h now" \
 	t="tmux" \
-	yt="youtube-dl --add-metadata -i" \
-	yta="youtube-dl -x" \
+	yt="yt-dlp --add-metadata -i" \
+	yta="yt-dlp -x" \
 	print256colors="curl -s https://gist.githubusercontent.com/HaleTom/89ffe32783f89f403bba96bd7bcd1263/raw/ | bash"
 
 # Weather
