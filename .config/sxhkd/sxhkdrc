@@ -22,9 +22,9 @@ super + shift + y
 
 # Monitor backlight brightness
 XF86MonBrightnessDown
-	xbacklight -dec 15
+	light -U 10
 XF86MonBrightnessUp
-	xbacklight -inc 15
+	light -A 10
 
 # Make screenshot (screen with mouse pointer)
 Print
@@ -65,3 +65,7 @@ super + S
 # Search on DuckDuckGo
 super + s
 	search
+
+# Calculator
+XF86Calculator
+	$TERMINAL -e tmux new -A -s calculator 'bc -l';
