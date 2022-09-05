@@ -113,3 +113,4 @@ autoload -Uz _zinit
 zinit light zsh-users/zsh-autosuggestions
 zinit load z-shell/H-S-MW
 zinit load ellie/atuin
+zinit load cjbassi/zsh-vi-mode-clipboard
