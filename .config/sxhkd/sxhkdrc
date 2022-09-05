@@ -4,10 +4,12 @@ super + shift + e
 super + e
 	  $BROWSER
 super + r
-	  $TERMINAL -e tmux new -A -s lf 'lf'
+	  $TERMINAL -e tmux new -A -s file-manager 'lf'
+super + shift + r
+	  $TERMINAL -e tmux new -A -s file-manager 'lf $(find ~/ -type d | fzf)';
 
 # Set White Temperature
-super + shift + r
+super + shift + b
 	whitetemp
 
 # Volume
