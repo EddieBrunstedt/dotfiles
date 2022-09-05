@@ -82,8 +82,29 @@
 ;; Use evil-snipe for all windows
 (setq avy-all-windows t)
 
-;; (after! org
-;;   (setq org-src-fontify-natively t))
+(use-package! topspace
+  :custom
+  (topspace-active             #'dan/topspace--active-p)
+  (topspace-autocenter-buffers #'dan/topspace--active-p)
+  (indicate-empty-lines        t)
+  :hook
+  (doom-first-buffer . global-topspace-mode))
 
-;; (after! org
-;;   (add-to-list 'org-src-lang-modes '("tsx" . typescript-tsx)))
+(after! topspace
+  (defun dan/topspace--active-p ()
+    (not (or (minibufferp)
+             (derived-mode-p 'vterm-mode
+                             'comint-mode
+                             'org-agenda-mode
+                             '+doom-dashboard-mode
+                             'eshell-mode
+                             'magit-mode
+                             'telega-root-mode
+                             'telega-chat-mode
+                             'image-mode
+                             'Custom-mode
+                             'compilation-mode
+                             'elfeed-search-mode
+                             'elfeed-show-mode
+                             'cfw:calendar-mode
+                             'special-mode)))))
