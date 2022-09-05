@@ -41,3 +41,7 @@ emacs --daemon &
 
 # ProtonMail Bridge
 # protonmail-bridge &
+
+# Laptop TouchPad settings
+xinput set-prop 'SynPS/2 Synaptics TouchPad' 'libinput Accel Speed' 0.5
+xinput set-prop 'SynPS/2 Synaptics TouchPad' 'libinput Tapping Enabled' 1
