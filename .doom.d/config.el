@@ -85,13 +85,13 @@
 ;; Org html export theme
 (setq org-html-head "
 <style>body{background:#18181b; color:#d4d4d8;}</style>
-<style>h2{color:#e1d08e;}</style>
+<style>h2{color:#ee7575;;}</style>
 <style>h3{color:#55c5b9;}</style>
 <style>h4{color:#db8282;}</style>
 <style>a{color:#60a5fa; text-decoration-line: none;}</style>
 <style>a:hover{text-decoration-line: underline;}</style>
 <style>code{color:#fdba74;}</style>
-<style>pre{background:#27272a; color:#d4d4d8; border: 1px solid #3f3f46; margin: 0.5rem; font-size: 0.8rem;}</style>
+<style>pre{background:#27272a; color:#d4d4d8; border: 1px solid #3f3f46; margin: 0.5rem; font-size: 0.9rem;}</style>
 <style>#content{max-width:1024px;}</style>
 <style>#text-table-of-contents{border-bottom:1px solid white; margin-bottom: 1rem; border-color: rgb(113 113 122);}</style>
 <style>.org-src-name{font-size: 0.875rem; line-height: 1.25rem;}</style>
