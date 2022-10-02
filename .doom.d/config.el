@@ -4,7 +4,7 @@
 
 ;;; UI
 ;; Theme
-(setq doom-theme 'doom-ayu-mirage)
+(setq doom-theme 'doom-dracula)
 ;; Font
 (setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 17)
       doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 24)
@@ -95,4 +95,5 @@
 <style>#content{max-width:1024px;}</style>
 <style>#text-table-of-contents{border-bottom:1px solid white; margin-bottom: 1rem; border-color: rgb(113 113 122);}</style>
 <style>.org-src-name{font-size: 0.875rem; line-height: 1.25rem;}</style>
+<style>#postamble{float: right; margin-top: 3rem;}</style>
 ")
