@@ -85,7 +85,7 @@
 ;; Org html export theme
 (setq org-html-head "
 <style>body{background:#18181b; color:#d4d4d8;}</style>
-<style>h2{color:#fb5959;}</style>
+<style>h2{color:#f47878;;}</style>
 <style>h3{color:#8cdbd2;}</style>
 <style>h4{color:#ff7474;}</style>
 <style>a{color:#60a5fa; text-decoration-line: none;}</style>
