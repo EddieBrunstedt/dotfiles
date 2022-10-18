@@ -96,4 +96,12 @@
 <style>#text-table-of-contents{border-bottom:1px solid white; margin-bottom: 1rem; border-color: rgb(113 113 122);}</style>
 <style>.org-src-name{font-size: 0.875rem; line-height: 1.25rem;}</style>
 <style>#postamble{margin-top: 3rem;}</style>
+<style>.TODO{color: #9294f3;}</style>
+<style>.PROJ{color: #34c99f;}</style>
+<style>.LOOP{color: #f35df1;}</style>
+<style>.DONE{color: #61ad3e;}</style>
+<style>.STRT{color: #8db8a9;}</style>
+<style>.WAIT{color: #d6d074;}</style>
+<style>._X_{color: #61ad3e;}</style>
+<style>.___{color: #9294f3;}</style>
 ")
