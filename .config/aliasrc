@@ -43,7 +43,7 @@ alias \
 	p="pacman" \
 	sdn="sudo shutdown -h now" \
 	t="tmux" \
-	yt="yt-dlp --add-metadata -i" \
+	yt="yt-dlp --add-metadata -i --restrict-filenames" \
 	yta="yt-dlp -x" \
 	print256colors="curl -s https://gist.githubusercontent.com/HaleTom/89ffe32783f89f403bba96bd7bcd1263/raw/ | bash"
 
