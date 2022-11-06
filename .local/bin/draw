@@ -1,0 +1,4 @@
+#!/bin/sh
+# Opens krita with sane defaults for quick drawing
+
+krita --new-image RGBA,U8,4096,2160 --workspace Big_Paint_2 --nosplash
