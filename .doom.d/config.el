@@ -104,4 +104,12 @@
 <style>.WAIT{color: #d6d074;}</style>
 <style>._X_{color: #61ad3e;}</style>
 <style>.___{color: #9294f3;}</style>
+<style>.tag{background-color: #332819;}</style>
 ")
+
+;; lsp auto complete delay
+(setq lsp-idle-delay 0.001)
+(setq company-tooltip-idle-delay 0.001)
+(setq company-dabbrev-downcase 0)
+(setq company-idle-delay 0)
+(setq company-minimum-prefix-length 1)
