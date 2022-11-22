@@ -13,5 +13,6 @@ case "$1" in
     *.tar.gz) tar -ztvf "$1";;
     *.zip) zipinfo "$1";;
     *.zsh*|*.bash*|*.git*) pistol "$1";;
+    *.json) jq < "$1";;
     *) bat -f --paging always --style=auto --theme=1337 "$1";;
 esac
