@@ -33,9 +33,7 @@ alias \
 alias \
 	P="sudo pacman" \
 	S="sudo" \
-	YT="yt-dlp" \
 	d=devour \
-	draw="devour krita --new-image RGBA,U8,4096,2160 --workspace Big_Paint_2 --nosplash" \
 	e="$EDITOR" \
 	f="$FILE" \
 	ka="killall" \
@@ -43,9 +41,8 @@ alias \
 	p="pacman" \
 	sdn="sudo shutdown -h now" \
 	t="tmux" \
-	yt="yt-dlp --add-metadata -i --restrict-filenames" \
-	yta="yt-dlp -x" \
-	print256colors="curl -s https://gist.githubusercontent.com/HaleTom/89ffe32783f89f403bba96bd7bcd1263/raw/ | bash"
+	yt="yt-dlp -N 5 --add-metadata -i --restrict-filenames" \
+	yta="yt-dlp -x -N 5" \
 
 # Weather
 alias \
@@ -87,7 +84,6 @@ alias gstl='git stash list' \
 alias gstp='git stash pop' \
 alias gsts='git stash save'
 
-# Git Functions
 # Git log find by commit message
 function glf() { git log --all --grep="$1"; }
 
