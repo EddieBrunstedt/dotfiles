@@ -9,9 +9,6 @@ librewolf-bin
 lssecret-git
 megasync-bin
 mullvad-vpn-beta-bin
-nerd-fonts-fira-code
-nerd-fonts-hack
-nerd-fonts-victor-mono
 nsxiv
 numix-icon-theme-git
 nvm
@@ -24,4 +21,3 @@ tailwindcss-language-server
 timeset
 tor-browser
 visual-studio-code-bin
-youtube-viewer
