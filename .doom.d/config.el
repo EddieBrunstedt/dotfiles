@@ -4,7 +4,7 @@
 
 ;;; UI
 ;; Theme
-(setq doom-theme 'doom-dracula)
+(setq doom-theme 'doom-xcode)
 ;; Font
 (setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 17)
       doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 24)
