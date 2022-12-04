@@ -18,9 +18,8 @@ XF86AudioRaiseVolume
 XF86AudioLowerVolume
     pamixer -d 5
 
-# Lock/Reboot/Power off computer
-super + shift + y
-	afk
+super + shift + l
+    gpgconf --reload gpg-agent; betterlockscreen -l;
 
 # Monitor backlight brightness
 XF86MonBrightnessDown
