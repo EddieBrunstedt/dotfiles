@@ -2,6 +2,8 @@
 
 export KEYTIMEOUT=1
 
+zle_highlight=('region:bg=168,fg=251')
+
 # vi mode
 bindkey -v
 bindkey -v '^?' backward-delete-char
@@ -114,3 +116,4 @@ zinit light zsh-users/zsh-autosuggestions
 zinit load z-shell/H-S-MW
 zinit load ellie/atuin
 zinit load cjbassi/zsh-vi-mode-clipboard
+zinit load zsh-users/zsh-syntax-highlighting
