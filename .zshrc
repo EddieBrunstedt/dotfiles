@@ -28,7 +28,7 @@ bindkey '^R' history-incremental-pattern-search-backward
 bindkey -s ^f "tmux-sessionizer\n"
 
 # Accept autosuggestion
-bindkey '^ ' autosuggest-accept
+bindkey '^N' autosuggest-accept
 
 # Load aliases if existent
 [ -f "$HOME/.config/aliasrc" ] && source "$HOME/.config/aliasrc"
