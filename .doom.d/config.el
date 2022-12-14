@@ -87,7 +87,7 @@
 <style>body{background:#18181b; color:#d4d4d8;}</style>
 <style>h2{color:#ffc587;;}</style>
 <style>h3{color:#f27a7a;}</style>
-<style>h4{color:#e37dca;}</style>
+<style>h4{color:#49a080;}</style>
 <style>a{color:#60a5fa; text-decoration-line: none;}</style>
 <style>a:hover{text-decoration-line: underline;}</style>
 <style>code{color:#fdba74; background:#27272a; border: 1px solid #3f3f46; padding-left: 0.2rem; padding-right: 0.2rem; font-size: 0.9rem;}</style>
