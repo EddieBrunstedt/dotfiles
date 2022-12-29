@@ -50,9 +50,34 @@
 ;; Default filter
 (after! elfeed (setq elfeed-search-filter "@2-month-ago +unread"))
 
-;; Ivy
-;; Preview buffers from ivy (buffer selection)
-(setq +ivy-buffer-preview t)
+(setq my/bare-repos
+      '(("~/" . "~/.cfg")))
+
+(defun my/magit-bare-repo-env (env)
+  "Detect and set the git command environment ENV for a bare repo.
+If a file is not inside a normal git repo, check it against a
+configured list or bare repository work directories. If it's
+under one, associate the file to the configured bare repo by
+setting the GIT_DIR and GIT_WORK_TREE environment variables
+before running a git command for Magit.
+See https://github.com/magit/magit/issues/460."
+  (unless (vc-call-backend 'Git 'root default-directory)
+    (let* ((bare-pair (seq-some
+                       (lambda (p)
+                         (if (file-in-directory-p default-directory
+                                                  (car p))
+                             p))
+                       my/bare-repos))
+           (workdir (car bare-pair))
+           (bare-repo (cdr bare-pair)))
+      (when bare-pair
+        (message "Bare repo, adding to env")
+        (push (format "GIT_WORK_TREE=%s" (expand-file-name workdir)) env)
+        (push (format "GIT_DIR=%s" (expand-file-name bare-repo)) env))))
+  env)
+
+(advice-add 'magit-process-environment
+            :filter-return #'my/magit-bare-repo-env)
 
 ;; Line numbers
 ;; t=standard, relative=relative, nil=off
