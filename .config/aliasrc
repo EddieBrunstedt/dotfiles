@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# Use neovim for vim if present.
-command -v nvim >/dev/null && alias vim="nvim" vimdiff="nvim -d"
-
 # Git helper for dotfiles
 alias \
 	config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME' \
