@@ -63,8 +63,8 @@
 (setq abbrev-file-name "~/.doom.d/.abbrev_defs")
 
 ;; Lsp
-;; Disable formatting with lsp
-(setq +format-with-lsp nil)
+;; Disable formatting with lsp for typescript files
+(setq-hook! 'typescript-mode-hook +format-with-lsp nil)
 
 (after! lsp-ui
   (setq lsp-ui-doc-enable nil
