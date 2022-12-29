@@ -69,10 +69,10 @@ cmd togglenum push :set<space>number!;set<space>relativenumber!<enter>
 
 cmd open ${{
     case $(file --mime-type $f -bL) in
-         image/vnd.djvu|application/pdf) setsid -f zathura $fx >/dev/null 2>&1;;
+         image/vnd.djvu|application/pdf|text/x-tex) setsid -f zathura $fx >/dev/null 2>&1;;
          text/*|application/json|application/javascript|application/csv) bat --paging always --style=auto --theme=1337 $fx;;
          image/x-xcf|image/svg+xml) setsid -f gimp $f >/dev/null 2>&1;;
-         image/*) rotdir $f | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|tif\)\(_large\)*$" | sxiv -aio 2>/dev/null | lfselect;;
+         image/*) rotdir $f | grep -i "\.\(png\|jpg\|heic\|jpeg\|gif\|webp\|tif\)\(_large\)*$" | sxiv -aio 2>/dev/null | lfselect;;
          audio/*) mpv --audio-display=no $f;;
          video/*) setsid -f mpv $f -quiet >/dev/null 2>&1;;
          application/pdf|application/epub*) setsid -f zathura $fx >/dev/null 2>&1;;
