@@ -28,7 +28,7 @@ cmd preview-off push :set<space>nopreview;set<space>ratios<space>1;cmd<space>pre
 map * push :glob-select<space>
 map . set hidden!
 map <c-f> finder
-map <c-n> togglenum
+map <c-n> togglenum # toggle line numbers
 map <c-r> reload
 map <enter> shell
 map D push :trash<space>
