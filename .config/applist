@@ -53,6 +53,7 @@ networkmanager
 nitrogen
 nmap
 noto-fonts
+noto-fonts-emoji
 nushell
 obs-studio
 odt2txt
@@ -82,6 +83,7 @@ tldr
 tmux
 traceroute
 tree
+ttf-iosevka-nerd
 typescript-language-server
 unclutter
 unrar
