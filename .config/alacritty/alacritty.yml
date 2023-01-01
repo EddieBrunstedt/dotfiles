@@ -1,49 +1,29 @@
 env:
-  # TERM variable
-  #
-  # This value is used to set the `$TERM` environment variable for
-  # each instance of Alacritty. If it is not present, alacritty will
-  # check the local terminfo database and use `alacritty` if it is
-  # available, otherwise `xterm-256color` is used.
   TERM: alacritty
 
 window:
-  # Window padding (changes require restart)
-  #
-  # Blank space added around the window in pixels. This padding is scaled
-  # by DPI and the specified value is always added at both opposing sides.
   padding:
     x: 2
     y: 0
 
-# If `true`, bold text is drawn using the bright color variants.
 draw_bold_text_with_bright_colors: true
 
 cursor:
-# If this is `true`, the cursor will be rendered as a hollow box when the
-# window is not focused.
   unfocused_hollow: true
 
 scrolling:
-  # Maximum number of lines in the scrollback buffer.
-  # Specifying '0' will disable scrolling.
   history: 100000
-  # Scrolling distance multiplier.
   multiplier: 7
   # Scroll to the bottom when new text is written to the terminal.
   auto_scroll: true
 
-
 selection:
-  # When set to `true`, selected text will be copied to both the primary and the
-  # selection clipboard. Otherwise, it will only be copied to the selection
-  # clipboard.
   save_to_clipboard: true
 
-# Font configuration
 font:
-  # Point size
   size: 10.0
+  normal:
+    family: Iosevka Nerd Font Mono
 
 # Autostart tmux
 shell:
@@ -53,55 +33,30 @@ shell:
     - -c
     - "tmux attach || tmux"
 
-colors:
-  primary:
-    background: '#282a36'
-    foreground: '#f8f8f2'
-    bright_foreground: '#ffffff'
-  cursor:
-    text: CellBackground
-    cursor: CellForeground
-  vi_mode_cursor:
-    text: CellBackground
-    cursor: CellForeground
-  search:
-    matches:
-      foreground: '#44475a'
-      background: '#50fa7b'
-    focused_match:
-      foreground: '#44475a'
-      background: '#ffb86c'
-  footer_bar:
-    background: '#282a36'
-    foreground: '#f8f8f2'
-  hints:
-    start:
-      foreground: '#282a36'
-      background: '#f1fa8c'
-    end:
-      foreground: '#f1fa8c'
-      background: '#282a36'
-  line_indicator:
-    foreground: None
-    background: None
-  selection:
-    text: CellForeground
-    background: '#44475a'
-  normal:
-    black: '#21222c'
-    red: '#ff5555'
-    green: '#50fa7b'
-    yellow: '#f1fa8c'
-    blue: '#bd93f9'
-    magenta: '#ff79c6'
-    cyan: '#8be9fd'
-    white: '#f8f8f2'
-  bright:
-    black: '#6272a4'
-    red: '#ff6e6e'
-    green: '#69ff94'
-    yellow: '#ffffa5'
-    blue: '#d6acff'
-    magenta: '#ff92df'
-    cyan: '#a4ffff'
-    white: '#ffffff'
+  # Whale theme
+  # https://github.com/anufrievroman/whale
+  colors:
+    # Default colors
+    primary:
+      background: "0x1a1e2a"
+      foreground: "0xffffff"
+    # Normal colors
+    normal:
+      black: "0x1d2430"
+      red: "0xfa5ead"
+      green: "0x00fbad"
+      yellow: "0xffdf5f"
+      blue: "0x5eadfc"
+      magenta: "0xfa5ead"
+      cyan: "0x242D42"
+      white: "0xffffff"
+    # Bright colors
+    bright:
+      black: "0x1d2430"
+      red: "0xfa5ead"
+      green: "0x00fbad"
+      yellow: "0xffdf5f"
+      blue: "0x5eadfc"
+      magenta: "0xfa5ead"
+      cyan: "0x6a6f87"
+      white: "0xeff1f5"
