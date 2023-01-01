@@ -1,0 +1,8 @@
+% weather
+
+# Show weather info for a specific location
+curl -s "wttr.in/<location>" \
+   | grep -v Follow
+
+# Auto-setup displays
+xrandr --auto

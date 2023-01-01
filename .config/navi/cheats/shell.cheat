@@ -1,0 +1,12 @@
+% shell
+
+# List all files of type
+find . -name '*.<txt>' -print
+
+# Kill a running process
+killall <running_process_name>
+
+# Scan disk usage
+ncdu --color off
+
+$ running_process_name: ps -A | awk '{ print $4 }'
