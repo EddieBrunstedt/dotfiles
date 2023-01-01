@@ -81,25 +81,5 @@ alias gstl='git stash list' \
 alias gstp='git stash pop' \
 alias gsts='git stash save'
 
-# Git log find by commit message
-function glf() { git log --all --grep="$1"; }
-
-# Pacman's more sensible half
-pacwoman-list-with-size () { pacman -Qi | awk '/^Name/{name=$3} /^Installed Size/{print $4$5, name}' | sort -h; }
-pacwoman-download-size () { expac -S -H M '%k\t%n' $1;}
-pacwoman-recently-installed () { expac --timefmt='%Y-%m-%d %T' '%l\t%n' | sort | tail -n 20; }
-pacwoman-explicitly-installed () { expac -H M '%-20n\t%10d' $(comm -23 <(pacman -Qqt | sort) <({ pacman -Qqg base-devel; expac -l '\n' '%E' base; } | sort -u)); }
-pacwoman-explicitly-installed-with-size () { expac -H M "%011m\t%-20n\t%10d" $(comm -23 <(pacman -Qqen | sort) <({ pacman -Qqg base-devel; expac -l '\n' '%E' base; } | sort | uniq)) | sort -n; }
-pacwoman-search-and-preview () { pacman -Qq | fzf --preview 'pacman -Qil {}' --layout=reverse --bind 'enter:execute(pacman -Qil {} | bat)'; }
-pacwoman-owned-files () { pacman -Qlq $1 | grep -v '/$' | xargs -r du -h | sort -h; }
-pacwoman-check-unowned-files-lostfiles () { sudo lostfiles; }
-pacwoman-check-unowned-files-pacreport () { sudo pacreport --unowned-files; }
-pacwoman-remove-orphans () { sudo pacman -Rns $(pacman -Qtdq); }
-pacwoman-patch-notes () { pacolog -l 10 $1; }
-pacwoman-set-up-hq () { sudo paru -S --noconfirm - < $HOME/.config/applist; }
-pacwoman-set-up-hq-aur () { paru -S --noconfirm --aur - < $HOME/.config/applist-aur;  }
-pacwoman-clean-house () { sudo rm -rf /var/cache/; rm -rf $HOME/.cache/yay; sudo pacman -Sccd --noconfirm; }
-pacwoman-file-owned-by-which-package () { pacman -Qo $1; }
-
 # use emacsclient
 alias emacs="emacsclient -c -a 'emacs'"
