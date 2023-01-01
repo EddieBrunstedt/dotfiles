@@ -6,9 +6,9 @@
 ;; Theme
 (setq doom-theme 'doom-xcode)
 ;; Font
-(setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 17)
-      doom-big-font (font-spec :family "FiraCode Nerd Font Mono" :size 24)
-      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 17))
+(setq doom-font (font-spec :family "Iosevka Nerd Font Mono" :size 18)
+      doom-big-font (font-spec :family "Iosevka Nerd Font Mono" :size 24)
+      doom-variable-pitch-font (font-spec :family "Iosevka Nerd Font Mono" :size 18))
 
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
