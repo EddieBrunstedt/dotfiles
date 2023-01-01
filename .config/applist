@@ -48,6 +48,7 @@ mlocate
 mousepad
 mpv
 mtr
+ncdu
 neovim
 networkmanager
 nitrogen
@@ -78,8 +79,8 @@ starship
 stress
 sxhkd
 sxiv
-thunar
 tealdeer
+thunar
 tmux
 traceroute
 tree
