@@ -97,6 +97,7 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
+eval "$(navi widget zsh)"
 
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
