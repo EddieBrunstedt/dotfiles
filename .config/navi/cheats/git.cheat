@@ -88,7 +88,7 @@ git log
 # Displays formatted log of commits for a repo
 git log --all --decorate --oneline --graph
 
-# Clear everything
+# Clean repo by removing intracked files
 git clean -dxf
 
 # Sign all commits in a branch based on master

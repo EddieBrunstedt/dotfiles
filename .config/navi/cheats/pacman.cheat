@@ -28,7 +28,7 @@ sudo lostfiles
 sudo pacreport --unowned-files
 
 # Remove all orphans
-pacwoman-remove-orphans
+sudo pacman -Qtdq | sudo pacman -Rns -
 
 # Install all packages from applist
 sudo paru -S - < $HOME/.config/applist
