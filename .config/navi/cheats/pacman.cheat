@@ -48,7 +48,7 @@ sudo pacman -S <pkg_name>
 # Remove a package
 sudo pacman -Rns <pkg_name_installed>
 
-# Upgrade all packages
+# System upgrade
 paru -Syu --devel --newsonupgrade --combinedupgrade --cleanafter --noconfirm && rustup update --no-self-update
 
 $ pkg_name_installed: sudo pacman -Qe | awk '{ print $1 }'
