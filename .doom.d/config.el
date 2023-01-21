@@ -4,11 +4,12 @@
 
 ;;; UI
 ;; Theme
-(setq doom-theme 'doom-xcode)
+(setq doom-theme 'modus-vivendi)
+
 ;; Font
-(setq doom-font (font-spec :family "Iosevka Nerd Font Mono" :size 18)
-      doom-big-font (font-spec :family "Iosevka Nerd Font Mono" :size 24)
-      doom-variable-pitch-font (font-spec :family "Iosevka Nerd Font Mono" :size 18))
+(setq doom-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold :size 19)
+      doom-big-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 24)
+      doom-variable-pitch-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 19))
 
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
