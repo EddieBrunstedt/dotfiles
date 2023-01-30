@@ -11,6 +11,9 @@
       doom-big-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 24)
       doom-variable-pitch-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 19))
 
+;; Treat "_" as part of a word.
+(modify-syntax-entry ?_ "w")
+
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-footer)
