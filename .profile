@@ -22,6 +22,7 @@ appendpath "$HOME/.dvm/bin/"
 unset appendpath
 
 export EDITOR="$HOME/.local/bin/start-editor"
+export ALTERNATE_EDITOR="emacs"
 export VISUAL="$HOME/.local/bin/start-editor"
 export TERMINAL="alacritty"
 export BROWSER="librewolf"
