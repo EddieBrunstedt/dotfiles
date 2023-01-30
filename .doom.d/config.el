@@ -7,7 +7,7 @@
 (setq doom-theme 'modus-vivendi)
 
 ;; Font
-(setq doom-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold :size 19)
+(setq doom-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold :size 20)
       doom-big-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 24)
       doom-variable-pitch-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 19))
 
