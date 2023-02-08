@@ -1,0 +1,4 @@
+% typescript
+
+# Print TS errors & warnings for current project (watch mode)
+tsc --project tsconfig.json --noEmit --watch
