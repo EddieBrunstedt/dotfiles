@@ -53,7 +53,7 @@ map ~ cd ~
 map A rename # at the very end
 map I push A<c-a> # at the very beginning
 map a push A<a-b><a-b><a-f> # before extension
-# map a push A<a-b> # after extension
+map <c-s> %rt_rename --file $f snake
 
 # avoid 'unknown mapping' error
 map <esc> :echo
