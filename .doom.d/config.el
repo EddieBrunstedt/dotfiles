@@ -125,7 +125,7 @@ See https://github.com/magit/magit/issues/460."
 <style>a{color:#60a5fa; text-decoration-line: none;}</style>
 <style>a:hover{text-decoration-line: underline;}</style>
 <style>code{color:#fdba74; background:#27272a; border: 1px solid #3f3f46; padding-left: 0.2rem; padding-right: 0.2rem; font-size: 0.9rem;}</style>
-<style>pre{background:#27272a; color:#d4d4d8; border: 1px solid #3f3f46; margin: 0.5rem; font-size: 0.9rem;}</style>
+<style>pre{background:#000000; color:#d4d4d8; border: 1px solid #3f3f46; margin: 0.5rem; font-size: 0.9rem;}</style>
 <style>#content{max-width:1024px;}</style>
 <style>#text-table-of-contents{border-bottom:1px solid white; margin-bottom: 1rem; border-color: rgb(113 113 122);}</style>
 <style>.org-src-name{font-size: 0.875rem; line-height: 1.25rem;}</style>
