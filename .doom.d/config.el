@@ -26,8 +26,8 @@
 
 ;;; :editor evil
 ;; Focus new window after splitting
-(setq evil-split-window-below t
-      evil-vsplit-window-right t)
+;; (setq evil-split-window-below t
+;;       evil-vsplit-window-right t)
 
 ;; Org
 ;; Org root directory
