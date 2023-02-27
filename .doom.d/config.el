@@ -11,6 +11,12 @@
       doom-big-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 24)
       doom-variable-pitch-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 19))
 
+;; org-agenda
+(after! org-agenda (setq org-agenda-span 31))
+
+;; log done time in org
+(setq org-log-done 'time)
+
 ;; Treat "_" as part of a word.
 (modify-syntax-entry ?_ "w")
 
