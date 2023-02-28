@@ -147,3 +147,7 @@ See https://github.com/magit/magit/issues/460."
 (setq company-dabbrev-downcase 0)
 (setq company-idle-delay 0)
 (setq company-minimum-prefix-length 1)
+
+(use-package lsp-tailwindcss
+  :init
+  (setq lsp-tailwindcss-add-on-mode t))

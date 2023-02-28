@@ -52,3 +52,4 @@
 ;(package! builtin-package :recipe (:branch "develop"))
 
 (package! pkgbuild-mode)
+(package! lsp-tailwindcss :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))
