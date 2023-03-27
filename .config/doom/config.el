@@ -118,27 +118,27 @@ See https://github.com/magit/magit/issues/460."
 
 ;; Org html export theme
 (setq org-html-head "
-<style>body{background:#18181b; color:#d4d4d8;}</style>
-<style>h2{color:#ffc587;;}</style>
-<style>h3{color:#f27a7a;}</style>
-<style>h4{color:#49a080;}</style>
-<style>a{color:#60a5fa; text-decoration-line: none;}</style>
+<style>body{background:#1b1b1b; color:#dcdcdc;}</style>
+<style>h2{color:#c792ea;}</style>
+<style>h3{color:#b5b5b5;}</style>
+<style>h4{color:#8e8e8e;}</style>
+<style>a{color:#5da5da; text-decoration-line: none;}</style>
 <style>a:hover{text-decoration-line: underline;}</style>
-<style>code{color:#fdba74; background:#27272a; border: 1px solid #3f3f46; padding-left: 0.2rem; padding-right: 0.2rem; font-size: 0.9rem;}</style>
-<style>pre{background:#000000; color:#d4d4d8; border: 1px solid #3f3f46; margin: 0.5rem; font-size: 0.9rem;}</style>
-<style>#content{max-width:1024px;}</style>
-<style>#text-table-of-contents{border-bottom:1px solid white; margin-bottom: 1rem; border-color: rgb(113 113 122);}</style>
+<style>code{color:#dcdcdc; background:#2b2b2b; border: 1px solid #4c4c4c; padding-left: 0.2rem; padding-right: 0.2rem; font-size: 0.9rem;}</style>
+<style>pre{background:#000000; color:#dcdcdc; border: 1px solid #4c4c4c; margin: 0.5rem; font-size: 0.9rem;}</style>
+<style>#content{max-width:1024px; margin: 0 auto;}</style>
+<style>#text-table-of-contents{border-bottom:1px solid #dcdcdc; margin-bottom: 1rem;}</style>
 <style>.org-src-name{font-size: 0.875rem; line-height: 1.25rem;}</style>
 <style>#postamble{margin-top: 3rem;}</style>
-<style>.TODO{color: #9294f3;}</style>
-<style>.PROJ{color: #34c99f;}</style>
-<style>.LOOP{color: #f35df1;}</style>
-<style>.DONE{color: #61ad3e;}</style>
-<style>.STRT{color: #8db8a9;}</style>
-<style>.WAIT{color: #d6d074;}</style>
-<style>._X_{color: #61ad3e;}</style>
-<style>.___{color: #9294f3;}</style>
-<style>.tag{background-color: #332819;}</style>
+<style>.TODO{color: #f0c674;}</style>
+<style>.PROJ{color: #b5bd68;}</style>
+<style>.LOOP{color: #d84a9c;}</style>
+<style>.DONE{color: #b8bb26;}</style>
+<style>.STRT{color: #b294bb;}</style>
+<style>.WAIT{color: #de935f;}</style>
+<style>._X_{color: #b8bb26;}</style>
+<style>.___{color: #f0c674;}</style>
+<style>.tag{background-color: #3d3d3d; border-radius: 3px; padding: 0 3px;}</style>
 ")
 
 ;; lsp auto complete delay
