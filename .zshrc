@@ -21,16 +21,18 @@ HISTSIZE=1000
 SAVEHIST=1000
 HISTFILE=~/.zsh_history
 
+# Navi
+export FZF_DEFAULT_OPTS="--height 30" navi
+
 # Suggestions
 ZSH_AUTOSUGGEST_STRATEGY=(history completion) # Auto-suggestion strategy
 ZSH_AUTOSUGGEST_USE_ASYNC=YesPls # Suggestions fetched asynchronously
 
 # Enable searching through history
 bindkey '^R' history-incremental-pattern-search-backward
-bindkey -s ^f "tmux-sessionizer\n"
 
 # Accept autosuggestion
-bindkey '^N' autosuggest-accept
+bindkey '^ ' autosuggest-accept
 
 # Load aliases if existent
 [ -f "$HOME/.config/aliasrc" ] && source "$HOME/.config/aliasrc"
@@ -89,7 +91,8 @@ lfcd () {
         fi
     fi
 }
-bindkey -s '^o' lfcd^J
+
+bindkey -s '^f' lfcd^J
 
 # Load Node Version Manager
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
@@ -118,3 +121,8 @@ zinit load z-shell/H-S-MW
 zinit load ellie/atuin
 zinit load cjbassi/zsh-vi-mode-clipboard
 zinit load zsh-users/zsh-syntax-highlighting
+
+# pnpm
+export PNPM_HOME="/home/nilo/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+# pnpm end
