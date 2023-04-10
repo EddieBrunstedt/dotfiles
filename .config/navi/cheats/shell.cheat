@@ -6,7 +6,10 @@ find . -name '*.<txt>' -print
 # Kill a running process
 killall <running_process_name>
 
-# Scan disk usage
+# Disk usage overview (erdtree)
+et --icons -s size --dirs-first --dirs-only --size-left --prune -g "\!/proc/*" /
+
+# Disk usage overview (ncdu)
 ncdu --color off
 
 $ running_process_name: ps -A | awk '{ print $4 }'
