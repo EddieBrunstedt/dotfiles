@@ -14,7 +14,7 @@ appendpath () {
 # All directories in '~/.local/bin'
 appendpath "$(du "$HOME/.local/bin/" | cut -f2 | tr '\n' ':' | sed 's/:*$//')"
 appendpath "$HOME/.yarn/bin"
-appendpath "$HOME/.emacs.d/bin"
+appendpath "$HOME/.config/emacs/bin"
 appendpath "$HOME/.deno/bin"
 appendpath "$HOME/.cargo/bin"
 appendpath "$HOME/.deno/"
