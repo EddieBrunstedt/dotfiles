@@ -3,7 +3,23 @@
       user-mail-address "eddie.brunstedt@protonmail.com")
 
 ;;; UI
-;; Theme
+;; Theme settings
+(setq
+ modus-themes-bold-constructs t
+ modus-themes-completions 'opinionated
+ modus-themes-italic-constructs t
+ modus-themes-mode-line 'borderless
+ modus-themes-paren-match '(bold intense)
+ modus-themes-prompts '(bold intense)
+ modus-themes-region 'bg-only
+ modus-themes-scale-headings t
+ modus-themes-headings
+ '((1 . (rainbow overline 1.3))
+   (2 . (rainbow 1.2))
+   (3 . (rainbow bold 1.1))
+   (4 . (semilight 1))))
+
+;; Set theme
 (setq doom-theme 'modus-vivendi)
 
 ;; Font
@@ -95,7 +111,7 @@ See https://github.com/magit/magit/issues/460."
 
 ;; Abbrev
 ;; Definitions path
-(setq abbrev-file-name "~/.doom.d/.abbrev_defs")
+;; (setq abbrev-file-name "~/.doom.d/.abbrev_defs")
 
 ;; LSP
 (setq +format-with-lsp nil)
