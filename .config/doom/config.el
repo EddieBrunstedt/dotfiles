@@ -6,6 +6,7 @@
 ;; Theme settings
 (setq
  modus-themes-bold-constructs t
+ modus-themes-org-blocks 'gray-background
  modus-themes-completions 'opinionated
  modus-themes-italic-constructs t
  modus-themes-mode-line 'borderless
