@@ -40,6 +40,7 @@ alias \
 	t="tmux" \
 	yt="yt-dlp -N 5 --add-metadata -i --restrict-filenames" \
 	yta="yt-dlp -x -N 5" \
+	vim="nvim" \
 
 # Weather
 alias \
