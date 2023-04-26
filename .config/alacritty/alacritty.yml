@@ -25,10 +25,12 @@ font:
   normal:
     family: Iosevka Nerd Font Mono
 
-# Autostart tmux
+# Autostart zellij
 shell:
-  program: /bin/zsh
-  args:
-    - -l
-    - -c
-    - "tmux attach || tmux"
+  program: /usr/bin/zellij
+
+  # program: /bin/zsh
+  # args:
+  #   - -l
+  #   - -c
+  #   - "tmux attach || tmux"
