@@ -66,7 +66,7 @@
 ;; Only format TypeScript on save
 (add-to-list '+format-on-save-enabled-modes 'typescript-mode t)
 
-(setq rustic-lsp-server 'rust-analyzer)
+(setq lsp-rust-analyzer-server-display-inlay-hints t)
 
 ;; Keybindings
 ;; Mouse thumb buttons for navigating forward/back
