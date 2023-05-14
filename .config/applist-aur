@@ -9,8 +9,6 @@ librewolf-bin
 lssecret-git
 megasync-bin
 mullvad-vpn-beta-bin
-navi
-nsxiv
 numix-icon-theme-git
 nvm
 paru-bin
@@ -18,7 +16,6 @@ pnpm
 rmtrash
 slack-desktop
 spotify
-tailwindcss-language-server
 timeset
 topgrade
 tor-browser
