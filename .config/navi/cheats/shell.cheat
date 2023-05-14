@@ -7,7 +7,7 @@ find . -name '*.<txt>' -print
 killall <running_process_name>
 
 # Disk usage overview (erdtree)
-et --icons -s size --dirs-first --dirs-only --size-left --prune -g "\!/proc/*" /
+erd --icons --long --human --level 3 /
 
 # Disk usage overview (ncdu)
 ncdu --color off
