@@ -32,7 +32,7 @@
 (after! org-agenda (setq org-agenda-span 31))
 
 ;; log done time in org
-(setq org-log-done 'time)
+;; (setq org-log-done 'date)
 
 ;; Treat "_" as part of a word.
 (modify-syntax-entry ?_ "w")
@@ -168,3 +168,5 @@ See https://github.com/magit/magit/issues/460."
 (use-package lsp-tailwindcss
   :init
   (setq lsp-tailwindcss-add-on-mode t))
+
+;; (setq org-agenda-log-mode-items '(closed))
