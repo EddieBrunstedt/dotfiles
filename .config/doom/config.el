@@ -169,4 +169,4 @@ See https://github.com/magit/magit/issues/460."
   :init
   (setq lsp-tailwindcss-add-on-mode t))
 
-;; (setq org-agenda-log-mode-items '(closed))
+(setq org-agenda-log-mode-items '(closed))
