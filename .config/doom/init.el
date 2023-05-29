@@ -149,7 +149,8 @@
        (org                ; organize your plain life in plain text
         +pretty
         +present
-        +roam2)
+        +roam2
+        +dragndrop)
        (php +lsp)                 ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
