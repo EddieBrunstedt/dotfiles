@@ -21,7 +21,7 @@ appendpath "$HOME/.deno/"
 appendpath "$HOME/.dvm/bin/"
 unset appendpath
 
-export EDITOR="emacsclient -n -c"
+export EDITOR="emacsclient -n"
 export VISUAL="emacsclient -n -c"
 export ALTERNATE_EDITOR="emacs"
 export TERMINAL="alacritty"
