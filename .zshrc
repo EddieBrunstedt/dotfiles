@@ -1,5 +1,3 @@
-# Eddie's zsh config
-
 export KEYTIMEOUT=1
 setopt shwordsplit
 
@@ -78,22 +76,7 @@ echo -ne '\e[5 q'
 # Use beam shape cursor for each new prompt.
 preexec() { echo -ne '\e[5 q' ;}
 
-# Use lf to switch directories and bind it to ctrl-o
-# lfcd () {
-#     tmp="$(mktemp)"
-#     lf -last-dir-path="$tmp" "$@"
-#     if [ -f "$tmp" ]; then
-#         dir="$(cat "$tmp")"
-#         command rm -f "$tmp"
-#         if [ -d "$dir" ]; then
-#             if [ "$dir" != "$(pwd)" ]; then
-#                 cd "$dir"
-#             fi
-#         fi
-#     fi
-# }
-
-bindkey -s '^f' "br --only-folders^J"
+bindkey -s '^f' "br^J"
 
 # Load Node Version Manager
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
@@ -126,6 +109,6 @@ zinit load cjbassi/zsh-vi-mode-clipboard
 zinit load zsh-users/zsh-syntax-highlighting
 
 # pnpm
-export PNPM_HOME="/home/nilo/.local/share/pnpm"
+export PNPM_HOME="$HOME/.local/share/pnpm"
 export PATH="$PNPM_HOME:$PATH"
 # pnpm end
