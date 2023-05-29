@@ -1,6 +1,7 @@
 # Eddie's zsh config
 
 export KEYTIMEOUT=1
+setopt shwordsplit
 
 zle_highlight=('region:bg=168,fg=251')
 
@@ -78,21 +79,21 @@ echo -ne '\e[5 q'
 preexec() { echo -ne '\e[5 q' ;}
 
 # Use lf to switch directories and bind it to ctrl-o
-lfcd () {
-    tmp="$(mktemp)"
-    lf -last-dir-path="$tmp" "$@"
-    if [ -f "$tmp" ]; then
-        dir="$(cat "$tmp")"
-        command rm -f "$tmp"
-        if [ -d "$dir" ]; then
-            if [ "$dir" != "$(pwd)" ]; then
-                cd "$dir"
-            fi
-        fi
-    fi
-}
+# lfcd () {
+#     tmp="$(mktemp)"
+#     lf -last-dir-path="$tmp" "$@"
+#     if [ -f "$tmp" ]; then
+#         dir="$(cat "$tmp")"
+#         command rm -f "$tmp"
+#         if [ -d "$dir" ]; then
+#             if [ "$dir" != "$(pwd)" ]; then
+#                 cd "$dir"
+#             fi
+#         fi
+#     fi
+# }
 
-bindkey -s '^f' lfcd^J
+bindkey -s '^f' "br --only-folders^J"
 
 # Load Node Version Manager
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
