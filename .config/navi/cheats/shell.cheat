@@ -3,8 +3,13 @@
 # List all files of type
 find . -name '*.<txt>' -print
 
-# Kill a running process
+# Kill process
 killall <running_process_name>
+
+# Kill process running on a given port
+lsof -i :<port> \
+   | awk '{l=$2} END {print l}' \
+   | xargs kill
 
 # Disk usage overview (erdtree)
 erd --icons --long --human --level 3 /
