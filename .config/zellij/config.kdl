@@ -1,6 +1,6 @@
 // If you'd like to override the default keybindings completely, be sure to change "keybinds" to "keybinds clear-defaults=true"
 keybinds {
-    unbind "Ctrl q" "Ctrl g" "Ctrl p" "Alt h" "Alt j" "Alt k" "Alt l" // unbind in all modes
+    unbind "Ctrl q" "Ctrl g" "Ctrl p" // unbind in all modes
     normal {
         // uncomment this and adjust key if using copy_on_select=false
         // bind "Alt c" { Copy; }
@@ -139,10 +139,10 @@ keybinds {
         // bind "Ctrl g" { SwitchToMode "Locked"; }
         // bind "Ctrl q" { Quit; }
         bind "Alt n" { NewPane; }
-        // bind "Alt h" "Alt Left" { MoveFocus "Left"; }
-        // bind "Alt l" "Alt Right" { MoveFocus "Right"; }
-        // bind "Alt j" "Alt Down" { MoveFocus "Down"; }
-        // bind "Alt k" "Alt Up" { MoveFocus "Up"; }
+        bind "Alt h" "Alt Left" { MoveFocus "Left"; }
+        bind "Alt l" "Alt Right" { MoveFocus "Right"; }
+        bind "Alt j" "Alt Down" { MoveFocus "Down"; }
+        bind "Alt k" "Alt Up" { MoveFocus "Up"; }
         bind "Alt =" "Alt +" { Resize "Increase"; }
         bind "Alt -" { Resize "Decrease"; }
         bind "Alt [" { PreviousSwapLayout; }
