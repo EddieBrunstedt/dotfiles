@@ -29,7 +29,7 @@
       doom-variable-pitch-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 19))
 
 ;; org-agenda
-(after! org-agenda (setq org-agenda-span 31))
+;; (after! org-agenda (setq org-agenda-span 31))
 
 ;; log done time in org
 ;; (setq org-log-done 'date)
@@ -170,3 +170,47 @@ See https://github.com/magit/magit/issues/460."
   (setq lsp-tailwindcss-add-on-mode t))
 
 (setq org-agenda-log-mode-items '(closed))
+
+;; Fixes some keybind issues in agenda views made org-ql
+(setq org-super-agenda-header-map (make-sparse-keymap))
+
+(setq org-agenda-custom-commands
+      `(("w" "My custom agenda"
+         ((tags-todo "*"
+                     ((org-agenda-skip-function '(org-agenda-skip-if nil '(timestamp)))
+                      (org-agenda-skip-function
+                       `(org-agenda-skip-entry-if
+                         'notregexp ,(format "\\[#%s\\]" (char-to-string org-priority-highest))))
+                      (org-agenda-block-separator nil)
+                      (org-agenda-overriding-header "Important tasks without a date\n")))
+          (agenda "" ((org-agenda-start-day nil)
+                      (org-agenda-span 1)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-scheduled-past-days 0)
+                      ;; We don't need the `org-agenda-date-today'
+                      ;; highlight because that only has a practical
+                      ;; utility in multi-day views.
+                      (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                      (org-agenda-format-date "%A %-e %B %Y")
+                      (org-agenda-overriding-header "\nToday's agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (agenda "" ((org-agenda-time-grid nil)
+                      (org-agenda-start-on-weekday nil)
+                      ;; We don't want to replicate the previous section's
+                      ;; three days, so we start counting from the day after.
+                      (org-agenda-start-day "+4d")
+                      (org-agenda-span 14)
+                      (org-agenda-show-all-dates nil)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-entry-types '(:deadline))
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n")))))
+        ))
