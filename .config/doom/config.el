@@ -133,6 +133,14 @@ See https://github.com/magit/magit/issues/460."
 ;; Use evil-snipe for all windows
 (setq avy-all-windows t)
 
+(use-package! highlight-indent-guides
+  :hook
+  (prog-mode . highlight-indent-guides-mode)
+  :config
+  (setq highlight-indent-guides-responsive 'top)
+  (setq highlight-indent-guides-method 'bitmap)
+  )
+
 ;; Org html export theme
 (setq org-html-head "
 <style>body{background:#1b1b1b; color:#dcdcdc;}</style>
@@ -181,12 +189,12 @@ See https://github.com/magit/magit/issues/460."
                       (org-agenda-skip-function
                        `(org-agenda-skip-entry-if
                          'notregexp ,(format "\\[#%s\\]" (char-to-string org-priority-highest))))
-                      (org-agenda-block-separator nil)
+                      (org-agenda-block-separator 45)
                       (org-agenda-overriding-header "Important tasks without a date\n")))
           (agenda "" ((org-agenda-start-day nil)
                       (org-agenda-span 1)
                       (org-deadline-warning-days 0)
-                      (org-agenda-block-separator nil)
+                      (org-agenda-block-separator 45)
                       (org-scheduled-past-days 0)
                       ;; We don't need the `org-agenda-date-today'
                       ;; highlight because that only has a practical
@@ -198,7 +206,7 @@ See https://github.com/magit/magit/issues/460."
                       (org-agenda-start-day "+1d")
                       (org-agenda-span 3)
                       (org-deadline-warning-days 0)
-                      (org-agenda-block-separator nil)
+                      (org-agenda-block-separator 45)
                       (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
                       (org-agenda-overriding-header "\nNext three days\n")))
           (agenda "" ((org-agenda-time-grid nil)
@@ -209,7 +217,7 @@ See https://github.com/magit/magit/issues/460."
                       (org-agenda-span 14)
                       (org-agenda-show-all-dates nil)
                       (org-deadline-warning-days 0)
-                      (org-agenda-block-separator nil)
+                      (org-agenda-block-separator 45)
                       (org-agenda-entry-types '(:deadline))
                       (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
                       (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n")))))
