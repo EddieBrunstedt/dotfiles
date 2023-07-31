@@ -1,6 +1,5 @@
-// If you'd like to override the default keybindings completely, be sure to change "keybinds" to "keybinds clear-defaults=true"
 keybinds {
-    unbind "Ctrl q" "Ctrl g" "Ctrl p" // unbind in all modes
+    unbind "Ctrl q" "Ctrl g" "Ctrl p" "Ctrl b" // unbind in all modes
     normal {
         // uncomment this and adjust key if using copy_on_select=false
         // bind "Alt c" { Copy; }
