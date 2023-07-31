@@ -7,12 +7,14 @@
 (setq
  modus-themes-bold-constructs t
  modus-themes-org-blocks 'gray-background
- modus-themes-completions 'opinionated
+ modus-themes-completions
+ '((matches . (extrabold underline))
+   (selection . (semibold italic)))
  modus-themes-italic-constructs t
- modus-themes-mode-line 'borderless
+ modus-themes-mode-line (quote (borderless accented))
  modus-themes-paren-match '(bold intense)
  modus-themes-prompts '(bold intense)
- modus-themes-region 'bg-only
+ modus-themes-region (quote (bg-only))
  modus-themes-scale-headings t
  modus-themes-headings
  '((1 . (rainbow overline 1.3))
@@ -132,14 +134,6 @@ See https://github.com/magit/magit/issues/460."
 
 ;; Use evil-snipe for all windows
 (setq avy-all-windows t)
-
-(use-package! highlight-indent-guides
-  :hook
-  (prog-mode . highlight-indent-guides-mode)
-  :config
-  (setq highlight-indent-guides-responsive 'top)
-  (setq highlight-indent-guides-method 'bitmap)
-  )
 
 ;; Org html export theme
 (setq org-html-head "
