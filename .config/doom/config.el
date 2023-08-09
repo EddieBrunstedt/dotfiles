@@ -17,9 +17,9 @@
  modus-themes-region (quote (bg-only))
  modus-themes-scale-headings t
  modus-themes-headings
- '((1 . (rainbow overline 1.3))
-   (2 . (rainbow 1.2))
-   (3 . (rainbow bold 1.1))
+ '((1 . (rainbow overline 1.2))
+   (2 . (rainbow bold 1.1))
+   (3 . (rainbow 1.1))
    (4 . (semilight 1))))
 
 ;; Set theme
