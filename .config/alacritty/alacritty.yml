@@ -21,7 +21,7 @@ selection:
   save_to_clipboard: true
 
 font:
-  size: 10.0
+  size: 15.0
   normal:
     family: Iosevka Nerd Font Mono
 
