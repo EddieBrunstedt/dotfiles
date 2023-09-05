@@ -132,7 +132,7 @@ See https://github.com/magit/magit/issues/460."
 ;; Code actions icon style
 (setq lsp-modeline-code-actions-segments '(count icon name))
 
-;; Use evil-snipe for all windows
+;; Extend evil-snipe functionality to all open windows
 (setq avy-all-windows t)
 
 ;; Org html export theme
