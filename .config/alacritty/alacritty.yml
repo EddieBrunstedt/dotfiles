@@ -40,7 +40,7 @@ colors:
   primary:
     background: "#000000"
     foreground: "#ffffff"
-    dim_foreground: "#1e1e1e"
+    dim_foreground: "#8b8b8b"
     bright_foreground: "#ffffff"
   normal:
     black:   "#000000"
@@ -52,7 +52,7 @@ colors:
     cyan:    "#00d3d0"
     white:   "#ffffff"
   bright:
-    black:   "#3d3d3d"
+    black:   "#8b8b8b"
     red:     "#ff5f5f"
     green:   "#44df44"
     yellow:  "#efef00"
