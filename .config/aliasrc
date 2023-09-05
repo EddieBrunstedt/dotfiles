@@ -16,7 +16,8 @@ alias \
 	mkd="mkdir -pv" \
 	mv="mv -iv" \
 	rm="rm -v" \
-	eco="ledger -f $HOME/economy/index.dat"
+	eco="ledger -f $HOME/economy/index.dat" \
+	man="batman"
 
 # Use exa instead of ls
 alias \
@@ -40,47 +41,11 @@ alias \
 	t="tmux" \
 	yt="yt-dlp -N 5 --add-metadata -i --restrict-filenames" \
 	yta="yt-dlp -x -N 5" \
-	vim="nvim" \
+	vim="nvim"
 
 # Weather
 alias \
 	weather="curl -s wttr.in/Copenhagen"
-
-# Git Aliases
-alias \
-alias ga='git add' \
-alias gaa='git add .' \
-alias gaaa='git add --all' \
-alias gau='git add --update' \
-alias gb='git branch' \
-alias gbd='git branch --delete ' \
-alias gc='git commit' \
-alias gcm='git commit --message' \
-alias gcf='git commit --fixup' \
-alias gco='git checkout' \
-alias gcob='git checkout -b' \
-alias gcom='git checkout master' \
-alias gcos='git checkout staging' \
-alias gcod='git checkout develop' \
-alias gd='git diff' \
-alias gda='git diff HEAD' \
-alias gi='git init' \
-alias glg='git log --graph --oneline --decorate --all' \
-alias gld='git log --pretty=format:"%h %ad %s" --date=short --all' \
-alias gm='git merge --no-ff' \
-alias gma='git merge --abort' \
-alias gmc='git merge --continue' \
-alias gp='git pull' \
-alias gpr='git pull --rebase' \
-alias gr='git rebase' \
-alias gs='git status' \
-alias gss='git status --short' \
-alias gst='git stash' \
-alias gsta='git stash apply' \
-alias gstd='git stash drop' \
-alias gstl='git stash list' \
-alias gstp='git stash pop' \
-alias gsts='git stash save'
 
 # use emacsclient
 alias emacs="emacsclient -c -a 'emacs'"
