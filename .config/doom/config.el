@@ -163,7 +163,7 @@ See https://github.com/magit/magit/issues/460."
 ;; lsp auto complete delay
 (setq lsp-idle-delay 0.001)
 (setq company-tooltip-idle-delay 0.001)
-(setq company-dabbrev-downcase 0)
+(setq company-dabbrev-downcase nil)
 (setq company-idle-delay 0)
 (setq company-minimum-prefix-length 1)
 
