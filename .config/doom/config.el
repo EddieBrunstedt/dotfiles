@@ -77,7 +77,8 @@
 
 ;; Elfeed
 ;; Default filter
-(after! elfeed (setq elfeed-search-filter "@2-month-ago +unread"))
+(after! elfeed (setq elfeed-search-filter "@4-month-ago +unread"))
+(setq rmh-elfeed-org-files '("~/notes/elfeed.org"))
 
 (setq my/bare-repos
       '(("~/" . "~/.cfg")))
