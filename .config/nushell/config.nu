@@ -285,8 +285,8 @@ let-env config = {
   }
   cursor_shape: {
     emacs: line # block, underscore, line, blink_block, blink_underscore, blink_line (line is the default)
-    vi_insert: block # block, underscore, line , blink_block, blink_underscore, blink_line (block is the default)
-    vi_normal: underscore # block, underscore, line, blink_block, blink_underscore, blink_line (underscore is the default)
+    vi_insert: line # block, underscore, line , blink_block, blink_underscore, blink_line (block is the default)
+    vi_normal: block # block, underscore, line, blink_block, blink_underscore, blink_line (underscore is the default)
   }
   color_config: $dark_theme   # if you want a light theme, replace `$dark_theme` to `$light_theme`
   use_grid_icons: true
@@ -295,7 +295,7 @@ let-env config = {
   # buffer_editor: "emacs" # command that will be used to edit the current line buffer with ctrl+o, if unset fallback to $env.EDITOR and $env.VISUAL
   use_ansi_coloring: true
   bracketed_paste: true # enable bracketed paste, currently useless on windows
-  edit_mode: emacs # emacs, vi
+  edit_mode: vi # emacs, vi
   shell_integration: true # enables terminal markers and a workaround to arrow keys stop working issue
   render_right_prompt_on_last_line: false # true or false to enable or disable right prompt to be rendered on last line of the prompt.
 
@@ -541,4 +541,4 @@ let-env config = {
   ]
 }
 
-source /home/nilo/.config/broot/launcher/nushell/br
+source $HOME/.config/broot/launcher/nushell/br
