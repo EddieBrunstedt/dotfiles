@@ -75,9 +75,22 @@
 (map! :n [mouse-8] #'better-jumper-jump-backward
       :n [mouse-9] #'better-jumper-jump-forward)
 
+
+;; (after! lsp-ui
+;;   (setq lsp-ui-doc-enable nil
+;;         lsp-ui-sideline-enable nil)
+;;   )
+
 ;; Elfeed
-;; Default filter
-(after! elfeed (setq elfeed-search-filter "@4-month-ago +unread"))
+(after! elfeed (setq elfeed-search-filter "@4-month-ago +unread"
+                     elfeed-goodies/entry-pane-size 0.5))
+(evil-define-key 'normal elfeed-show-mode-map
+  (kbd "J") 'elfeed-goodies/split-show-next
+  (kbd "K") 'elfeed-goodies/split-show-prev)
+(evil-define-key 'normal elfeed-search-mode-map
+  (kbd "J") 'elfeed-goodies/split-show-next
+  (kbd "K") 'elfeed-goodies/split-show-prev)
+
 (setq rmh-elfeed-org-files '("~/notes/elfeed.org"))
 
 (setq my/bare-repos
