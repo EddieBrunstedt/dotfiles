@@ -10,8 +10,6 @@ bindkey -v '^?' backward-delete-char
 # Enable colors
 autoload -U colors && colors
 
-# Use bat as man pager
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 # Limit the man width
 export MANWIDTH=80
 
