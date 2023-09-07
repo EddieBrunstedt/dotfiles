@@ -55,3 +55,4 @@
 (package! lsp-tailwindcss :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))
 (package! highlight-indent-guides)
 (package! doom-modeline :pin "6125309c2caa")
+(package! protobuf-mode)
