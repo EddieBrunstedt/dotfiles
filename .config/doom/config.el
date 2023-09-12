@@ -17,7 +17,7 @@
  modus-themes-region (quote (bg-only))
  modus-themes-scale-headings t
  modus-themes-headings
- '((1 . (rainbow overline 1.2))
+ '((1 . (rainbow 1.2))
    (2 . (rainbow bold 1.1))
    (3 . (rainbow 1.1))
    (4 . (semilight 1))))
@@ -26,8 +26,8 @@
 (setq doom-theme 'modus-vivendi)
 
 ;; Font
-(setq doom-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold :size 24)
-      doom-big-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 28)
+(setq doom-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold :size 26)
+      doom-big-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 34)
       doom-variable-pitch-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 19))
 
 ;; org-agenda
@@ -66,7 +66,7 @@
 ;; Do not start spell-fu (spelling) by default
 (remove-hook! 'text-mode-hook #'spell-fu-mode)
 ;; Only format TypeScript on save
-(add-to-list '+format-on-save-enabled-modes 'typescript-mode t)
+;; (add-to-list '+format-on-save-enabled-modes 'typescript-mode t)
 
 (setq lsp-inlay-hint-enable t)
 
