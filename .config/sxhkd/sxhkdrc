@@ -7,6 +7,8 @@ super + r
 	  $TERMINAL -e tmux new -A -s file-manager 'lf'
 super + shift + r
 	  $TERMINAL -e tmux new -A -s file-manager 'lf $(find ~/ -type d | fzf)';
+super + shift + m
+	  mpv --force-window --idle;
 
 # Set White Temperature
 super + shift + b
