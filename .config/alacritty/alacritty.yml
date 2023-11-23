@@ -23,7 +23,7 @@ selection:
 font:
   size: 15.0
   normal:
-    family: Iosevka Nerd Font Mono
+    family: Victor Mono
 
 # Autostart zellij
 shell:
