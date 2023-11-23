@@ -19,6 +19,7 @@ appendpath "$HOME/.deno/bin"
 appendpath "$HOME/.cargo/bin"
 appendpath "$HOME/.deno/"
 appendpath "$HOME/.dvm/bin/"
+appendpath "$HOME/.fly/bin/"
 unset appendpath
 
 export EDITOR="emacsclient -n"
