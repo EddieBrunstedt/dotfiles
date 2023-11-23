@@ -9,8 +9,8 @@
  modus-themes-org-blocks 'gray-background
  modus-themes-completions
  '((matches . (extrabold underline))
-   (selection . (semibold italic)))
- modus-themes-italic-constructs t
+   (selection . (semibold)))
+ modus-themes-italic-constructs nil
  modus-themes-mode-line (quote (borderless accented))
  modus-themes-paren-match '(bold intense)
  modus-themes-prompts '(bold intense)
@@ -25,10 +25,9 @@
 ;; Set theme
 (setq doom-theme 'modus-vivendi)
 
-;; Font
-(setq doom-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold :size 26)
-      doom-big-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 34)
-      doom-variable-pitch-font (font-spec :family "Iosevka Nerd Font Mono" :weight 'semibold  :size 19))
+;; Fonts
+(setq doom-font (font-spec :family "Victor Mono" :size 26 :weight 'SemiBold)
+      doom-variable-pitch-font (font-spec :family "Victor Mono" :size 26 :weight: 'bold))
 
 ;; org-agenda
 ;; (after! org-agenda (setq org-agenda-span 31))
@@ -82,7 +81,8 @@
 ;;   )
 
 ;; Elfeed
-(after! elfeed (setq elfeed-search-filter "@4-month-ago +unread"
+(setq rmh-elfeed-org-files '("~/notes/elfeed.org"))
+(after! elfeed (setq elfeed-search-filter "@3-month-ago"
                      elfeed-goodies/entry-pane-size 0.5))
 (evil-define-key 'normal elfeed-show-mode-map
   (kbd "J") 'elfeed-goodies/split-show-next
@@ -90,8 +90,6 @@
 (evil-define-key 'normal elfeed-search-mode-map
   (kbd "J") 'elfeed-goodies/split-show-next
   (kbd "K") 'elfeed-goodies/split-show-prev)
-
-(setq rmh-elfeed-org-files '("~/notes/elfeed.org"))
 
 (setq my/bare-repos
       '(("~/" . "~/.cfg")))
@@ -141,7 +139,7 @@ See https://github.com/magit/magit/issues/460."
 ;; Breadcrumbs
 (setq lsp-headerline-breadcrumb-enable t)
 (setq lsp-headerline-breadcrumb-segments '(symbols))
-(setq lsp-headerline-breadcrumb-icons-enable t)
+(setq lsp-headerline-breadcrumb-icons-enable nil)
 
 ;; Code actions icon style
 (setq lsp-modeline-code-actions-segments '(count icon name))
