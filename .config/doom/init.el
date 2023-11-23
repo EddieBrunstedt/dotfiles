@@ -88,10 +88,10 @@
        tree-sitter
        ;;ansible
        ;;(beancount +lsp)
-       (debugger +lsp)     ; FIXME stepping through code, to help you add bugs
+       ;;debugger          ; FIXME stepping through code, to help you add bugs
        ;;direnv
        ;;docker
-       ;;editorconfig        ; let someone else argue about tabs vs spaces
+       ;;editorconfig      ; let someone else argue about tabs vs spaces
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
        ;;gist              ; interacting with github gists
@@ -110,6 +110,7 @@
        ;;upload            ; map local to remote projects via ssh/ftp
 
        :lang
+       (zig +lsp +tree-sitter)
        ;;agda              ; types of types of types of types...
        (cc +lsp +tree-sitter)           ; C/C++/Obj-C madness
        ;;clojure           ; java with a lisp
@@ -151,7 +152,7 @@
         +present
         +roam2
         +dragndrop)
-       (php +lsp)                 ; perl's insecure younger brother
+       (php +lsp +tree-sitter)                 ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
        ;;python            ; beautiful is better than ugly
