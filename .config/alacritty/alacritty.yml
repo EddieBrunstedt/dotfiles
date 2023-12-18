@@ -24,6 +24,7 @@ font:
   size: 15.0
   normal:
     family: Victor Mono
+    style: SemiBold
 
 # Autostart zellij
 shell:
