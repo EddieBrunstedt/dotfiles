@@ -7,6 +7,8 @@ alias \
 
 # Flags
 alias \
+	bf="br --only-folders" \
+	br="br --hidden" \
 	bat="bat --style=header --style=auto --theme base16" \
 	ccat="highlight --out-format=ansi" \
 	cp="cp -iv" \
