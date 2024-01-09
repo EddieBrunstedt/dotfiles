@@ -4,6 +4,7 @@ arc-solid-gtk-theme
 atool
 atuin
 bat
+bat-extras
 bind
 bitwarden
 chromium
@@ -22,8 +23,8 @@ electrum
 element-desktop
 eslint
 expac
+eza
 fd
-firefox
 firefox-developer-edition
 flameshot
 fzf
