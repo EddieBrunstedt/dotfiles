@@ -31,7 +31,7 @@ map <c-f> finder
 map <c-n> togglenum # toggle line numbers
 map <c-r> reload
 map <enter> shell
-map D push :trash<space>
+map D $rip $f
 map E extract
 map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
 map O $mimeopen --ask $f
@@ -86,28 +86,6 @@ cmd open ${{
          application/zip) zipinfo $fx | bat --paging always --theme=1337;;
          *) xdg-open "$f";;
     esac
-}}
-
-cmd trash &{{
-    lf -remote "send $id echo Trashing..."
-    msg=$(mktemp) || exit
-    trap 'rm -f "$msg"' EXIT
-    if trash-put $fx >$msg 2>&1; then
-        lf -remote "send $id echo Trashing Done."
-    else
-        lf -remote "send $id !printf '\e[?1049h\e[H'; cat \"$msg\""
-        lf -remote "send $id echo Trashing Failed."
-    fi
-    lf -remote 'send load'
-}}
-
-cmd delete ${{
-    printf '\e[?1049h\e[H'
-    echo 'Permanently Deleting Files:'; echo
-    printf '  %s\n' $fx ""
-    read -p 'Delete? [y/N] ' ans
-    case $ans in y|Y) rm -rfv --one-file-system -- $fx ;;
-    esac || read -p 'Press enter to continue'
 }}
 
 cmd finder ${{
