@@ -33,11 +33,11 @@ XF86MonBrightnessUp
 
 # Make screenshot (screen with mouse pointer)
 Print
-	flameshot gui -c -p ~/screenshots/
+	flameshot gui -c -p ~/media/image/screenshots
 
 # Make screenshot (using gui)
 shift + Print
-	flameshot screen -c -p ~/screenshots/
+	flameshot screen -c -p ~/media/image/screenshots
 
 # Mount a USB drive or Android device
 super + F9
