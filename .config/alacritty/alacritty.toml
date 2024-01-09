@@ -5,14 +5,14 @@
 # TERM = "alacritty"
 
 [font]
-size = 15.0
+size = 14
 
 [font.normal]
-family = "Victor Mono"
+family = "Victor Mono Nerd Font"
 style = "SemiBold"
 
 [font.italic]
-family = "Victor Mono"
+family = "Victor Mono Nerd Font"
 style = "SemiBold"
 
 [scrolling]
@@ -27,7 +27,7 @@ save_to_clipboard = true
 # program = "/usr/bin/zellij"
 
 [window.padding]
-x = 4
+x = 0
 y = 0
 
 [colors.bright]
@@ -61,3 +61,7 @@ foreground = "#ffffff"
 [colors.selection]
 background = "#3c3c3c"
 text = "#ffffff"
+
+[shell]
+program = "zsh"
+args = ["-l", "-c", "tmux attach || tmux new -s main"]
