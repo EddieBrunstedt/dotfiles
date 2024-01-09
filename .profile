@@ -22,9 +22,9 @@ appendpath "$HOME/.dvm/bin/"
 appendpath "$HOME/.fly/bin/"
 unset appendpath
 
-export EDITOR="emacsclient -n"
-export VISUAL="emacsclient -n -c"
-export ALTERNATE_EDITOR="emacs"
+export EDITOR="nvim"
+export VISUAL="nvim"
+export ALTERNATE_EDITOR="nvim"
 export TERMINAL="alacritty"
 export BROWSER="librewolf"
 export READER="zathura"
