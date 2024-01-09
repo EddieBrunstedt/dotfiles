@@ -84,8 +84,6 @@ eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 eval "$(navi widget zsh)"
 
-source /home/nilo/.config/broot/launcher/bash/br
-
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
     print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
@@ -126,4 +124,4 @@ lfcd () {
     fi
 }
 
-alias lf=lfcd
+source $HOME/.config/broot/launcher/bash/br

@@ -5,6 +5,9 @@ alias \
 	config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME' \
 	pbpaste='xclip -o -sel primary'
 
+alias \
+	lf="lfcd"
+
 # Flags
 alias \
 	bf="br --only-folders" \
