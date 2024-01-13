@@ -3,7 +3,7 @@
 	sync = checkout master && git fetch --all -p && git pull
 [core]
     pager = delta
-	editor = emacs
+	editor = nvim
 [credential]
 	helper = store
 [delta]
