@@ -1,6 +1,11 @@
-#!/bin/zsh
+#zinit self-update!/bin/zsh
 
-# Function to add to PATH
+export KEYTIMEOUT=1
+
+# Disable feature for freezing terminal with Ctrl + S
+stty -ixon
+
+# Helper function to add stuff to PATH
 appendpath () {
     case ":$PATH:" in
         *:"$1":*)
@@ -13,28 +18,36 @@ appendpath () {
 # Directories to add to PATH
 # All directories in '~/.local/bin'
 appendpath "$(du "$HOME/.local/bin/" | cut -f2 | tr '\n' ':' | sed 's/:*$//')"
-appendpath "$HOME/.yarn/bin"
-appendpath "$HOME/.config/emacs/bin"
-appendpath "$HOME/.deno/bin"
 appendpath "$HOME/.cargo/bin"
+appendpath "$HOME/.config/emacs/bin"
 appendpath "$HOME/.deno/"
+appendpath "$HOME/.deno/bin"
 appendpath "$HOME/.dvm/bin/"
 appendpath "$HOME/.fly/bin/"
+appendpath "$HOME/.yarn/bin"
 unset appendpath
 
-export EDITOR="nvim"
-export VISUAL="nvim"
-export ALTERNATE_EDITOR="nvim"
-export TERMINAL="alacritty"
+export EDITOR=VISUAL=ALTERNATE_EDITOR="nvim"
 export BROWSER="librewolf"
-export READER="zathura"
 export FILE="lf"
-export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
 export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
+export READER="zathura"
+export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
+export TERMINAL="alacritty"
 
 # Default options for fzf
 export FZF_DEFAULT_OPTS="--layout=reverse --height 40% --border --inline-info"
 export FZF_DEFAULT_COMMAND='fd --type f --hidden'
+
+# Make navi taller
+export FZF_DEFAULT_OPTS="--height 30" navi
+
+# Limit the man width
+export MANWIDTH=80
+
+# PNPM
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
 
 # less/man colors
 export LESS=-R
@@ -46,7 +59,7 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;4;31m'
 
-# lsp
+# Compile LSP in plist mode for better performance
 export LSP_USE_PLISTS=true
 
 # dvm (deno version manager)
@@ -61,4 +74,5 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 # Mozilla smooth scrolling/touchpads.
 export MOZ_USE_XINPUT2="1"
 
+# Used by SSH agent
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"

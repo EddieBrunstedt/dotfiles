@@ -1,4 +1,3 @@
-export KEYTIMEOUT=1
 setopt shwordsplit
 
 zle_highlight=('region:bg=168,fg=251')
@@ -10,16 +9,10 @@ bindkey -v '^?' backward-delete-char
 # Enable colors
 autoload -U colors && colors
 
-# Limit the man width
-export MANWIDTH=80
-
 # History in cache directory:
 HISTSIZE=1000
 SAVEHIST=1000
 HISTFILE=~/.zsh_history
-
-# Navi
-export FZF_DEFAULT_OPTS="--height 30" navi
 
 # Suggestions
 ZSH_AUTOSUGGEST_STRATEGY=(history completion) # Auto-suggestion strategy
@@ -30,9 +23,6 @@ bindkey '^R' history-incremental-pattern-search-backward
 
 # Accept autosuggestion
 bindkey '^ ' autosuggest-accept
-
-# Load aliases if existent
-[ -f "$HOME/.config/aliasrc" ] && source "$HOME/.config/aliasrc"
 
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu yes select
@@ -76,14 +66,6 @@ preexec() { echo -ne '\e[5 q' ;}
 
 bindkey -s '^f' "br^J"
 
-# Load Node Version Manager
-export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-
-eval "$(starship init zsh)"
-eval "$(zoxide init zsh)"
-eval "$(navi widget zsh)"
-
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
     print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
@@ -104,11 +86,6 @@ zinit load ellie/atuin
 zinit load cjbassi/zsh-vi-mode-clipboard
 zinit load zsh-users/zsh-syntax-highlighting
 
-# pnpm
-export PNPM_HOME="$HOME/.local/share/pnpm"
-export PATH="$PNPM_HOME:$PATH"
-# pnpm end
-
 lfcd () {
     tmp="$(mktemp)"
     # `command` is needed in case `lfcd` is aliased to `lf`
@@ -124,4 +101,11 @@ lfcd () {
     fi
 }
 
+
+eval "$(starship init zsh)"
+eval "$(zoxide init zsh)"
+eval "$(navi widget zsh)"
+
+source /usr/share/nvm/init-nvm.sh
+source "$HOME/.config/aliasrc"
 source $HOME/.config/broot/launcher/bash/br
