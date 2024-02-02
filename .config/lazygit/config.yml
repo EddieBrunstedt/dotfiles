@@ -1,0 +1,33 @@
+gui:
+  timeFormat: '1985-02-16' # https://pkg.go.dev/time#Time.Format
+  shortTimeFormat: '15:04'
+  theme:
+    activeBorderColor:
+      - "#ffe8a8"
+      - bold
+    inactiveBorderColor:
+      - "#adadad"
+    searchingActiveBorderColor:
+      - cyan
+      - bold
+    optionsTextColor:
+      - blue
+    selectedLineBgColor:
+      - black # set to `default` to have no background colour
+      - bold
+    selectedRangeBgColor:
+      - black
+    cherryPickedCommitBgColor:
+      - cyan
+    cherryPickedCommitFgColor:
+      - blue
+    unstagedChangesColor:
+      - red
+    defaultFgColor:
+      - default
+os:
+  editPreset: 'nvim'
+git:
+  paging:
+    colorArg: always
+    pager: delta --syntax-theme 1337 --paging=never
