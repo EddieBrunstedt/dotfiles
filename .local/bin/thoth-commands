@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Define arrays for display names and their corresponding commands
+display_names=("Improve grammar")
+commands=("improve-grammar")
+
+# Convert display names array to a newline-separated string for dmenu
+options=$(printf "%s\n" "${display_names[@]}")
+
+# Show the dmenu prompt to the user and get the chosen option
+chosen=$(echo "$options" | dmenu -i -l 6 -fn monospace-12)
+
+# Exit if nothing was chosen
+[ "$chosen" != "" ] || exit
+
+# Find the index of the chosen option
+for i in "${!display_names[@]}"; do
+   if [[ "${display_names[$i]}" == "$chosen" ]]; then
+       index=$i
+       break
+   fi
+done
+
+# Extract the command associated with the chosen option using the index
+command=${commands[$index]}
+
+# Execute the command
+$command

@@ -11,6 +11,8 @@ super + shift + v
 	  mpv --force-window --idle;
 super + shift + m
 	  monitor-setting
+super + shift + o
+	  improve-grammar
 
 # Set White Temperature
 super + shift + b
