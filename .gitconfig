@@ -2,23 +2,23 @@
 	last = log -1 HEAD
 	sync = checkout master && git fetch --all -p && git pull
 [core]
-    pager = delta
+	pager = delta
 	editor = nvim
 [credential]
 	helper = store
 [delta]
 	navigate = true
-    features = line-numbers decorations
+	features = line-numbers decorations
 [diff]
-    colorMoved = default
+	colorMoved = default
 [github]
 	user = EddieBrunstedt
 [init]
 	defaultBranch = main
 [interactive]
-    diffFilter = delta --color-only
+	diffFilter = delta --color-only
 [merge]
-    conflictstyle = diff3
+	conflictstyle = diff3
 [user]
 	email = eddie.brunstedt@protonmail.com
 	name = Eddie Brunstedt
