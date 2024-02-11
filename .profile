@@ -27,7 +27,9 @@ appendpath "$HOME/.fly/bin/"
 appendpath "$HOME/.yarn/bin"
 unset appendpath
 
-export EDITOR=VISUAL=ALTERNATE_EDITOR="nvim"
+export EDITOR="nvim"
+export VISUAL="nvim"
+export ALTERNATE_EDITOR="nvim"
 export BROWSER="librewolf"
 export FILE="lf"
 export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
