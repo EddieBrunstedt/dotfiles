@@ -22,7 +22,7 @@ ZSH_AUTOSUGGEST_USE_ASYNC=YesPls # Suggestions fetched asynchronously
 bindkey '^R' history-incremental-pattern-search-backward
 
 # Accept autosuggestion
-bindkey '^ ' autosuggest-accept
+bindkey '^y' autosuggest-accept
 
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu yes select
