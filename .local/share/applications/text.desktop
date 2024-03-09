@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
 Name=Text editor
-Exec=/usr/bin/emacsclient -n %u
+Exec=/usr/bin/nvim %u
