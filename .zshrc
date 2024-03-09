@@ -106,6 +106,6 @@ eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 eval "$(navi widget zsh)"
 
-source /usr/share/nvm/init-nvm.sh
+source "/usr/share/nvm/init-nvm.sh"
 source "$HOME/.config/aliasrc"
-source $HOME/.config/broot/launcher/bash/br
+source "$HOME/.config/broot/launcher/bash/br"
