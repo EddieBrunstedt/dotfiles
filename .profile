@@ -78,3 +78,7 @@ export MOZ_USE_XINPUT2="1"
 
 # Used by SSH agent
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+
+# Use rootless docker service
+# DOC: https://wiki.archlinux.org/title/docker#Rootless_Docker_daemon
+export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
