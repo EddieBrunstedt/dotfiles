@@ -9,7 +9,7 @@ clipboard_content=$(xclip -selection clipboard -o)
 
 # Run the content through Thoth, update the clipboard and send notification
 if thoth prompt --no-new-line grammar text="$clipboard_content" | xclip -selection clipboard; then
-    notify-send -u low "Thoth" "Grammar processing complete and clipboard updated."
+    notify-send -u low -i ~/.dotfiles/.config/dunst/icons/thoth.png "Thoth" "Grammar processing complete and clipboard updated."
 else
     notify-send -u low "Thoth" "Grammar processing failed."
 fi
