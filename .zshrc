@@ -82,7 +82,6 @@ autoload -Uz _zinit
 # Plugins
 zinit light zsh-users/zsh-autosuggestions
 zinit load z-shell/H-S-MW
-zinit load ellie/atuin
 zinit load cjbassi/zsh-vi-mode-clipboard
 zinit load zsh-users/zsh-syntax-highlighting
 
@@ -105,6 +104,7 @@ lfcd () {
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 eval "$(navi widget zsh)"
+eval "$(atuin init zsh --disable-up-arrow)"
 
 source "/usr/share/nvm/init-nvm.sh"
 source "$HOME/.config/aliasrc"
