@@ -36,6 +36,7 @@ export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
 export READER="zathura"
 export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
 export TERMINAL="alacritty"
+export GRAVEYARD="$HOME/.local/share/graveyard"
 
 # Default options for fzf
 export FZF_DEFAULT_OPTS="--layout=reverse --height 40% --border --inline-info"
