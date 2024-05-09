@@ -31,7 +31,7 @@ map <c-f> finder
 map <c-n> togglenum # toggle line numbers
 map <c-r> reload
 map <enter> shell
-map D $rip $f
+map D $rip $fx
 map E extract
 map J $lf -remote "send $id cd $(cut -d'	' -f2 ~/.config/directories | fzf)"
 map O $mimeopen --ask $f
