@@ -1,9 +1,9 @@
 super + e
 	$BROWSER
 super + shift + f
-	$TERMINAL -e tmux new -A -s file-manager 'lf $(find ~/ -type d | fzf)';
+	$TERMINAL -e tmux new -A -s file-manager 'lf "$(find ~/ -type d | fzf)"';
 super + shift + a
-	$TERMINAL -e tmux new -A -s pulsemixer 'pulsemixer';
+	$TERMINAL -e tmux new -A -s pulsemixer "pulsemixer";
 super + shift + v
 	mpv --force-window --idle;
 super + shift + m
@@ -16,8 +16,6 @@ super + shift + b
 	whitetemp
 super + shift + k
 	keyboard-layout-dmenu
-super + shift + o
-	$TERMINAL -e tmux new -A -s calculator 'bc -l';
 super + shift + n
 	$TERMINAL -e nmtui
 
