@@ -5,7 +5,7 @@
 # TERM = "alacritty"
 
 [font]
-size = 14
+size = 13
 
 [font.normal]
 family = "Victor Mono Nerd Font"
