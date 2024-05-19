@@ -1,7 +1,7 @@
 super + e
 	$BROWSER
 super + shift + f
-	$TERMINAL -e tmux new -A -s file-manager 'lf "$(find ~/ -type d | fzf)"';
+	$TERMINAL -e tmux new -A -s file-manager 'lf "$(find ~/ \( -name 'node_modules' -o -name '.cargo' -o -name '.cache' -o -name '.nvm' -o -name '.librewolf' -o -name '.mozilla' \) -prune -o -type d -print | fzf)"';
 super + shift + a
 	$TERMINAL -e tmux new -A -s pulsemixer "pulsemixer";
 super + shift + v
