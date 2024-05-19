@@ -16,6 +16,8 @@ set infotimefmtold "2006-01-02 15:04"
 set errorfmt  "\033[31m%s\033[0m"
 set promptfmt "\033[2m%d"
 set hiddenfiles ".*:$RECYCLE.BIN:System Volume Information"
+set number
+set relativenumber
 
 # Toggle preview
 map t preview-toggle
