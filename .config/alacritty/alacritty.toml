@@ -5,15 +5,13 @@
 # TERM = "alacritty"
 
 [font]
-size = 13
+size = 12
 
 [font.normal]
-family = "Victor Mono Nerd Font"
-style = "SemiBold"
+family = "JetBrainsMono Nerd Font"
 
 [font.italic]
-family = "Victor Mono Nerd Font"
-style = "SemiBold"
+family = "JetBrainsMono Nerd Font"
 
 [scrolling]
 # auto_scroll = true
