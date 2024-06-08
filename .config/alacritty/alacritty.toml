@@ -1,8 +1,9 @@
 # [cursor]
 # unfocused_hollow = true
 
-# [env]
-# TERM = "alacritty"
+[env]
+term = "alacritty-direct"
+
 
 [font]
 size = 12
