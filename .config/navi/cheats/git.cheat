@@ -89,7 +89,7 @@ git log
 git log --all --decorate --oneline --graph
 
 # Clean repo by removing intracked files
-git clean -dxf
+git clean -df
 
 # Sign all commits in a branch based on master
 git rebase master -S -f
