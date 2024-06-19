@@ -1,18 +1,30 @@
 # [cursor]
 # unfocused_hollow = true
 
+[shell]
+program = "zsh"
+args = ["-l", "-c", "tmux attach || tmux new -s main"]
+
 [env]
 term = "alacritty-direct"
 
+[colors]
+draw_bold_text_with_bright_colors = true
 
 [font]
 size = 12
 
 [font.normal]
 family = "JetBrainsMono Nerd Font"
+style = "SemiBold"
+
+[font.bold]
+family = "JetBrainsMono Nerd Font"
+style = "Bold"
 
 [font.italic]
 family = "JetBrainsMono Nerd Font"
+style = "Italic"
 
 [scrolling]
 # auto_scroll = true
@@ -26,41 +38,46 @@ save_to_clipboard = true
 # program = "/usr/bin/zellij"
 
 [window.padding]
-x = 0
-y = 0
+x = 4
+y = 4
 
-[colors.bright]
-black = "#535353"
-blue = "#79a8ff"
-cyan = "#4ae2f0"
-green = "#70b900"
-magenta = "#f78fe7"
-red = "#ef8b50"
-white = "#989898"
-yellow = "#c0c530"
-
-[colors.cursor]
-cursor = "#f4f4f4"
-text = "#323232"
-
-[colors.normal]
-black = "#323232"
-blue = "#2fafff"
-cyan = "#00d3d0"
-green = "#44bc44"
-magenta = "#feacd0"
-red = "#ff8059"
-white = "#ffffff"
-yellow = "#d0bc00"
-
+# TokyoNight Alacritty Colors
+# Default colors
 [colors.primary]
-background = "#000000"
-foreground = "#ffffff"
+background = '#1a1b26'
+foreground = '#c0caf5'
 
-[colors.selection]
-background = "#3c3c3c"
-text = "#ffffff"
+#[colors.cursor]
+#cursor = '#c0caf5'
+#text = '#1a1b26'
 
-[shell]
-program = "zsh"
-args = ["-l", "-c", "tmux attach || tmux new -s main"]
+# Normal colors
+[colors.normal]
+black = '#15161e'
+red = '#f7768e'
+green = '#9ece6a'
+yellow = '#e0af68'
+blue = '#7aa2f7'
+magenta = '#bb9af7'
+cyan = '#7dcfff'
+white = '#a9b1d6'
+
+# Bright colors
+[colors.bright]
+black = '#414868'
+red = '#f7768e'
+green = '#9ece6a'
+yellow = '#e0af68'
+blue = '#7aa2f7'
+magenta = '#bb9af7'
+cyan = '#7dcfff'
+white = '#c0caf5'
+
+# Indexed Colors
+[[colors.indexed_colors]]
+index = 16
+color = '#ff9e64'
+
+[[colors.indexed_colors]]
+index = 17
+color = '#db4b4b'
