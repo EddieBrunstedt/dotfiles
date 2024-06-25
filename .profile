@@ -35,7 +35,7 @@ export FILE="lf"
 export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
 export READER="zathura"
 export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
-export TERMINAL="wezterm"
+export TERMINAL="alacritty"
 export GRAVEYARD="$HOME/.local/share/graveyard"
 export XDG_CONFIG_HOME=$HOME/.config
 

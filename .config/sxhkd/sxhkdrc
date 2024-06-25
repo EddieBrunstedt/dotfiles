@@ -1,11 +1,12 @@
 super + e
 	$BROWSER
 super + shift + f
-	$TERMINAL start -- yazi;
+	$TERMINAL -e tmux new -A -s file-manager "lf"
 super + shift + a
-	$TERMINAL start -- pulsemixer;
+	$TERMINAL -e tmux new -A -s pulsemixer "pulsemixer"
 super + shift + v
-	mpv --force-window --idle;
+	mpv --force-window --idle
+
 super + shift + m
 	monitor-setting
 super + shift + p
@@ -17,7 +18,7 @@ super + shift + b
 super + shift + k
 	keyboard-layout-dmenu
 super + shift + n
-	$TERMINAL start -- nmtui
+	$TERMINAL -e nmtui
 
 # Volume
 XF86AudioRaiseVolume
