@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Define arrays for display names and their corresponding commands
-display_names=("Get definition" "Improve grammar")
-commands=("get-definition" "improve-grammar")
+display_names=("Get definition" "Improve grammar" "Shorten")
+commands=("get-definition" "improve-grammar" "shorten")
 
 # Convert display names array to a newline-separated string for dmenu
 options=$(printf "%s\n" "${display_names[@]}")

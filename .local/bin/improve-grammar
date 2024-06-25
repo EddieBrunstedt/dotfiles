@@ -1,15 +1,3 @@
 #!/bin/sh
 
-# Exit if any command fails and catch failures in pipelines
-set -e
-set -o pipefail
-
-# Store the current content of the clipboard to a variable
-clipboard_content=$(xclip -selection clipboard -o)
-
-# Run the content through Thoth, update the clipboard and send notification
-if thoth prompt --no-new-line grammar text="$clipboard_content" | xclip -selection clipboard; then
-    notify-send -u low -i ~/.dotfiles/.config/dunst/icons/thoth.png "Thoth" "Grammar processing complete and clipboard updated."
-else
-    notify-send -u low "Thoth" "Grammar processing failed."
-fi
+ord prompt grammar -f=text -c -n complete
