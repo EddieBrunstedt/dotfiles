@@ -1,9 +1,9 @@
 super + e
 	$BROWSER
 super + shift + f
-	$TERMINAL -e tmux new -A -s file-manager 'lf "$(find ~/ \( -name 'node_modules' -o -name '.cargo' -o -name '.cache' -o -name '.nvm' -o -name '.librewolf' -o -name '.mozilla' \) -prune -o -type d -print | fzf)"';
+	$TERMINAL start -- yazi;
 super + shift + a
-	$TERMINAL -e tmux new -A -s pulsemixer "pulsemixer";
+	$TERMINAL start -- pulsemixer;
 super + shift + v
 	mpv --force-window --idle;
 super + shift + m
@@ -17,7 +17,7 @@ super + shift + b
 super + shift + k
 	keyboard-layout-dmenu
 super + shift + n
-	$TERMINAL -e nmtui
+	$TERMINAL start -- nmtui
 
 # Volume
 XF86AudioRaiseVolume
