@@ -1,0 +1,3 @@
+# Ord Configuration
+api_key = ""
+model = "gpt-4o"
