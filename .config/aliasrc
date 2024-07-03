@@ -6,7 +6,8 @@ alias \
 	pbpaste='xclip -o -sel primary'
 
 alias \
-	lf="lfcd"
+	lf="lfcd" \
+	lg="lazygit"
 
 # Flags
 alias \
