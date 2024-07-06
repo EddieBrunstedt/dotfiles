@@ -10,7 +10,7 @@ super + shift + v
 super + shift + m
 	monitor-setting
 super + shift + p
-	thoth-prompts
+	ord_prompts
 super + shift + i
 	dunstctl close-all
 super + shift + b
