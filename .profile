@@ -34,9 +34,7 @@ export BROWSER="librewolf"
 export FILE="lf"
 export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
 export READER="zathura"
-export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
 export TERMINAL="alacritty"
-export GRAVEYARD="$HOME/.local/share/graveyard"
 export XDG_CONFIG_HOME=$HOME/.config
 
 # Default options for fzf
@@ -84,3 +82,6 @@ export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 # Use rootless docker service
 # DOC: https://wiki.archlinux.org/title/docker#Rootless_Docker_daemon
 export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
+
+# Escape key timeout in ZSH shell (used by "jeffreytse/zsh-vi-mode" plugin)
+ZVM_KEYTIMEOUT=0

@@ -1,58 +1,62 @@
 #!/bin/sh
 
-# Git helper for dotfiles
+# File operations
 alias \
-	config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME' \
-	pbpaste='xclip -o -sel primary'
+    cp="cp -iv" \
+    mv="mv -iv" \
+    rm="rm -v" \
+    mkd="mkdir -pv"
 
+# List and browse directories
 alias \
-	lf="lfcd" \
-	lg="lazygit"
+    l="eza --group-directories-first" \
+    ls="eza --group-directories-first" \
+    ll="eza -l --group-directories-first --time-style=iso" \
+    lll="eza -lgh --group-directories-first --git --time-style=long-iso" \
+    la="eza -la --group-directories-first" \
+    lt="eza --long --tree" \
+    lf="lfcd" \
+    bf="br --only-folders" \
+    br="br --hidden"
 
-# Flags
+# Text and file viewers
 alias \
-	bf="br --only-folders" \
-	br="br --hidden" \
-	bat="bat --style=header --style=auto --theme base16" \
-	ccat="highlight --out-format=ansi" \
-	cp="cp -iv" \
-	diff="diff --color=auto" \
-	ffmpeg="ffmpeg -hide_banner" \
-	grep="grep --color=auto" \
-	mkd="mkdir -pv" \
-	mv="mv -iv" \
-	rm="rm -v" \
-	eco="ledger -f $HOME/economy/index.dat" \
-	man="batman"
+    bat="bat --style=header --style=auto --theme base16" \
+    ccat="highlight --out-format=ansi" \
+    diff="diff --color=auto" \
+    grep="grep --color=auto" \
+    man="batman"
 
-# Use eza instead of ls
+# Editors and development tools
 alias \
-	l="eza --group-directories-first" \
-	ls="eza --group-directories-first" \
-	ll="eza -l --group-directories-first --time-style=iso" \
-	lll="eza -lgh --group-directories-first --git --time-style=long-iso" \
-	la="eza -la --group-directories-first" \
-	lt="eza --long --tree"
+    e="$EDITOR" \
+    f="$FILE" \
+    vim="nvim" \
+    lg="lazygit"
 
-# Shortcuts
+# System operations
 alias \
-	P="sudo pacman" \
-	S="sudo" \
-	d=devour \
-	e="$EDITOR" \
-	f="$FILE" \
-	ka="killall" \
-	mc="tmux split -h lf; lf" \
-	p="pacman" \
-	sdn="sudo shutdown -h now" \
-	t="tmux" \
-	yt="yt-dlp -N 5 --add-metadata -i --restrict-filenames" \
-	yta="yt-dlp -x -N 5" \
-	vim="nvim"
+    ka="killall" \
+    sdn="sudo shutdown -h now" \
+    d=devour
 
-# Weather
+# Tmux
 alias \
-	weather="curl -s wttr.in/Copenhagen"
+    t="tmux" \
+    tkill="tmux kill-server" \
+    mc="tmux split -h lf; lf"
 
-# use emacsclient
-alias emacs="emacsclient -c -a 'emacs'"
+# Media and download
+alias \
+    ffmpeg="ffmpeg -hide_banner" \
+    yt="yt-dlp -N 5 --add-metadata -i --restrict-filenames" \
+    yta="yt-dlp -x -N 5"
+
+# Clipboard
+alias \
+    pbpaste='xclip -o -sel primary'
+
+# Miscellaneous
+alias \
+    eco="ledger -f $HOME/economy/index.dat" \
+    weather="curl -s wttr.in/Copenhagen"

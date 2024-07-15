@@ -1,90 +1,47 @@
-setopt shwordsplit
-
-zle_highlight=('region:bg=168,fg=251')
-
-# vi mode
-bindkey -v
-bindkey -v '^?' backward-delete-char
-
-# Enable colors
-autoload -U colors && colors
-
-# History in cache directory:
-HISTSIZE=1000
-SAVEHIST=1000
-HISTFILE=~/.zsh_history
-
-# Suggestions
-ZSH_AUTOSUGGEST_STRATEGY=(history completion) # Auto-suggestion strategy
-ZSH_AUTOSUGGEST_USE_ASYNC=YesPls # Suggestions fetched asynchronously
-
-# Enable searching through history
-bindkey '^R' history-incremental-pattern-search-backward
-
-# Accept autosuggestion
-bindkey '^y' autosuggest-accept
-
-autoload -Uz compinit && compinit
-zstyle ':completion:*' menu yes select
-zmodload zsh/complist
-compinit
-
-# Include hidden files in autocomplete
-_comp_options+=(globdots)
-
-# Use vim keys in tab complete menu
-bindkey -M menuselect 'h' vi-backward-char
-bindkey -M menuselect 'k' vi-up-line-or-history
-bindkey -M menuselect 'l' vi-forward-char
-bindkey -M menuselect 'j' vi-down-line-or-history
-
-# Change cursor shape for different vi modes
-function zle-keymap-select {
-  if [[ ${KEYMAP} == vicmd ]] ||
-     [[ $1 = 'block' ]]; then
-    echo -ne '\e[1 q'
-
-  elif [[ ${KEYMAP} == main ]] ||
-       [[ ${KEYMAP} == viins ]] ||
-       [[ ${KEYMAP} = '' ]] ||
-       [[ $1 = 'beam' ]]; then
-    echo -ne '\e[5 q'
-  fi
-}
-zle -N zle-keymap-select
-
-zle-line-init() {
-    zle -K viins # initiate `vi insert` as keymap (can be removed if `bindkey -V` has been set elsewhere)
-    echo -ne "\e[5 q"
-}
-zle -N zle-line-init
-
-# Use beam shape cursor on startup.
-echo -ne '\e[5 q'
-# Use beam shape cursor for each new prompt.
-preexec() { echo -ne '\e[5 q' ;}
-
-bindkey -s '^f' "br^J"
-
-### Added by Zinit's installer
-if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
-    print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
-    command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
-    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git" && \
-        print -P "%F{33} %F{34}Installation successful.%f%b" || \
-        print -P "%F{160} The clone has failed.%f%b"
-fi
-
-source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
-autoload -Uz _zinit
-(( ${+_comps} )) && _comps[zinit]=_zinit
-
 # Plugins
-zinit light zsh-users/zsh-autosuggestions
-zinit load z-shell/H-S-MW
-zinit load cjbassi/zsh-vi-mode-clipboard
-zinit load zsh-users/zsh-syntax-highlighting
+source /usr/share/zinit/zinit.zsh 
 
+zinit ice depth=1
+
+zinit light Aloxaf/fzf-tab
+zinit light jeffreytse/zsh-vi-mode
+zinit light zsh-users/zsh-autosuggestions
+zinit light zsh-users/zsh-completions
+zinit light zsh-users/zsh-syntax-highlighting
+
+# Snippets
+zinit snippet OMZP::archlinux
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+
+# Load completions
+autoload -Uz compinit && compinit
+zinit cdreplay -q
+
+# Aliases
+source "$HOME/.config/aliasrc"
+
+# History settings
+HISTDUP=erase
+HISTFILE=~/.zsh_history
+HISTSIZE=5000
+SAVEHIST=$HISTSIZE
+setopt appendhistory
+setopt hist_find_no_dups
+setopt hist_ignore_all_dups
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt hist_save_no_dups
+setopt sharehistory
+
+# Completion styling
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+
+# lf jumper (TODO: Remove once yazi is ripe)
 lfcd () {
     tmp="$(mktemp)"
     # `command` is needed in case `lfcd` is aliased to `lf`
@@ -100,6 +57,7 @@ lfcd () {
     fi
 }
 
+# Yazi jumper
 function yy() {
     local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
     yazi "$@" --cwd-file="$tmp"
@@ -109,12 +67,14 @@ function yy() {
     rm -f -- "$tmp"
 }
 
+# Keybinds
+bindkey '^y' autosuggest-accept
 
-eval "$(starship init zsh)"
-eval "$(zoxide init zsh)"
+# Node Version Manager
+# source "/usr/share/nvm/init-nvm.sh"
+
+eval "$(fzf --zsh)"
 eval "$(navi widget zsh)"
-eval "$(atuin init zsh --disable-up-arrow)"
-
-source "/usr/share/nvm/init-nvm.sh"
-source "$HOME/.config/aliasrc"
-source "$HOME/.config/broot/launcher/bash/br"
+eval "$(zoxide init zsh)"
+eval "$(starship init zsh)"
+zvm_after_init_commands+=(eval "$(atuin init zsh)")
