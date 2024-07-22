@@ -74,7 +74,7 @@ eval "$(fzf --zsh)"
 eval "$(navi widget zsh)"
 eval "$(zoxide init zsh)"
 eval "$(starship init zsh)"
-zvm_after_init_commands+=(eval "$(atuin init zsh)")
+zvm_after_init_commands+=(eval "$(atuin init zsh --disable-up-arrow)")
 
 # Keybinds
 bindkey '^ ' autosuggest-accept
