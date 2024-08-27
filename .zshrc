@@ -33,13 +33,16 @@ setopt hist_ignore_dups
 setopt hist_ignore_space
 setopt hist_save_no_dups
 setopt sharehistory
+setopt glob_dots
 
 # Completion styling
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' menu no
+zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
+zstyle ':fzf-tab:complete:cd:*' popup-pad 50 0
 
 # lf jumper (TODO: Remove once yazi is ripe)
 lfcd () {
@@ -69,12 +72,21 @@ function yy() {
 
 # Node Version Manager
 # source "/usr/share/nvm/init-nvm.sh"
+export NVM_DIR="$HOME/.nvm"
 
-eval "$(fzf --zsh)"
-eval "$(navi widget zsh)"
-eval "$(zoxide init zsh)"
+[ -s "$HOMEBREW_PREFIX/opt/nvm/nvm.sh" ] && \. "$HOMEBREW_PREFIX/opt/nvm/nvm.sh" # This loads nvm
+[ -s "$HOMEBREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm" ] && \. "$HOMEBREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm" # This loads nvm bash_completion
+
 eval "$(starship init zsh)"
-zvm_after_init_commands+=(eval "$(atuin init zsh --disable-up-arrow)")
 
-# Keybinds
-bindkey '^ ' autosuggest-accept
+zvm_after_init_commands+=(eval "$(fzf --zsh)")
+zvm_after_init_commands+=(eval "$(navi widget zsh)")
+zvm_after_init_commands+=(eval "$(zoxide init zsh)")
+
+autoload -Uz add-zsh-hook
+
+add-zsh-hook -Uz apply_keybindings() {
+  bindkey '^@' autosuggest-accept
+}
+
+apply_keybindings
