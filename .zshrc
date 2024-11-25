@@ -70,12 +70,18 @@ function yy() {
     rm -f -- "$tmp"
 }
 
-
-eval "$(starship init zsh)"
-
 zvm_after_init_commands+=(eval "$(fzf --zsh)")
 zvm_after_init_commands+=(eval "$(navi widget zsh)")
 zvm_after_init_commands+=(eval "$(zoxide init zsh)")
+
+# Starship prompt
+eval "$(starship init zsh)"
+
+# Node Version Manager
+eval "$(fnm env --use-on-cd --shell zsh)"
+
+# Direnv
+eval "$(direnv hook zsh)"
 
 autoload -Uz add-zsh-hook
 
