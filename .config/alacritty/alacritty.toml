@@ -1,7 +1,7 @@
 # [cursor]
 # unfocused_hollow = true
 
-[shell]
+[terminal.shell]
 program = "zsh"
 args = ["-l", "-c", "tmux attach || tmux new -s main"]
 
@@ -44,7 +44,7 @@ y = 4
 # TokyoNight Alacritty Colors
 # Default colors
 [colors.primary]
-background = '#1a1b26'
+background = '#000000'
 foreground = '#c0caf5'
 
 #[colors.cursor]
