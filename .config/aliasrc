@@ -60,3 +60,5 @@ alias \
 alias \
     eco="ledger -f $HOME/economy/index.dat" \
     weather="curl -s wttr.in/Copenhagen"
+
+alias nvm='fnm'
