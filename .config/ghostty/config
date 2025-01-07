@@ -1,0 +1,14 @@
+## Start tmux on boot
+command = zsh -c "$HOME/.scripts/tmux_init"
+
+font-size = 13
+
+## Remove all things GTK
+window-decoration = false
+window-padding-x = 0
+window-padding-y = 0
+gtk-adwaita = false
+gtk-titlebar = false
+
+## Load theme config
+config-file = themes/modus_vivendi
