@@ -1,12 +1,15 @@
 gui:
-  timeFormat: '1985-02-16' # https://pkg.go.dev/time#Time.Format
-  shortTimeFormat: '15:04'
-  theme:
-    selectedLineBgColor:
-      - "#292e42"
+    timeFormat: '1985-02-16' # https://pkg.go.dev/time#Time.Format
+    shortTimeFormat: '15:04'
+    theme:
+        selectedLineBgColor:
+            - "#292e42"
 os:
-  editPreset: 'nvim'
+    editPreset: 'nvim'
 git:
-  paging:
-    colorArg: always
-    pager: delta --syntax-theme 1337 --paging=never
+    paging:
+        colorArg: always
+        pager: delta --syntax-theme 1337 --paging=never
+keybinding:
+    universal:
+        quit: <disabled>
