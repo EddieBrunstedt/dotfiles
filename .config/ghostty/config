@@ -1,4 +1,4 @@
-command = zsh -c "$HOME/.scripts/tmux_init" # Initialize tmux on boot
+command = zsh -c "$HOME/.scripts/tmux_init"
 
 confirm-close-surface = false
 font-size = 13
@@ -9,4 +9,4 @@ window-decoration = false
 window-padding-x = 0
 window-padding-y = 0
 
-config-file = themes/modus_vivendi # Load theme config
+config-file = themes/modus_vivendi
