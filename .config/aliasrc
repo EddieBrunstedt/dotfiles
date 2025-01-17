@@ -61,4 +61,6 @@ alias \
     eco="ledger -f $HOME/economy/index.dat" \
     weather="curl -s wttr.in/Copenhagen"
 
-alias nvm='fnm'
+alias nvm="fnm"
+
+alias notes="cd $HOME/notes/obsidian_vaults/main && nvim"
