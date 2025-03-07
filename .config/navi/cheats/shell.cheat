@@ -1,8 +1,5 @@
 % shell
 
-# List all files of type
-find . -name '*.<txt>' -print
-
 # Kill process
 killall <running_process_name>
 

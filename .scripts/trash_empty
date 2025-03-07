@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Path to trash directory
+TRASH_DIR="$HOME/.local/share/Trash"
+
+# Verify trash directory exists
+if [ ! -d "$TRASH_DIR" ]; then
+    echo "Trash directory doesn't exist at: $TRASH_DIR"
+    exit 1
+fi
+
+# Calculate trash size before cleanup
+trash_size=$(du -sh "$TRASH_DIR" | cut -f1)
+
+# Check if trash is already empty
+if [ "$(ls -A "$TRASH_DIR/files")" == "" ] && [ "$(ls -A "$TRASH_DIR/info")" == "" ]; then
+    echo "Trash is already empty."
+    exit 0
+fi
+
+# Empty the trash with verbose output
+rm -rfv "$TRASH_DIR/files/"* "$TRASH_DIR/info/"*
+
+# Confirmation message
+printf "Trash emptied. Space recovered: %s\n" "$trash_size"

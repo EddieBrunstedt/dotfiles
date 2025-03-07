@@ -1,0 +1,4 @@
+% file
+
+# List all files of type
+find . -name '*.<txt>' -print

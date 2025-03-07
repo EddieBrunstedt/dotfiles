@@ -25,6 +25,7 @@ appendpath "$HOME/.deno/bin"
 appendpath "$HOME/.dvm/bin/"
 appendpath "$HOME/.fly/bin/"
 appendpath "$HOME/.yarn/bin"
+appendpath "$HOME/.scripts/"
 unset appendpath
 
 export EDITOR="nvim"
