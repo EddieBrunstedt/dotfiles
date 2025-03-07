@@ -8,9 +8,10 @@
 	helper = store
 [delta]
 	navigate = true
-	features = line-numbers decorations
+	dark = true
+	features = line-numbers decorations hunk-header-decoration-style="grey ul"
 [diff]
-	colorMoved = default
+	tool = bc
 [github]
 	user = EddieBrunstedt
 [init]
@@ -18,7 +19,7 @@
 [interactive]
 	diffFilter = delta --color-only
 [merge]
-	conflictstyle = diff3
+	conflictstyle = zdiff3
 [user]
 	email = eddie.brunstedt@protonmail.com
 	name = Eddie Brunstedt
