@@ -9,7 +9,7 @@ os:
 git:
     paging:
         colorArg: always
-        pager: delta --syntax-theme 1337 --paging=never
+        pager: delta --paging=never --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
 keybinding:
     universal:
         quit: <disabled>
