@@ -1,12 +1,15 @@
 command = zsh -c "$HOME/.scripts/tmux_init"
 
-confirm-close-surface = false
+font-family = "MonoLisa"
 font-size = 13
+
+confirm-close-surface = false
+quit-after-last-window-closed = true
+
 gtk-adwaita = false
 gtk-titlebar = false
-quit-after-last-window-closed = true
-window-decoration = false
 window-padding-x = 0
 window-padding-y = 0
+window-decoration = server
 
 config-file = themes/modus_vivendi
