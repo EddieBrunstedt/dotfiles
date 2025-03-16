@@ -13,3 +13,5 @@ window-padding-y = 0
 window-decoration = server
 
 config-file = themes/modus_vivendi
+
+keybind = ctrl+enter=unbind
