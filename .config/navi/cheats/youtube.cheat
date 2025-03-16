@@ -1,0 +1,4 @@
+% youtube
+
+# Download youtube video using stored cookies
+yt-dlp "<URL>" --cookies-from-browser firefox --cookies $HOME/cookies-youtube-com.txt -P $HOME/media/video/youtube
