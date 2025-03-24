@@ -1,5 +1,5 @@
 super + e
-	$BROWSER
+	exec $env.BROWSER
 super + shift + f
 	$TERMINAL -e tmux new -A -s file-manager "lf"
 super + shift + a
@@ -19,6 +19,8 @@ super + shift + k
 	keyboard-layout-dmenu
 super + shift + n
 	$TERMINAL -e nmtui
+super + p
+	SHELL=/usr/bin/sh dmenu_run -fn 'monospace:size=14' -nb '#2d2d2d' -nf '#e0e0e0' -sb '#ffb81c' -sf '#222222' -p 'Run: '
 
 # Volume
 XF86AudioRaiseVolume
