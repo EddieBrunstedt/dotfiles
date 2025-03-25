@@ -1,3 +1,2 @@
 # Ord Configuration
-api_key = "REMOVED_OPENAI_KEY"
 model = "gpt-4o"
