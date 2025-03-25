@@ -64,3 +64,6 @@ def --env y [...args] {
 
 # enable Zoxide
 source ~/.zoxide.nu
+
+# navi
+source ($nu.default-config-dir | path join "navi-integration.nu")
