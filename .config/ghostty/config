@@ -1,7 +1,7 @@
 command = zsh -c "$HOME/.scripts/tmux_init"
 
 font-family = "MonoLisa"
-font-size = 13
+font-size = 14
 
 confirm-close-surface = false
 quit-after-last-window-closed = true
