@@ -1,54 +1,54 @@
 super + e
-	exec $env.BROWSER
+    exec $BROWSER
 super + shift + f
-	$TERMINAL -e tmux new -A -s file-manager "lf"
+    $TERMINAL -e tmux new -A -s file-manager "lf"
 super + shift + a
-	$TERMINAL -e tmux new -A -s pulsemixer "pulsemixer"
+    $TERMINAL -e tmux new -A -s pulsemixer "pulsemixer"
 super + shift + v
-	mpv --force-window --idle
+    mpv --force-window --idle
 
 super + shift + m
-	monitor-setting
+    monitor-setting
 super + shift + p
-	SHELL=/usr/bin/sh ord_prompts
+    SHELL=/usr/bin/sh ord_prompts
 super + shift + i
-	dunstctl close-all
+    dunstctl close-all
 super + shift + b
-	whitetemp
+    whitetemp
 super + shift + k
-	keyboard-layout-dmenu
+    keyboard-layout-dmenu
 super + shift + n
-	$TERMINAL -e nmtui
+    $TERMINAL -e nmtui
 super + p
-	SHELL=/usr/bin/sh dmenu_run -fn 'monospace:size=14' -nb '#2d2d2d' -nf '#e0e0e0' -sb '#ffb81c' -sf '#222222' -p 'Run: '
+    SHELL=/usr/bin/sh dmenu_run -fn 'monospace:size=14' -nb '#2d2d2d' -nf '#e0e0e0' -sb '#ffb81c' -sf '#222222' -p 'Run: '
 
 # Volume
 XF86AudioRaiseVolume
-	pamixer -i 5
+    pamixer -i 5
 XF86AudioLowerVolume
-	pamixer -d 5
+    pamixer -d 5
 
 super + shift + l
-	gpgconf --reload gpg-agent; betterlockscreen -l;
+    gpgconf --reload gpg-agent; betterlockscreen -l;
 
 # Monitor backlight brightness
 XF86MonBrightnessDown
-	light -U 10
+    light -U 10
 XF86MonBrightnessUp
-	light -A 10
+    light -A 10
 
 # Make screenshot (screen with mouse pointer)
 Print
-	flameshot gui -c -p ~/media/image/screenshots
+    flameshot gui -c -p ~/media/image/screenshots
 
 # Make screenshot (using gui)
 shift + Print
-	flameshot screen -c -p ~/media/image/screenshots
+    flameshot screen -c -p ~/media/image/screenshots
 
 # Mount a USB drive or Android device
 super + F9
-	dmenumount
+    dmenumount
 
 # Unmount a USB drive or Android device
 super + F10
-	dmenuumount
+    dmenuumount
