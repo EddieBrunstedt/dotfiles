@@ -15,3 +15,5 @@ window-decoration = server
 background = #1e1e1e
 
 keybind = ctrl+enter=unbind
+
+gtk-custom-css = ./custom.css
