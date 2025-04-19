@@ -1,16 +1,7 @@
 source ~/.secrets/env
 
+set -g fish_greeting
 set -g fish_key_bindings fish_vi_key_bindings
-
-if status is-interactive
-    starship init fish | source
-    zoxide init fish | source
-    navi widget fish | source
-end
-
-function on_exit --on-event fish_exit
-    echo fish is now exiting
-end
 
 bind ctrl-space accept-autosuggestion
 bind -M insert ctrl-space accept-autosuggestion
@@ -43,3 +34,12 @@ function y
     rm -f -- "$tmp"
 end
 
+if status is-interactive
+    starship init fish | source
+    zoxide init fish | source
+    navi widget fish | source
+
+    export ZELLIJ_AUTO_ATTACH=true
+    export ZELLIJ_AUTO_EXIT=true
+    eval (zellij setup --generate-auto-start fish | string collect)
+end
