@@ -3,8 +3,8 @@ source ~/.secrets/env
 set -g fish_greeting
 set -g fish_key_bindings fish_vi_key_bindings
 
-bind ctrl-space accept-autosuggestion
-bind -M insert ctrl-space accept-autosuggestion
+bind ctrl-y accept-autosuggestion
+bind -M insert ctrl-y accept-autosuggestion
 
 alias l="eza -l --group-directories-first --time-style=iso"
 alias ls="eza --group-directories-first"
