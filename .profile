@@ -26,6 +26,7 @@ appendpath "$HOME/.dvm/bin/"
 appendpath "$HOME/.fly/bin/"
 appendpath "$HOME/.yarn/bin"
 appendpath "$HOME/.scripts/"
+appendpath "$HOME/.go/bin"
 unset appendpath
 
 export EDITOR="nvim"
@@ -37,6 +38,8 @@ export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
 export READER="zathura"
 export TERMINAL="alacritty"
 export XDG_CONFIG_HOME=$HOME/.config
+export GOPATH=$HOME/.go
+export GOBIN=$HOME/.go/bin
 
 # Default options for fzf
 export FZF_DEFAULT_OPTS="--layout=reverse --height 40% --border --inline-info"
