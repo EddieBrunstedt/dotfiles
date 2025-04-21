@@ -7,11 +7,16 @@ bind ctrl-y accept-autosuggestion
 bind -M insert ctrl-y accept-autosuggestion
 
 alias l="eza -l --group-directories-first --time-style=iso"
-alias ls="eza --group-directories-first"
+alias ls="eza --group-directories-first --time-style=iso"
+alias lsa="eza -a --group-directories-first --time-style=iso"
+alias ll="l"
+alias la="eza -la --group-directories-first --time-style=iso"
+alias lt="eza --tree --group-directories-first --time-style=iso"
+alias lta="eza -a --tree --group-directories-first --time-style=iso"
 alias lll="eza -lgh --group-directories-first --git --time-style=long-iso"
-alias la="eza -la --group-directories-first"
-alias lt="eza --long --tree --group-directories-first"
-alias lta="eza -a --long --tree --group-directories-first"
+alias llla="eza -lgha --group-directories-first --git --time-style=long-iso"
+alias llt="eza --long --tree --group-directories-first --time-style=iso"
+alias llta="eza -a --long --tree --group-directories-first --time-style=iso"
 
 alias vim="nvim"
 alias lg="lazygit"
@@ -38,6 +43,7 @@ if status is-interactive
     starship init fish | source
     zoxide init fish | source
     navi widget fish | source
+    atuin init fish | source
 
     export ZELLIJ_AUTO_ATTACH=true
     export ZELLIJ_AUTO_EXIT=true
