@@ -44,6 +44,7 @@ if status is-interactive
     zoxide init fish | source
     navi widget fish | source
     atuin init fish | source
+    direnv hook fish | source
 
     export ZELLIJ_AUTO_ATTACH=true
     export ZELLIJ_AUTO_EXIT=true
