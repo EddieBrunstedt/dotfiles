@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
 Name=Text editor
-Exec=/usr/bin/nvim %u
+Exec=zellij run --close-on-exit -- nvim %f
