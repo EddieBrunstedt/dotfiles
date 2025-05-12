@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
 Name=File Manager
-Exec=/usr/bin/alacritty -e zellij run -- lf %u
+Exec=zellij run --close-on-exit -- yazi %f
