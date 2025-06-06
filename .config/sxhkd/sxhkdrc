@@ -29,7 +29,10 @@ XF86AudioLowerVolume
     pamixer -d 5
 
 super + shift + l
-    gpgconf --reload gpg-agent; betterlockscreen -l;
+    gpgconf --reload gpg-agent; gpg-connect-agent 'clear_passphrase' /bye; betterlockscreen -l &
+
+super + shift + x
+    sys;
 
 # Monitor backlight brightness
 XF86MonBrightnessDown
