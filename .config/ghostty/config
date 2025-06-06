@@ -1,7 +1,5 @@
-#command = zsh -c "$HOME/.scripts/tmux_init"
-
 font-family = "MonoLisa"
-font-size = 15
+font-size = 12
 
 confirm-close-surface = false
 quit-after-last-window-closed = true
@@ -12,7 +10,7 @@ window-padding-x = 0
 window-padding-y = 0
 window-decoration = server
 
-background = #1e1e1e
+background = #000000
 
 keybind = ctrl+enter=unbind
 
