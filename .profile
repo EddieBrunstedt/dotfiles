@@ -72,7 +72,7 @@ export LSP_USE_PLISTS=true
 export DENO_INSTALL=$HOME/.deno
 
 # Have QT use gtk2 theme
-export QT_QPA_PLATFORMTHEME="gtk2"
+export QT_QPA_PLATFORMTHEME="gtk3"
 
 # Fix for Java applications in dwm
 export _JAVA_AWT_WM_NONREPARENTING=1

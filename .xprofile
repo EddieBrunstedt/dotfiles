@@ -1,7 +1,10 @@
 #!/bin/sh
 
 # Load .Xresources.
-xrdb $HOME/.Xresources &
+[ -f "$HOME/.Xresources" ] && xrdb -merge "$HOME/.Xresources"
+
+# Set cursor on the root window (important for WMs like dwm)
+xsetroot -cursor_name left_ptr
 
 # Bind keys
 sxhkd &
