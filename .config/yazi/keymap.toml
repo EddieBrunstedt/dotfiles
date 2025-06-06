@@ -1,4 +1,4 @@
-[manager]
+[mgr]
 prepend_keymap = [
     { on = [ "<C-n>" ], run = '''shell 'dragon-drop -a -x "$@"' --confirm'''},
     { on = [ "q" ], run = "noop"}
