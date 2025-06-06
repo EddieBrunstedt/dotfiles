@@ -21,6 +21,8 @@ alias llta="eza -a --long --tree --group-directories-first --time-style=iso"
 alias vim="nvim"
 alias lg="lazygit"
 alias man="batman"
+alias timr="timr -n on"
+alias bc="bc -l"
 
 alias ka="killall"
 alias tkill="tmux kill-server"
