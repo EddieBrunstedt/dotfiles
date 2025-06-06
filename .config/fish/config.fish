@@ -46,7 +46,11 @@ if status is-interactive
     atuin init fish | source
     direnv hook fish | source
 
-    export ZELLIJ_AUTO_ATTACH=true
-    export ZELLIJ_AUTO_EXIT=true
-    eval (zellij setup --generate-auto-start fish | string collect)
+    # Autostart tmux
+    if not set -q TMUX
+        # Check if tmux is installed
+        command -v tmux &>/dev/null
+        and test -z "$TMUX"
+        and exec tmux new-session -A -s main
+    end
 end
