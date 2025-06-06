@@ -1,7 +1,7 @@
 super + e
     exec $BROWSER
 super + shift + f
-    $TERMINAL -e tmux new -A -s file-manager "lf"
+    $TERMINAL -e tmux new -A -s file-manager "yazi"
 super + shift + a
     $TERMINAL -e tmux new -A -s pulsemixer "pulsemixer"
 super + shift + v
