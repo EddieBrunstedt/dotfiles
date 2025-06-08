@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-case "$(printf "kill\nsuspend\nreboot\nshutdown" | dmenu -i -l 4)" in
+case "$(printf "kill\nsuspend\nreboot\nshutdown" | dmenu -i -b -fn 'monospace:size=11' -nb '#1E1D2F' -sb '#4a4a58' -sf '#D9E0EE' -l 4)" in
 	kill)
-		ps -u $USER -o pid,comm,%cpu,%mem | dmenu -i -l 10 -p Kill: | awk '{print $1}' | xargs -r kill
+		ps -u $USER -o pid,comm,%cpu,%mem | dmenu -i -b -fn 'monospace:size=11' -nb '#1E1D2F' -sb '#4a4a58' -sf '#D9E0EE' -l 10 -p Kill: | awk '{print $1}' | xargs -r kill
 		;;
 	suspend)
 		gpgconf --reload gpg-agent
