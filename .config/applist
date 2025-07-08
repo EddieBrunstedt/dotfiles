@@ -14,6 +14,7 @@ cmake
 composer
 dbeaver
 deno
+direnv
 discord
 dmenu
 docker
@@ -42,6 +43,7 @@ htmlq
 htop
 jq
 krita
+lazygit
 ledger
 light
 lightdm
@@ -94,6 +96,7 @@ ttf-jetbrains-mono-nerd
 typescript-language-server
 unclutter
 unrar
+vnstat
 w3m
 wireguard-tools
 xclip
