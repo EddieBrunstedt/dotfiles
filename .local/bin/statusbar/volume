@@ -1,4 +1,4 @@
 #! /bin/bash 
 
-dte="$(pamixer --get-volume-human)"
-echo -e "$dte"
+volume="$(pamixer --get-volume-human)"
+printf "%4s" "$volume"

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+weather=$(curl -s "wttr.in/Eskilstuna?format="%C+%t\\n"" 2>/dev/null)
+if [ -n "$weather" ]; then
+    echo "$weather"
+else
+    echo "No weather data"
+fi
