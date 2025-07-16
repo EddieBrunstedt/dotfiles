@@ -6,16 +6,13 @@
 
 xsetroot -cursor_name left_ptr	# Set cursor on the root window (important for WMs like dwm)
 sxhkd &				# Keybindings
-dwmblocks &			# statusbar in dwm
+dwmblocksrs &			# statusbar in dwm
 nitrogen --restore &		# Wallpaper
 xset r rate 300 50 &		# Keyboard long-press/repeat speed
 unclutter &			# Remove mouse cursor when idle
 dunst &				# notifications
 megasync &			# cloud storage syncing
 mullvad-vpn &			# vpn
-
-# Set keyboard layout and set Caps as Mod/Escape
-# setxkbmap -layout us,se,dk -option caps:super -option grp:alt_shift_toggle &
 
 # Disable monitor power saving
 xset -dpms
