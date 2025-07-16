@@ -32,6 +32,20 @@ alias bat="bat --style=header --style=auto --theme base16"
 alias hledger="hledger -s"
 alias eco="hledger bs -X DKK -c '1,000.00 DKK'"
 
+function yt
+    if test (count $argv) -lt 2
+        echo "Usage: yt <url> <cookie_file>"
+        echo "Error: both URL and cookie file path are required."
+        return 1
+    end
+
+    set -l url $argv[1]
+    set -l cookie_file $argv[2]
+    set -l output "%(upload_date)s-%(uploader)s-%(title)s-[%(id)s].%(ext)s"
+
+    yt-dlp --cookies "$cookie_file" --restrict-filenames -o "$output" "$url"
+end
+
 function y
     set tmp (mktemp -t "yazi-cwd.XXXXXX")
     yazi $argv --cwd-file="$tmp"
@@ -40,6 +54,12 @@ function y
     end
     rm -f -- "$tmp"
 end
+
+# Make fzf show hidden files/directories
+set -g fzf_fd_opts --hidden --follow --exclude=.git
+
+# Change fzf directory search to Ctrl+F
+fzf_configure_bindings --directory=\cf
 
 if status is-interactive
     starship init fish | source
