@@ -41,13 +41,6 @@ export XDG_CONFIG_HOME=$HOME/.config
 export GOPATH=$HOME/.go
 export GOBIN=$HOME/.go/bin
 
-# Default options for fzf
-export FZF_DEFAULT_OPTS="--layout=reverse --height 40% --border --inline-info"
-export FZF_DEFAULT_COMMAND='fd --type f --hidden'
-
-# Make navi taller
-export FZF_DEFAULT_OPTS="--height 30" navi
-
 # Limit the man width
 export MANWIDTH=80
 
