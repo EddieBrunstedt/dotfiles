@@ -23,6 +23,6 @@
 [user]
 	email = eddie.brunstedt@protonmail.com
 	name = Eddie Brunstedt
-	signingkey = 2B869BDC537067F1
+	signingkey = 5CC7BBDDF0534D09F82A6523B15F264ED2A15EFE
 [commit]
 	gpgsign = true
