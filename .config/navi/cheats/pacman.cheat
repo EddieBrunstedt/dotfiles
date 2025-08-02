@@ -6,14 +6,11 @@ pacman -Qi | awk '/^Name/{name=$3} /^Installed Size/{print $4$5, name}' | sort -
 # Check size of remote package
 expac -S -H M '%k\t%n' <package>
 
-# Recently installed packages
+# List recently installed packages
 expac --timefmt='%Y-%m-%d %T' '%l\t%n' | sort | tail -n 20
 
-# List all explicitly installed
-expac -H M '%-20n\t%10d' $(comm -23 <(pacman -Qqt | sort) <({ pacman -Qqg base-devel; expac -l '\n' '%E' base; } | sort -u))
-
-# List all explicitly installed with size
-expac -H M "%011m\t%-20n\t%10d" $(comm -23 <(pacman -Qqen | sort) <({ pacman -Qqg base-devel; expac -l '\n' '%E' base; } | sort | uniq)) | sort -n
+# List explicitly installed packages with description
+expac -Q '%n - %d' $(paru -Qeq)
 
 # Search and preview installed packages
 pacman -Qq | fzf --preview 'pacman -Qil {}' --layout=reverse --bind 'enter:execute(pacman -Qil {} | bat)'
@@ -31,10 +28,10 @@ sudo pacreport --unowned-files
 sudo pacman -Qtdq | sudo pacman -Rns -
 
 # Install all packages from applist
-sudo paru -S - < $HOME/.config/applist
+sudo paru -S --needed --noconfirm - < $HOME/.config/applist
 
 # Install all packages from applist-aur
-paru -S --aur - < $HOME/.config/applist-aur
+paru -S --aur --needed --noconfirm - < $HOME/.config/applist-aur
 
 # Clean up all local caches
 sudo pacman -Scc

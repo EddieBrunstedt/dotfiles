@@ -1,0 +1,158 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# Configuration
+APPLIST="$HOME/.config/applist"
+APPLIST_AUR="$HOME/.config/applist-aur"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+NC='\033[0m'
+
+# Check if files exist
+if [[ ! -f "$APPLIST" ]]; then
+	echo -e "${RED}Error: $APPLIST not found!${NC}"
+	exit 1
+fi
+
+if [[ ! -f "$APPLIST_AUR" ]]; then
+	echo -e "${RED}Error: $APPLIST_AUR not found!${NC}"
+	exit 1
+fi
+
+# Arrays for results
+official_moved_to_aur=()
+aur_moved_to_official=()
+official_missing=()
+aur_missing=()
+official_count=0
+aur_count=0
+declare -A applist_packages
+
+check_package() {
+	local package="$1"
+
+	if pacman -Si "$package" &>/dev/null; then
+		echo "official"
+	elif paru -Si --aur "$package" &>/dev/null; then
+		echo "aur"
+	else
+		echo "missing"
+	fi
+}
+
+# Update package databases
+echo -e "${YELLOW}Updating package databases...${NC}"
+paru -Sy --noconfirm >/dev/null 2>&1 || {
+	echo -e "${RED}Failed to update databases${NC}"
+	exit 1
+}
+
+# Check official packages
+echo -e "${BLUE}Checking packages...${NC}"
+while IFS= read -r package || [[ -n "$package" ]]; do
+	[[ -z "$package" || "$package" =~ ^[[:space:]]*# ]] && continue
+	package=$(echo "$package" | xargs)
+	[[ -z "$package" ]] && continue
+
+	applist_packages["$package"]=1
+	((official_count++)) || true
+
+	status=$(check_package "$package")
+	case "$status" in
+	"aur") official_moved_to_aur+=("$package") ;;
+	"missing") official_missing+=("$package") ;;
+	esac
+done <"$APPLIST"
+
+# Check AUR packages
+while IFS= read -r package || [[ -n "$package" ]]; do
+	[[ -z "$package" || "$package" =~ ^[[:space:]]*# ]] && continue
+	package=$(echo "$package" | xargs)
+	[[ -z "$package" ]] && continue
+
+	applist_packages["$package"]=1
+	((aur_count++)) || true
+
+	status=$(check_package "$package")
+	case "$status" in
+	"official") aur_moved_to_official+=("$package") ;;
+	"missing") aur_missing+=("$package") ;;
+	esac
+done <"$APPLIST_AUR"
+
+# Find explicitly installed packages not in applists
+echo -e "${BLUE}Checking for untracked packages...${NC}"
+untracked_packages=()
+while IFS= read -r package; do
+	if [[ -z "${applist_packages[$package]:-}" ]]; then
+		untracked_packages+=("$package")
+	fi
+done < <(pacman -Qqe)
+
+# Calculate totals
+total_packages=$((official_count + aur_count))
+problem_packages=$((${#official_moved_to_aur[@]} + ${#aur_moved_to_official[@]} + ${#official_missing[@]} + ${#aur_missing[@]}))
+intact_packages=$((total_packages - problem_packages))
+
+# Output report
+echo
+echo -e "${BLUE}══════════════════════════════════════════${NC}"
+echo -e "${BLUE}         PACKAGE STATUS REPORT${NC}"
+echo -e "${BLUE}══════════════════════════════════════════${NC}"
+echo
+echo -e "Total packages: $total_packages"
+echo -e "${GREEN}✓ Intact: $intact_packages${NC}"
+echo -e "${YELLOW}⚠ Issues: $problem_packages${NC}"
+echo
+
+# Show problems only
+if [[ ${#official_moved_to_aur[@]} -gt 0 ]]; then
+	echo -e "${YELLOW}Moved from Official to AUR (${#official_moved_to_aur[@]} packages):${NC}"
+	for pkg in "${official_moved_to_aur[@]}"; do
+		echo "  • $pkg"
+	done
+	echo
+fi
+
+if [[ ${#aur_moved_to_official[@]} -gt 0 ]]; then
+	echo -e "${GREEN}Moved from AUR to Official (${#aur_moved_to_official[@]} packages):${NC}"
+	for pkg in "${aur_moved_to_official[@]}"; do
+		echo "  • $pkg"
+	done
+	echo
+fi
+
+if [[ ${#official_missing[@]} -gt 0 ]]; then
+	echo -e "${RED}Missing from official (${#official_missing[@]} packages):${NC}"
+	for pkg in "${official_missing[@]}"; do
+		echo "  • $pkg"
+	done
+	echo
+fi
+
+if [[ ${#aur_missing[@]} -gt 0 ]]; then
+	echo -e "${RED}Missing from AUR (${#aur_missing[@]} packages):${NC}"
+	for pkg in "${aur_missing[@]}"; do
+		echo "  • $pkg"
+	done
+	echo
+fi
+
+if [[ ${#untracked_packages[@]} -gt 0 ]]; then
+	echo -e "${MAGENTA}Installed but not in applists (${#untracked_packages[@]} packages):${NC}"
+	for pkg in "${untracked_packages[@]}"; do
+		echo "  • $pkg"
+	done
+	echo
+fi
+
+if [[ $problem_packages -eq 0 && ${#untracked_packages[@]} -eq 0 ]]; then
+	echo -e "${GREEN}All packages are intact and tracked!${NC}"
+	echo
+fi
