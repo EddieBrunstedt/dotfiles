@@ -82,3 +82,6 @@ export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
 
 # Escape key timeout in ZSH shell (used by "jeffreytse/zsh-vi-mode" plugin)
 ZVM_KEYTIMEOUT=0
+
+# Keyboard repeat speeds
+xset r rate 200 50;
