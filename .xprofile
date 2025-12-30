@@ -3,18 +3,18 @@
 # Load .Xresources.
 [ -f "$HOME/.Xresources" ] && xrdb -merge "$HOME/.Xresources"
 
+# X server configuration
+xsetroot -cursor_name left_ptr # Set cursor on root window
+xset r rate 200 50             # Keyboard repeat rate
+xset -dpms                     # Disable monitor power saving
+xset s off                     # Disable screensaver
+xset s noblank                 # Prevent screen blanking
 
-xsetroot -cursor_name left_ptr	# Set cursor on the root window (important for WMs like dwm)
-sxhkd &				# Keybindings
-dwmblocksrs &			# statusbar in dwm
-nitrogen --restore &		# Wallpaper
-xset r rate 300 50 &		# Keyboard long-press/repeat speed
-unclutter &			# Remove mouse cursor when idle
-dunst &				# notifications
-megasync &			# cloud storage syncing
-mullvad-vpn &			# vpn
-
-# Disable monitor power saving
-xset -dpms
-xset s off
-xset s noblank
+# Launch background services
+sxhkd &              # Keybindings
+dwmblocksrs &        # Status bar
+nitrogen --restore & # Wallpaper
+unclutter &          # Hide idle cursor
+dunst &              # Notifications
+megasync &           # Cloud storage
+mullvad-vpn &        # VPN
