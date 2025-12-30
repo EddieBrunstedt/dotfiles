@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
 Name=File Manager
-Exec=zellij run --close-on-exit -- yazi %f
+Exec=ghostty -e tmux new-session -s file_explorer yazi %f
