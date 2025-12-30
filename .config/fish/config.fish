@@ -32,6 +32,8 @@ alias bat="bat --style=header --style=auto --theme base16"
 alias hledger="hledger -s"
 alias eco="hledger bs -X DKK -c '1,000.00 DKK'"
 
+alias analyze_disk_usage="duf"
+
 function yt
     if test (count $argv) -lt 2
         echo "Usage: yt <url> <cookie_file>"
