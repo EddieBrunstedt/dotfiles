@@ -14,12 +14,14 @@ cargo-update
 chromium
 cmake
 deno
+devtools
 direnv
 discord
 dmenu
 docker
 docker-compose
 dog
+duf
 dunst
 dust
 electrum
@@ -70,6 +72,7 @@ nitrogen
 nmap
 noto-fonts
 noto-fonts-emoji
+npm
 nsxiv
 nushell
 obs-studio
@@ -111,6 +114,7 @@ tree
 typescript-language-server
 unclutter
 unrar
+unzip
 veracrypt
 vnstat
 watchexec
