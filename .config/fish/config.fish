@@ -61,16 +61,7 @@ end
 set -g fzf_fd_opts --hidden --follow --exclude=.git
 
 # Start ssh-agent if not already running
-if not pgrep -x ssh-agent > /dev/null
-    eval (ssh-agent -c)
-    echo $SSH_AGENT_PID > ~/.ssh-agent-pid
-else
-    # Use existing ssh-agent
-    if test -f ~/.ssh-agent-pid
-        set -x SSH_AGENT_PID (cat ~/.ssh-agent-pid)
-        set -x SSH_AUTH_SOCK (find /tmp -name "agent.*" -user (whoami) 2>/dev/null | head -1)
-    end
-end
+set -gx SSH_AUTH_SOCK "$XDG_RUNTIME_DIR/ssh-agent.socket"
 
 if status is-interactive
     starship init fish | source
