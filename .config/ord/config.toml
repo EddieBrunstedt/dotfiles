@@ -1,2 +1,8 @@
 # Ord Configuration
-model = "gpt-5.2"
+provider = "anthropic"
+model = "claude-sonnet-4-5"
+max_tokens = 4096
+
+# provider = "openai"
+# model = "gpt-5.2"
+# max_tokens = 4096
