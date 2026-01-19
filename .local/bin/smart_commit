@@ -1,5 +1,4 @@
 #!/bin/sh
-
 msg=$(ord run commit_message text="$(git diff -U20 -W --stat --staged)")
 
 echo "Proposed commit message:"
@@ -7,16 +6,10 @@ echo "------------------------"
 echo "$msg"
 echo "------------------------"
 
-read -p "Commit (y), edit (e), or cancel (n)? [y/e/N] " confirm
+read -p "Commit (y), edit (e), or cancel (n)? [y/e/N] " c
 
-case "$confirm" in
-[Yy])
-	git commit -m "$msg"
-	;;
-[Ee])
-	git commit -e -m "$msg"
-	;;
-*)
-	echo "Commit cancelled."
-	;;
+case "$c" in
+[Yy]) git commit -m "$msg" ;;
+[Ee]) git commit -e -m "$msg" ;;
+*) echo "Commit cancelled." ;;
 esac
