@@ -1,5 +1,0 @@
-[flavor]
-dark = "flexoki-dark"
-
-[mgr]
-hovered = { bg = "#282726" }
