@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ord run improve_prompt -f=text -c -n

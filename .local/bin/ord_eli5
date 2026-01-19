@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ord run eli5 -f=text -b

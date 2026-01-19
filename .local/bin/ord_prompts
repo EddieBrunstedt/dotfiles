@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Define arrays for display names and their corresponding commands
-display_names=("Fix grammar" "Get definition" "Shorten" "Summarize")
-commands=("ord_grammar" "ord_definition" "ord_shorten" "ord_summarize")
+display_names=("Fix grammar" "Get definition" "Shorten" "Summarize" "ELI5" "Explain code" "Commit message" "Summarize logs" "Checklist" "Improve prompt")
+commands=("ord_grammar" "ord_definition" "ord_shorten" "ord_summarize" "ord_eli5" "ord_explain_code" "ord_commit_message" "ord_summarize_logs" "ord_checklist" "ord_improve_prompt")
 
 # Convert display names array to a newline-separated string for dmenu
 options=$(printf "%s\n" "${display_names[@]}")
 
 # Show the dmenu prompt to the user and get the chosen option
-chosen=$(echo "$options" | dmenu -i -l 6 -fn monospace-12)
+chosen=$(echo "$options" | dmenu -i -l 20 -fn monospace-12)
 
 # Exit if nothing was chosen
 [ "$chosen" != "" ] || exit
@@ -16,8 +16,8 @@ chosen=$(echo "$options" | dmenu -i -l 6 -fn monospace-12)
 # Find the index of the chosen option
 for i in "${!display_names[@]}"; do
    if [[ "${display_names[$i]}" == "$chosen" ]]; then
-       index=$i
-       break
+      index=$i
+      break
    fi
 done
 

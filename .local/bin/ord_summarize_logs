@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ord run summarize_logs -f=text -b

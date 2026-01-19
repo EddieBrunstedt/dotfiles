@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ord run commit_message -f=text -c -n

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ord run checklist -f=text -b

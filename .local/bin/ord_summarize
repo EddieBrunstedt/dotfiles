@@ -1,3 +1,3 @@
 #!/bin/sh
 
-ord gen summarize -f=text -b
+ord run summarize -f=text -b
