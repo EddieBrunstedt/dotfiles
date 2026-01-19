@@ -1,4 +1,12 @@
-#!/bin/sh
+#!/bin/bash
+set -e
+
+# Check for staged changes
+if git diff --cached --quiet; then
+	echo "No staged changes. Stage your changes with 'git add' first."
+	exit 1
+fi
+
 msg=$(ord run commit_message text="$(git diff -U20 -W --stat --staged)")
 
 echo "Proposed commit message:"
