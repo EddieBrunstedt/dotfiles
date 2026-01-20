@@ -1,9 +1,8 @@
 #!/bin/bash
 set -e
 
-# Check for staged changes
 if git diff --cached --quiet; then
-	echo "No staged changes. Stage your changes with 'git add' first."
+	echo "No staged changes."
 	exit 1
 fi
 
@@ -14,10 +13,10 @@ echo "------------------------"
 echo "$msg"
 echo "------------------------"
 
-read -p "Commit (y), edit (e), or cancel (n)? [y/e/N] " c
+read -p "Commit (y), edit (e), or cancel (n)? " c
 
 case "$c" in
 [Yy]) git commit -m "$msg" ;;
 [Ee]) git commit -e -m "$msg" ;;
-*) echo "Commit cancelled." ;;
+*) echo "Cancelled." ;;
 esac
