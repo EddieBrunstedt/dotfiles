@@ -43,7 +43,6 @@ github-cli
 glances
 glow
 gnome-themes-extra
-gnu-netcat
 gopls
 gparted
 highlight
@@ -68,7 +67,6 @@ navi
 neovim
 networkmanager
 nginx
-nitrogen
 nmap
 noto-fonts
 noto-fonts-emoji
