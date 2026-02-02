@@ -28,6 +28,7 @@ alias bc="bc -l"
 
 alias ka="killall"
 alias tkill="tmux kill-server"
+alias clip='xclip -selection clipboard'
 
 alias bat="bat --style=header --style=auto --theme base16"
 
