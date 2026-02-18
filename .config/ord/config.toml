@@ -16,5 +16,5 @@
 # max_tokens = 4096
 
 provider = "openrouter"
-model = "z-ai/glm-5"
+model = "google/gemini-2.5-flash"
 max_tokens = 4096
