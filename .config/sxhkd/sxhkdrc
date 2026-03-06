@@ -22,9 +22,11 @@ super + shift + n
 
 # Volume
 XF86AudioRaiseVolume
-    pamixer -i 5
+    pamixer -i 5 && pkill -x -RTMIN+1 dwmblocksrs
 XF86AudioLowerVolume
-    pamixer -d 5
+    pamixer -d 5 && pkill -x -RTMIN+1 dwmblocksrs
+XF86AudioMute
+    pamixer -t && pkill -x -RTMIN+1 dwmblocksrs
 
 super + shift + l
     gpgconf --reload gpg-agent; gpg-connect-agent 'clear_passphrase' /bye; betterlockscreen -l &

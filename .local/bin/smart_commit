@@ -6,7 +6,7 @@ if git diff --cached --quiet; then
 	exit 1
 fi
 
-msg=$(ord run commit_message text="$(git diff -U20 -W --stat --staged)")
+msg=$(ord run commit_message text="$(git diff -U20 -W --stat --staged -- ':!package-lock.json' ':!yarn.lock' ':!pnpm-lock.yaml')")
 
 echo "Proposed commit message:"
 echo "------------------------"
