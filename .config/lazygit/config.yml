@@ -1,12 +1,25 @@
 gui:
-  timeFormat: '1985-02-16' # https://pkg.go.dev/time#Time.Format
+  border: single
+  showRandomTip: false
+  showPanelJumps: true
+  showCommandLog: false
+  expandFocusedSidePanel: true
+  showBranchCommitHash: true
+  nerdFontsVersion: "3"
+  timeFormat: '1985-02-16'
   shortTimeFormat: '15:04'
   theme:
     selectedLineBgColor:
-      - "#292e42"
+      - "#343a52"
+    selectedRangeBgColor:
+      - "#3d4460"
 os:
   editPreset: 'nvim'
 git:
+  log:
+    showGraph: always
+    order: topo-order
+  branchLogCmd: "git log --graph --decorate --date=relative --pretty=format:'%C(auto)%h %C(blue)%ar%C(reset) %s %C(auto)%d%C(reset)' --color=always {{branchName}}"
   pagers:
     - colorArg: always
       pager: delta --paging=never --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"

@@ -4,12 +4,35 @@
 [core]
 	pager = delta
 	editor = nvim
+[fetch]
+	prune = true
 [credential]
 	helper = store
+[pull]
+	ff = only
 [delta]
-	navigate = true
 	dark = true
-	features = line-numbers decorations hunk-header-decoration-style="grey ul"
+	navigate = true
+	tabs = 2
+	line-numbers = true
+	side-by-side = false
+	syntax-theme = ansi
+	
+	plus-style = syntax "#012800"
+	minus-style = syntax "#340001"
+	hunk-header-style = file line-number syntax
+	hunk-header-decoration-style = "#3b4261" ul
+	file-style = bold "#7aa2f7"
+	file-decoration-style = none
+	commit-style = bold "#e0af68"
+	commit-decoration-style = none
+	
+	line-numbers-left-style = "#6b7089"
+	line-numbers-right-style = "#6b7089"
+	line-numbers-minus-style = "#f7768e"
+	line-numbers-plus-style = "#9ece6a"
+	
+	hyperlinks = true
 [diff]
 	tool = bc
 [github]
