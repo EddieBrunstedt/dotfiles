@@ -4,29 +4,25 @@ update_all_signal: 0
 
 segments:
     - script: "volume"
-      icon: "VOL: "
+      icon: "🔊 "
       update_interval: 10
       hide_if_empty: true
       left_separator: ""
       signals: [1]
     - script: "cpu"
       update_interval: 5
-      icon: "CPU: "
+      icon: "🧠 "
       hide_if_empty: true
       trim: false
     - script: "memory"
       update_interval: 10
-      icon: "MEM: "
+      icon: "💾 "
       hide_if_empty: true
       trim: false
     - script: "bandwidth"
       update_interval: 3
-      icon: "NET: "
-      hide_if_empty: true
-    - script: "weather"
-      args: ["Eskilstuna", "SE"]
-      update_interval: 1800
+      icon: "🌐 "
       hide_if_empty: true
     - program: "date"
-      args: ["+%a, %b %d %H:%M"]
+      args: ["+⏰ %a, %b %d %H:%M"]
       update_interval: 1
