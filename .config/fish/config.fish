@@ -25,6 +25,7 @@ alias lg="lazygit"
 alias man="batman"
 alias timr="timr -n on"
 alias bc="bc -l"
+alias pi="~/code/pi-mono/packages/coding-agent/binaries/linux-x64/pi"
 
 alias ka="killall"
 alias tkill="tmux kill-server"
