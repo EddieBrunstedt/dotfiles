@@ -23,6 +23,9 @@ x-scheme-handler/magnet=torrent.desktop;
 x-scheme-handler/mailto=thunderbird.desktop
 x-scheme-handler/postman=Postman.desktop
 x-scheme-handler/unknown=librewolf.desktop
+video/webm=mpv.desktop
+video/mpeg=mpv.desktop
+video/ogg=mpv.desktop
 
 [Added Associations]
 image/png=gimp.desktop;krita_png.desktop;
