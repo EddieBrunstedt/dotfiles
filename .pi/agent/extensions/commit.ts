@@ -12,8 +12,14 @@
  */
 
 import { complete } from "@mariozechner/pi-ai";
-import type { ExtensionAPI, ExtensionCommandContext } from "@mariozechner/pi-coding-agent";
-import { BorderedLoader, getMarkdownTheme } from "@mariozechner/pi-coding-agent";
+import type {
+	ExtensionAPI,
+	ExtensionCommandContext,
+} from "@mariozechner/pi-coding-agent";
+import {
+	BorderedLoader,
+	getMarkdownTheme,
+} from "@mariozechner/pi-coding-agent";
 import { Container, Markdown, matchesKey, Text } from "@mariozechner/pi-tui";
 
 interface CommitGroup {
@@ -49,24 +55,38 @@ Respond with ONLY a valid JSON object matching this schema, no markdown fencing:
 }`;
 
 async function getGitStatus(pi: ExtensionAPI, cwd: string): Promise<string> {
-	const { stdout, code } = await pi.exec("git", ["status", "--porcelain"], { cwd });
+	const { stdout, code } = await pi.exec("git", ["status", "--porcelain"], {
+		cwd,
+	});
 	if (code !== 0) throw new Error("Not a git repository or git error");
 	return stdout.trim();
 }
 
-async function getGitDiff(pi: ExtensionAPI, cwd: string, staged: boolean): Promise<string> {
+async function getGitDiff(
+	pi: ExtensionAPI,
+	cwd: string,
+	staged: boolean,
+): Promise<string> {
 	const args = staged ? ["diff", "--cached"] : ["diff"];
 	const { stdout } = await pi.exec("git", args, { cwd });
 	return stdout.trim();
 }
 
-async function getUntrackedContent(pi: ExtensionAPI, cwd: string, files: string[]): Promise<string> {
+async function getUntrackedContent(
+	pi: ExtensionAPI,
+	cwd: string,
+	files: string[],
+): Promise<string> {
 	const parts: string[] = [];
 	for (const file of files.slice(0, 20)) {
-		const { stdout, code } = await pi.exec("git", ["show", `:${file}`], { cwd });
+		const { stdout, code } = await pi.exec("git", ["show", `:${file}`], {
+			cwd,
+		});
 		if (code !== 0) {
 			// Fallback: read from working tree for untracked
-			const { stdout: content } = await pi.exec("head", ["-100", file], { cwd });
+			const { stdout: content } = await pi.exec("head", ["-100", file], {
+				cwd,
+			});
 			if (content.trim()) {
 				parts.push(`=== New file: ${file} ===\n${content.trim()}`);
 			}
@@ -77,7 +97,11 @@ async function getUntrackedContent(pi: ExtensionAPI, cwd: string, files: string[
 	return parts.join("\n\n");
 }
 
-function parseStatus(status: string): { staged: string[]; unstaged: string[]; untracked: string[] } {
+function parseStatus(status: string): {
+	staged: string[];
+	unstaged: string[];
+	untracked: string[];
+} {
 	const staged: string[] = [];
 	const unstaged: string[] = [];
 	const untracked: string[] = [];
@@ -89,7 +113,9 @@ function parseStatus(status: string): { staged: string[]; unstaged: string[]; un
 		const filePath = line.slice(3).trim();
 
 		// Handle renames: "R  old -> new"
-		const actualPath = filePath.includes(" -> ") ? filePath.split(" -> ")[1] : filePath;
+		const actualPath = filePath.includes(" -> ")
+			? filePath.split(" -> ")[1]
+			: filePath;
 
 		if (indexStatus === "?") {
 			untracked.push(actualPath);
@@ -128,7 +154,8 @@ async function generateCommitPlan(
 
 	// Truncate if very large to stay within context
 	if (userContent.length > 80000) {
-		userContent = userContent.slice(0, 80000) + "\n\n[... truncated due to size]";
+		userContent =
+			userContent.slice(0, 80000) + "\n\n[... truncated due to size]";
 	}
 
 	const response = await complete(
@@ -155,7 +182,10 @@ async function generateCommitPlan(
 		.trim();
 
 	// Strip markdown code fences if present
-	const cleaned = text.replace(/^```(?:json)?\n?/m, "").replace(/\n?```$/m, "").trim();
+	const cleaned = text
+		.replace(/^```(?:json)?\n?/m, "")
+		.replace(/\n?```$/m, "")
+		.trim();
 
 	try {
 		return JSON.parse(cleaned) as CommitPlan;
@@ -180,7 +210,10 @@ function renderPlanMarkdown(plan: CommitPlan): string {
 	return lines.join("\n");
 }
 
-async function showPlanAndConfirm(plan: CommitPlan, ctx: ExtensionCommandContext): Promise<boolean> {
+async function showPlanAndConfirm(
+	plan: CommitPlan,
+	ctx: ExtensionCommandContext,
+): Promise<boolean> {
 	const markdown = renderPlanMarkdown(plan);
 
 	return ctx.ui.custom<boolean>((_tui, theme, _kb, done) => {
@@ -189,7 +222,16 @@ async function showPlanAndConfirm(plan: CommitPlan, ctx: ExtensionCommandContext
 
 		container.addChild(new Text("", 0, 0));
 		container.addChild(new Markdown(markdown, 1, 1, mdTheme));
-		container.addChild(new Text(theme.fg("dim", "  Enter = execute  •  e = edit in editor  •  Esc = cancel"), 1, 1));
+		container.addChild(
+			new Text(
+				theme.fg(
+					"dim",
+					"  Enter = execute  •  e = edit in editor  •  Esc = cancel",
+				),
+				1,
+				1,
+			),
+		);
 
 		return {
 			render: (width: number) => container.render(width),
@@ -225,14 +267,22 @@ async function executeCommits(
 		}
 
 		// Check if anything was staged
-		const { stdout: staged } = await pi.exec("git", ["diff", "--cached", "--name-only"], { cwd });
+		const { stdout: staged } = await pi.exec(
+			"git",
+			["diff", "--cached", "--name-only"],
+			{ cwd },
+		);
 		if (!staged.trim()) {
 			ctx.ui.notify(`Skipped empty commit: ${commit.message}`, "warning");
 			continue;
 		}
 
 		// Commit
-		const { code: commitCode, stderr } = await pi.exec("git", ["commit", "-m", commit.message], { cwd });
+		const { code: commitCode, stderr } = await pi.exec(
+			"git",
+			["commit", "-m", commit.message],
+			{ cwd },
+		);
 		if (commitCode === 0) {
 			success++;
 		} else {
@@ -246,7 +296,8 @@ async function executeCommits(
 
 export default function (pi: ExtensionAPI) {
 	pi.registerCommand("commit", {
-		description: "Smart structured git commit (add 'push' to also push, 'all' to stage everything)",
+		description:
+			"Smart structured git commit (add 'push' to also push, 'all' to stage everything)",
 		handler: async (args, ctx) => {
 			if (!ctx.hasUI) {
 				ctx.ui.notify("commit requires interactive mode", "error");
@@ -275,10 +326,16 @@ export default function (pi: ExtensionAPI) {
 
 			const { staged, unstaged, untracked } = parseStatus(statusText);
 			const totalChanges = staged.length + unstaged.length + untracked.length;
-			ctx.ui.notify(`Found ${totalChanges} changed file(s), analyzing...`, "info");
+			ctx.ui.notify(
+				`Found ${totalChanges} changed file(s), analyzing...`,
+				"info",
+			);
 
 			// Step 2: Stage everything if 'all', or ask if nothing is staged
-			if (stageAll || (staged.length === 0 && (unstaged.length > 0 || untracked.length > 0))) {
+			if (
+				stageAll ||
+				(staged.length === 0 && (unstaged.length > 0 || untracked.length > 0))
+			) {
 				if (!stageAll) {
 					const shouldStageAll = await ctx.ui.confirm(
 						"Nothing staged",
@@ -305,19 +362,31 @@ export default function (pi: ExtensionAPI) {
 			);
 
 			// Step 4: Generate commit plan via LLM
-			const plan = await ctx.ui.custom<CommitPlan | null>((tui, theme, _kb, done) => {
-				const loader = new BorderedLoader(tui, theme, "Analyzing changes and generating commit plan...");
-				loader.onAbort = () => done(null);
+			const plan = await ctx.ui.custom<CommitPlan | null>(
+				(tui, theme, _kb, done) => {
+					const loader = new BorderedLoader(
+						tui,
+						theme,
+						"Analyzing changes and generating commit plan...",
+					);
+					loader.onAbort = () => done(null);
 
-				generateCommitPlan(ctx, stagedDiff, statusText, untrackedContent, loader.signal)
-					.then(done)
-					.catch((err) => {
-						console.error("commit plan generation failed:", err);
-						done(null);
-					});
+					generateCommitPlan(
+						ctx,
+						stagedDiff,
+						statusText,
+						untrackedContent,
+						loader.signal,
+					)
+						.then(done)
+						.catch((err) => {
+							console.error("commit plan generation failed:", err);
+							done(null);
+						});
 
-				return loader;
-			});
+					return loader;
+				},
+			);
 
 			if (!plan || plan.commits.length === 0) {
 				ctx.ui.notify("Cancelled or failed to generate plan", "info");
@@ -348,7 +417,11 @@ export default function (pi: ExtensionAPI) {
 			const { success, failed } = await executeCommits(pi, plan, cwd, ctx);
 
 			// Check for any remaining uncommitted changes (leftovers)
-			const { stdout: remaining } = await pi.exec("git", ["status", "--porcelain"], { cwd });
+			const { stdout: remaining } = await pi.exec(
+				"git",
+				["status", "--porcelain"],
+				{ cwd },
+			);
 			if (remaining.trim()) {
 				const stageLeftovers = await ctx.ui.confirm(
 					"Leftover changes",
@@ -356,12 +429,17 @@ export default function (pi: ExtensionAPI) {
 				);
 				if (stageLeftovers) {
 					await pi.exec("git", ["add", "-A"], { cwd });
-					await pi.exec("git", ["commit", "-m", "chore: remaining changes"], { cwd });
+					await pi.exec("git", ["commit", "-m", "chore: remaining changes"], {
+						cwd,
+					});
 				}
 			}
 
 			if (failed > 0) {
-				ctx.ui.notify(`Done: ${success} committed, ${failed} failed`, "warning");
+				ctx.ui.notify(
+					`Done: ${success} committed, ${failed} failed`,
+					"warning",
+				);
 			} else {
 				ctx.ui.notify(`Committed ${success} commit(s)`, "info");
 			}
@@ -374,7 +452,11 @@ export default function (pi: ExtensionAPI) {
 					ctx.ui.notify("Pushed successfully", "info");
 				} else {
 					// Try push with upstream
-					const { stdout: branch } = await pi.exec("git", ["branch", "--show-current"], { cwd });
+					const { stdout: branch } = await pi.exec(
+						"git",
+						["branch", "--show-current"],
+						{ cwd },
+					);
 					const { code: code2, stderr: stderr2 } = await pi.exec(
 						"git",
 						["push", "--set-upstream", "origin", branch.trim()],
@@ -383,7 +465,10 @@ export default function (pi: ExtensionAPI) {
 					if (code2 === 0) {
 						ctx.ui.notify("Pushed (set upstream)", "info");
 					} else {
-						ctx.ui.notify(`Push failed: ${stderr2.trim() || stderr.trim()}`, "error");
+						ctx.ui.notify(
+							`Push failed: ${stderr2.trim() || stderr.trim()}`,
+							"error",
+						);
 					}
 				}
 			}
