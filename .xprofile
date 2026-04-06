@@ -16,5 +16,4 @@ dwmblocksrs &        # Status bar
 nitrogen --restore & # Wallpaper
 unclutter &          # Hide idle cursor
 dunst &              # Notifications
-megasync &           # Cloud storage
 mullvad-vpn &        # VPN
