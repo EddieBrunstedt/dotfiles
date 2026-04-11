@@ -26,6 +26,8 @@ x-scheme-handler/unknown=librewolf.desktop
 video/webm=mpv.desktop
 video/mpeg=mpv.desktop
 video/ogg=mpv.desktop
+text/x-nfo=nfo.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop
 
 [Added Associations]
 image/png=gimp.desktop;krita_png.desktop;
