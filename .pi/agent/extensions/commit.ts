@@ -86,7 +86,7 @@ Respond with ONLY a valid JSON object matching this schema, no markdown fencing:
     {
       "message": "type(scope): description",
       "items": ["path/to/file1", "old/path -> new/path"],
-      "description": "Brief explanation of what this commit does"
+      "description": "Commit body: 1-2 sentences explaining what this commit does and why."
     }
   ]
 }`;
@@ -373,6 +373,87 @@ function formatValidationError(validation: CommitPlanValidation): string {
 }
 
 /**
+ * Validate that a parsed JSON value has the expected CommitPlan shape.
+ * Returns null on success or a human-readable error string on failure.
+ */
+function validateCommitPlanStructure(value: unknown): string | null {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) {
+		return "response is not an object";
+	}
+
+	const obj = value as Record<string, unknown>;
+	if (!Array.isArray(obj.commits)) {
+		return "missing or invalid 'commits' array";
+	}
+
+	for (const [i, entry] of (obj.commits as unknown[]).entries()) {
+		const label = `commits[${i}]`;
+		if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+			return `${label} is not an object`;
+		}
+		const commit = entry as Record<string, unknown>;
+		if (typeof commit.message !== "string" || !commit.message.trim()) {
+			return `${label}.message is missing or empty`;
+		}
+		if (
+			!Array.isArray(commit.items) ||
+			commit.items.length === 0 ||
+			!commit.items.every((item) => typeof item === "string" && item.trim())
+		) {
+			return `${label}.items is missing, empty, or contains non-string entries`;
+		}
+		if (typeof commit.description !== "string") {
+			return `${label}.description is missing`;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Indent-aware word wrap for commit bodies.
+ *
+ * Preserves list structure: when a line starts with a bullet or number
+ * prefix (e.g. "- ", "* ", "1. "), continuation lines are indented past
+ * the prefix so the text stays visually aligned.
+ */
+function wrapCommitBody(text: string, maxWidth = 72): string {
+	const bulletPattern = /^(\s*(?:[-*]|\d+\.)\s+)/;
+
+	return text
+		.split("\n")
+		.map((line) => {
+			if (line.length <= maxWidth) return line;
+
+			const bulletMatch = line.match(bulletPattern);
+			const hangingIndent = bulletMatch
+				? " ".repeat(bulletMatch[1].length)
+				: "";
+
+			const words = line.split(/(\s+)/);
+			const wrapped: string[] = [];
+			let current = "";
+
+			for (const word of words) {
+				const projected = current + word;
+				if (
+					projected.length > maxWidth &&
+					current.trimEnd().length > 0
+				) {
+					wrapped.push(current.trimEnd());
+					current = hangingIndent + word.trimStart();
+				} else {
+					current = projected;
+				}
+			}
+			if (current.trimEnd()) wrapped.push(current.trimEnd());
+
+			return wrapped.join("\n");
+		})
+		.join("\n");
+}
+
+/**
  * Ask the model for a commit plan.
  *
  * The model sees staged items, raw staged status, the staged diff, optional
@@ -433,15 +514,23 @@ async function generateCommitPlan(
 		.join("\n")
 		.trim();
 
-	const cleaned = text
-		.replace(/^```(?:json)?\n?/m, "")
-		.replace(/\n?```$/m, "")
-		.trim();
+	const openBrace = text.indexOf("{");
+	const closeBrace = text.lastIndexOf("}");
+	if (openBrace === -1 || closeBrace === -1 || closeBrace <= openBrace) {
+		throw new Error(`No JSON object found in model response: ${text.slice(0, 200)}`);
+	}
+	const jsonText = text.slice(openBrace, closeBrace + 1);
 
 	try {
-		return JSON.parse(cleaned) as CommitPlan;
-	} catch {
-		throw new Error(`Failed to parse commit plan: ${cleaned.slice(0, 200)}`);
+		const parsed: unknown = JSON.parse(jsonText);
+		const structureError = validateCommitPlanStructure(parsed);
+		if (structureError) {
+			throw new Error(`Invalid commit plan structure: ${structureError}`);
+		}
+		return parsed as CommitPlan;
+	} catch (error) {
+		const detail = error instanceof Error ? error.message : jsonText.slice(0, 200);
+		throw new Error(`Failed to parse commit plan: ${detail}`);
 	}
 }
 
@@ -550,8 +639,9 @@ async function executeCommits(
 		}
 
 		const commitArgs = ["commit", "-m", commit.message];
-		if (commit.description.trim()) {
-			commitArgs.push("-m", commit.description.trim());
+		const body = wrapCommitBody(commit.description.trim());
+		if (body) {
+			commitArgs.push("-m", body);
 		}
 
 		const { code: commitCode, stderr } = await pi.exec("git", commitArgs, {
