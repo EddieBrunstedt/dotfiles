@@ -531,11 +531,14 @@ async function executeCommits(
 			continue;
 		}
 
-		const { code: commitCode, stderr } = await pi.exec(
-			"git",
-			["commit", "-m", commit.message],
-			{ cwd },
-		);
+		const commitArgs = ["commit", "-m", commit.message];
+		if (commit.description.trim()) {
+			commitArgs.push("-m", commit.description.trim());
+		}
+
+		const { code: commitCode, stderr } = await pi.exec("git", commitArgs, {
+			cwd,
+		});
 		if (commitCode !== 0) {
 			ctx.ui.notify(`Failed: ${commit.message} — ${stderr.trim()}`, "error");
 			return { success, failed: 1 };
