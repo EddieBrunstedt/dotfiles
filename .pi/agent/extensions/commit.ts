@@ -39,9 +39,9 @@ interface CommitPlan {
 
 interface CommitPlanValidation {
 	emptyCommitIndices: number[];
-	missingFiles: string[];
-	extraFiles: string[];
-	duplicateFiles: string[];
+	missingItems: string[];
+	extraItems: string[];
+	duplicateItems: string[];
 }
 
 /**
@@ -266,6 +266,13 @@ function parseStatus(status: string): {
 	return { staged, unstaged, untracked };
 }
 
+/**
+ * Convert `git diff --cached --name-status --find-renames` output into the
+ * staged items the model is allowed to plan with.
+ *
+ * Important: renames/copies become one logical item (`old -> new`) even
+ * though their patch needs both paths when replayed.
+ */
 function parseStagedEntries(stagedStatusText: string): StagedEntry[] {
 	const entries: StagedEntry[] = [];
 
@@ -337,9 +344,9 @@ function validateCommitPlan(
 
 	return {
 		emptyCommitIndices,
-		missingFiles: missingItems,
-		extraFiles: extraItems,
-		duplicateFiles: duplicateItems,
+		missingItems,
+		extraItems,
+		duplicateItems,
 	};
 }
 
@@ -350,21 +357,28 @@ function formatValidationError(validation: CommitPlanValidation): string {
 		parts.push(`empty commits: ${validation.emptyCommitIndices.join(", ")}`);
 	}
 
-	if (validation.missingFiles.length > 0) {
-		parts.push(`missing: ${validation.missingFiles.join(", ")}`);
+	if (validation.missingItems.length > 0) {
+		parts.push(`missing: ${validation.missingItems.join(", ")}`);
 	}
 
-	if (validation.extraFiles.length > 0) {
-		parts.push(`unexpected: ${validation.extraFiles.join(", ")}`);
+	if (validation.extraItems.length > 0) {
+		parts.push(`unexpected: ${validation.extraItems.join(", ")}`);
 	}
 
-	if (validation.duplicateFiles.length > 0) {
-		parts.push(`duplicated: ${validation.duplicateFiles.join(", ")}`);
+	if (validation.duplicateItems.length > 0) {
+		parts.push(`duplicated: ${validation.duplicateItems.join(", ")}`);
 	}
 
 	return parts.join(" • ");
 }
 
+/**
+ * Ask the model for a commit plan.
+ *
+ * The model sees staged items, raw staged status, the staged diff, optional
+ * user intent, and the contents of newly-added files. It never sees the full
+ * working tree because commits are planned strictly from the index snapshot.
+ */
 async function generateCommitPlan(
 	ctx: ExtensionCommandContext,
 	diff: string,
@@ -474,6 +488,13 @@ async function showPlanAndConfirm(
 	});
 }
 
+/**
+ * Execute the validated plan by replaying each commit's staged patch back into
+ * the index and committing from there.
+ *
+ * This keeps `/commit` faithful to the user's staged hunks while still
+ * allowing the model to split the staged snapshot into multiple commits.
+ */
 async function executeCommits(
 	pi: ExtensionAPI,
 	plan: CommitPlan,
@@ -669,9 +690,9 @@ export default function (pi: ExtensionAPI) {
 				const validation = validateCommitPlan(plan, stagedEntryKeys);
 				if (
 					validation.emptyCommitIndices.length > 0 ||
-					validation.missingFiles.length > 0 ||
-					validation.extraFiles.length > 0 ||
-					validation.duplicateFiles.length > 0
+					validation.missingItems.length > 0 ||
+					validation.extraItems.length > 0 ||
+					validation.duplicateItems.length > 0
 				) {
 					ctx.ui.notify(
 						`Commit plan is invalid — ${formatValidationError(validation)}`,
