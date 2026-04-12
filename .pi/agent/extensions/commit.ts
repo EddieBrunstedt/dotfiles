@@ -128,7 +128,9 @@ async function getStagedPatchForPaths(
 		{ cwd },
 	);
 	if (code !== 0) {
-		throw new Error(`Failed to read staged patch for paths: ${paths.join(", ")}`);
+		throw new Error(
+			`Failed to read staged patch for paths: ${paths.join(", ")}`,
+		);
 	}
 	return stdout;
 }
@@ -169,13 +171,7 @@ async function applyCachedPatch(
 		await writeFile(patchPath, patch, "utf8");
 		const { code, stderr } = await pi.exec(
 			"git",
-			[
-				"apply",
-				"--cached",
-				"--binary",
-				"--whitespace=nowarn",
-				patchPath,
-			],
+			["apply", "--cached", "--binary", "--whitespace=nowarn", patchPath],
 			{ cwd },
 		);
 		if (code !== 0) {
@@ -205,8 +201,7 @@ async function restoreIndexSnapshot(
 	try {
 		await applyCachedPatch(pi, cwd, patch);
 	} catch (error) {
-		const message =
-			error instanceof Error ? error.message : "git apply failed";
+		const message = error instanceof Error ? error.message : "git apply failed";
 		throw new Error(`Failed to restore staged changes: ${message}`);
 	}
 }
@@ -280,7 +275,10 @@ function parseStagedEntries(stagedStatusText: string): StagedEntry[] {
 		const parts = line.split("\t");
 		const statusCode = parts[0] ?? "";
 
-		if ((statusCode.startsWith("R") || statusCode.startsWith("C")) && parts.length >= 3) {
+		if (
+			(statusCode.startsWith("R") || statusCode.startsWith("C")) &&
+			parts.length >= 3
+		) {
 			const oldPath = parts[1]?.trim();
 			const newPath = parts[2]?.trim();
 			if (!oldPath || !newPath) continue;
@@ -462,11 +460,7 @@ async function showPlanAndConfirm(
 		container.addChild(new Text("", 0, 0));
 		container.addChild(new Markdown(markdown, 1, 1, mdTheme));
 		container.addChild(
-			new Text(
-				theme.fg("dim", "  Enter = execute  •  Esc = cancel"),
-				1,
-				1,
-			),
+			new Text(theme.fg("dim", "  Enter = execute  •  Esc = cancel"), 1, 1),
 		);
 
 		return {
@@ -492,7 +486,9 @@ async function executeCommits(
 		plan.commits.map((commit) => {
 			const patchPaths = [
 				...new Set(
-					commit.items.flatMap((item) => stagedEntryMap.get(item)?.patchPaths ?? []),
+					commit.items.flatMap(
+						(item) => stagedEntryMap.get(item)?.patchPaths ?? [],
+					),
 				),
 			];
 			return getStagedPatchForPaths(pi, cwd, patchPaths);
@@ -516,7 +512,8 @@ async function executeCommits(
 		try {
 			await applyCachedPatch(pi, cwd, patches[index] ?? "");
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "git apply failed";
+			const message =
+				error instanceof Error ? error.message : "git apply failed";
 			ctx.ui.notify(`Failed to stage ${commit.message} — ${message}`, "error");
 			return { success, failed: 1 };
 		}
@@ -699,7 +696,10 @@ export default function (pi: ExtensionAPI) {
 				);
 
 				if (failed > 0) {
-					ctx.ui.notify(`Done: ${success} committed, ${failed} failed`, "warning");
+					ctx.ui.notify(
+						`Done: ${success} committed, ${failed} failed`,
+						"warning",
+					);
 				} else {
 					ctx.ui.notify(`Committed ${success} commit(s)`, "info");
 				}
