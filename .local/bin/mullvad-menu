@@ -1,0 +1,133 @@
+#!/bin/sh
+
+# Mullvad VPN dmenu controller.
+# Triggered by sxhkd; signals dwmblocksrs (RTMIN+2) to refresh the bar instantly
+# after any state-changing action.
+#
+# All notifications share NOTIFY_ID so successive ones replace the previous
+# (e.g. "Connecting…" → "Connected to …" in place, no notification stack).
+
+SIGNAL_SLOT=2
+NOTIFY_ID=9001
+DMENU="dmenu -i -b -fn monospace:size=11 -nb #1E1D2F -sb #4a4a58 -sf #D9E0EE"
+
+refresh() {
+    pkill -x -RTMIN+$SIGNAL_SLOT dwmblocksrs 2>/dev/null
+}
+
+notify() {
+    # $1 = summary, $2 = body (optional)
+    notify-send -r "$NOTIFY_ID" -a Mullvad "$1" "${2:-}"
+}
+
+# Poll mullvad status until $1 matches, or ~30s elapse. Returns 0 on match.
+wait_for_state() {
+    target="$1"
+    for _ in $(seq 1 60); do
+        sleep 0.5
+        state="$(mullvad status --json 2>/dev/null | jq -r '.state' 2>/dev/null)"
+        [ "$state" = "$target" ] && return 0
+    done
+    return 1
+}
+
+connected_info() {
+    mullvad status --json | jq -r '"\(.details.location.city), \(.details.location.country) — \(.details.location.hostname)"'
+}
+
+# Background watcher: wait until tunnel is up, then replace the "Connecting…" toast.
+watch_connect() {
+    (
+        if wait_for_state connected; then
+            notify "🔒 Connected" "$(connected_info)"
+        else
+            notify "⚠ Mullvad" "Connection attempt timed out"
+        fi
+        refresh
+    ) &
+}
+
+watch_disconnect() {
+    (
+        if wait_for_state disconnected; then
+            notify "🔓 Disconnected"
+        else
+            notify "⚠ Mullvad" "Disconnect attempt timed out"
+        fi
+        refresh
+    ) &
+}
+
+notify_status() {
+    if ! out="$(mullvad status -v 2>&1)"; then
+        notify "🔒 Mullvad" "daemon unreachable"
+        return
+    fi
+    notify "🔒 Mullvad" "$out"
+}
+
+pick_country() {
+    countries="$(mullvad relay list | grep -E '^[A-Za-z].*\([a-z]+\)$')"
+    [ -z "$countries" ] && { notify "🔒 Mullvad" "no relay list available"; return; }
+    country="$(printf '%s\n' "$countries" | $DMENU -l 20 -p 'Connect to country:')" || return
+    [ -z "$country" ] && return
+    code="$(printf '%s' "$country" | sed -E 's/.*\(([a-z]+)\)$/\1/')"
+    mullvad relay set location "$code" >/dev/null
+    notify "🔒 Mullvad" "Connecting to $country…"
+    mullvad reconnect >/dev/null
+    # let the daemon leave 'connected' before we start polling for it
+    sleep 1
+    watch_connect
+    refresh
+}
+
+toggle_auto_connect() {
+    cur="$(mullvad auto-connect get 2>/dev/null | awk '{print $NF}')"
+    if [ "$cur" = "on" ]; then
+        mullvad auto-connect set off >/dev/null
+        notify "🔒 Mullvad" "Auto-connect disabled"
+    else
+        mullvad auto-connect set on >/dev/null
+        notify "🔒 Mullvad" "Auto-connect enabled"
+    fi
+}
+
+options="Connect
+Disconnect
+Reconnect
+Show status
+Pick country…
+Toggle auto-connect"
+
+choice="$(printf '%s\n' "$options" | $DMENU -l 6 -p 'Mullvad:')" || exit 0
+
+case "$choice" in
+    Connect)
+        notify "🔒 Mullvad" "Connecting…"
+        mullvad connect >/dev/null
+        watch_connect
+        refresh
+        ;;
+    Disconnect)
+        notify "🔓 Mullvad" "Disconnecting…"
+        mullvad disconnect >/dev/null
+        watch_disconnect
+        refresh
+        ;;
+    Reconnect)
+        notify "🔒 Mullvad" "Reconnecting…"
+        mullvad reconnect >/dev/null
+        sleep 1
+        watch_connect
+        refresh
+        ;;
+    "Show status")
+        notify_status
+        ;;
+    "Pick country…")
+        pick_country
+        ;;
+    "Toggle auto-connect")
+        toggle_auto_connect
+        ;;
+esac

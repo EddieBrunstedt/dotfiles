@@ -19,6 +19,8 @@ super + shift + k
     spawn keyboard-layout-dmenu
 super + shift + n
     spawn $TERMINAL -e nmtui
+super + shift + s
+    spawn mullvad-menu
 
 # Volume
 XF86AudioRaiseVolume
