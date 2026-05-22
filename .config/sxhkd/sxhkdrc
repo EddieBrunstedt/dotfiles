@@ -3,7 +3,7 @@ super + e
 super + shift + f
     spawn $TERMINAL -e tmux new -A -s file-manager "yazi"
 super + shift + a
-    spawn $TERMINAL -e tmux new -A -s pulsemixer "pulsemixer"
+    spawn $TERMINAL -e wiremix
 super + shift + v
     spawn mpv --force-window --idle
 
@@ -22,11 +22,11 @@ super + shift + n
 
 # Volume
 XF86AudioRaiseVolume
-    pamixer -i 5 && pkill -x -RTMIN+1 dwmblocksrs
+    wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ && pkill -x -RTMIN+1 dwmblocksrs
 XF86AudioLowerVolume
-    pamixer -d 5 && pkill -x -RTMIN+1 dwmblocksrs
+    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -x -RTMIN+1 dwmblocksrs
 XF86AudioMute
-    pamixer -t && pkill -x -RTMIN+1 dwmblocksrs
+    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && pkill -x -RTMIN+1 dwmblocksrs
 
 super + shift + l
     spawn betterlockscreen -l --text "U Can't Touch This, nananana"

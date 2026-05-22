@@ -1,3 +1,11 @@
 #! /bin/bash
 
-echo $(pamixer --get-volume-human)
+out="$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)" || { printf "%4s" "—"; exit; }
+
+if grep -q '\[MUTED\]' <<< "$out"; then
+    vol="muted"
+else
+    vol="$(awk '{printf "%d%%", $2 * 100}' <<< "$out")"
+fi
+
+printf "%4s" "${vol:-—}"

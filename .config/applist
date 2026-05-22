@@ -79,14 +79,15 @@ openresolv
 openssh
 pacman-contrib
 pacutils
-pamixer
 papirus-icon-theme
 pastel
 peek
 perl-file-mimeinfo
+pipewire
+pipewire-jack
+pipewire-pulse
 plocate
 pnpm
-pulsemixer
 qbittorrent
 redshift
 reflector
@@ -120,6 +121,8 @@ watchexec
 wget
 whois
 wireguard-tools
+wiremix
+wireplumber
 xclip
 xdotool
 xed
