@@ -1,0 +1,11 @@
+#!/bin/sh
+# spawn: run a command in a new transient systemd user scope.
+#
+# The command is started as its own scope unit under the user manager's
+# app.slice, so it has an independent lifecycle and cgroup from the
+# process that invoked spawn. Resource usage is accounted to that scope,
+# and stdout/stderr go to the systemd journal under the scope's name.
+#
+# Usage: spawn <command> [args...]
+# Example: spawn librewolf
+exec systemd-run --user --scope --quiet -- "$@"

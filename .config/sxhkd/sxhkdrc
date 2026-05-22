@@ -1,24 +1,24 @@
 super + e
-    exec $BROWSER
+    spawn $BROWSER
 super + shift + f
-    $TERMINAL -e tmux new -A -s file-manager "yazi"
+    spawn $TERMINAL -e tmux new -A -s file-manager "yazi"
 super + shift + a
-    $TERMINAL -e tmux new -A -s pulsemixer "pulsemixer"
+    spawn $TERMINAL -e tmux new -A -s pulsemixer "pulsemixer"
 super + shift + v
-    mpv --force-window --idle
+    spawn mpv --force-window --idle
 
 super + shift + m
-    monitor-setting
+    spawn monitor-setting
 super + shift + p
-    SHELL=/usr/bin/sh ord_prompts
+    spawn env SHELL=/usr/bin/sh ord_prompts
 super + shift + i
     dunstctl close-all
 super + shift + b
-    whitetemp
+    spawn whitetemp
 super + shift + k
-    keyboard-layout-dmenu
+    spawn keyboard-layout-dmenu
 super + shift + n
-    $TERMINAL -e nmtui
+    spawn $TERMINAL -e nmtui
 
 # Volume
 XF86AudioRaiseVolume
@@ -29,10 +29,10 @@ XF86AudioMute
     pamixer -t && pkill -x -RTMIN+1 dwmblocksrs
 
 super + shift + l
-    gpgconf --reload gpg-agent; gpg-connect-agent 'clear_passphrase' /bye; betterlockscreen -l &
+    spawn betterlockscreen -l --text "U Can't Touch This, nananana"
 
 super + shift + x
-    sys;
+    spawn sys
 
 # Monitor backlight brightness
 XF86MonBrightnessDown
@@ -42,17 +42,17 @@ XF86MonBrightnessUp
 
 # Make screenshot (screen with mouse pointer)
 Print
-    flameshot gui -c -p ~/screenshots
+    spawn flameshot gui -c -p ~/screenshots
 
 
 # Make screenshot (using gui)
 shift + Print
-    flameshot screen -c -p ~/screenshots
+    spawn flameshot screen -c -p ~/screenshots
 
 # Mount a USB drive or Android device
 super + F9
-    dmenumount
+    spawn dmenumount
 
 # Unmount a USB drive or Android device
 super + F10
-    dmenuumount
+    spawn dmenuumount
