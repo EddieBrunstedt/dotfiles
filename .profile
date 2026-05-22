@@ -12,23 +12,24 @@ export VISUAL="nvim"
 # PATH configuration
 export PNPM_HOME="$HOME/.local/share/pnpm"
 
-# Helper function to add stuff to PATH
-appendpath() {
+path_prepend() {
+    [ -d "$1" ] || return
     case ":$PATH:" in
     *:"$1":*) ;;
     *)
-        PATH="${PATH:+$PATH:}$1"
+        PATH="$1${PATH:+:$PATH}"
         ;;
     esac
 }
 
-# All directories in '~/.local/bin'
-appendpath "$(du "$HOME/.local/bin" | cut -f2 | tr '\n' ':' | sed 's/:*$//')"
-appendpath "$HOME/.cargo/bin"
-appendpath "$HOME/.scripts"
-appendpath "$HOME/.yarn/bin"
-appendpath "$PNPM_HOME"
-unset appendpath
+path_prepend "$PNPM_HOME"
+path_prepend "$HOME/.yarn/bin"
+path_prepend "$HOME/.local/share/zvm/bin"
+path_prepend "$HOME/.cargo/bin"
+path_prepend "$HOME/.local/bin/statusbar"
+path_prepend "$HOME/.local/bin"
+export PATH
+unset path_prepend
 
 # Less/Man page configuration
 export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"

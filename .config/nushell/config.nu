@@ -67,5 +67,3 @@ source ~/.zoxide.nu
 
 # navi
 source ($nu.default-config-dir | path join "navi-integration.nu")
-
-use '/home/nilo/.config/broot/launcher/nushell/br' *

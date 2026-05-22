@@ -1,7 +1,0 @@
-#!/bin/bash
-
-vnstat -tr 2 -ru 0 | awk '
-  /rx/ { rx = $2 }
-  /tx/ { tx = $2 }
-  END { printf "↓%5.1f ↑%5.1f", rx, tx }
- '

@@ -15,5 +15,5 @@ cheats:
     - ~/.config/navi/cheats
 
 shell:
-  command: zsh
-  finder_command: zsh
+  command: fish
+  finder_command: fish

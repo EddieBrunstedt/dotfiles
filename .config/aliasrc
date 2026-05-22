@@ -14,10 +14,7 @@ alias \
     ll="eza -l --group-directories-first --time-style=iso" \
     lll="eza -lgh --group-directories-first --git --time-style=long-iso" \
     la="eza -la --group-directories-first" \
-    lt="eza --long --tree" \
-    lf="lfcd" \
-    bf="br --only-folders" \
-    br="br --hidden"
+    lt="eza --long --tree"
 
 # Text and file viewers
 alias \
@@ -29,22 +26,18 @@ alias \
 
 # Editors and development tools
 alias \
-    e="$EDITOR" \
-    f="$FILE" \
     vim="nvim" \
     lg="lazygit"
 
 # System operations
 alias \
     ka="killall" \
-    sdn="sudo shutdown -h now" \
-    d=devour
+    sdn="sudo shutdown -h now"
 
 # Tmux
 alias \
     t="tmux" \
-    tkill="tmux kill-server" \
-    mc="tmux split -h lf; lf"
+    tkill="tmux kill-server"
 
 # Media and download
 alias \
@@ -52,15 +45,4 @@ alias \
     yt="yt-dlp -N 5 --add-metadata -i --restrict-filenames" \
     yta="yt-dlp -x -N 5"
 
-# Clipboard
-alias \
-    pbpaste='xclip -o -sel primary'
-
-# Miscellaneous
-alias \
-    eco="ledger -f $HOME/economy/index.dat" \
-    weather="curl -s wttr.in/Copenhagen"
-
 alias nvm="fnm"
-
-alias notes="cd $HOME/notes/obsidian_vaults/main && nvim"

@@ -1,4 +1,0 @@
-#!/bin/sh
-cpu_usage=$(vmstat 1 2 | tail -1 | awk '{print int($13+$14)}')
-
-printf "%2d%%" "$cpu_usage"

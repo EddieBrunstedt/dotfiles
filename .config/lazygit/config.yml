@@ -13,8 +13,6 @@ gui:
       - "#343a52"
     selectedRangeBgColor:
       - "#3d4460"
-os:
-  editPreset: 'nvim'
 git:
   log:
     showGraph: always
@@ -23,6 +21,3 @@ git:
   pagers:
     - colorArg: always
       pager: delta --paging=never --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
-keybinding:
-  universal:
-    quit: <disabled>

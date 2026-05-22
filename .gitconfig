@@ -33,8 +33,6 @@
 	line-numbers-plus-style = "#9ece6a"
 	
 	hyperlinks = true
-[diff]
-	tool = bc
 [github]
 	user = EddieBrunstedt
 [init]

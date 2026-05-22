@@ -23,7 +23,6 @@ alias llta="eza -a --long --tree --group-directories-first --time-style=iso"
 alias vim="nvim"
 alias lg="lazygit"
 alias man="batman"
-alias timr="timr -n on"
 alias bc="bc -l"
 alias pi="~/code/pi-mono/packages/coding-agent/binaries/linux-x64/pi"
 
@@ -32,9 +31,6 @@ alias tkill="tmux kill-server"
 alias clip='xclip -selection clipboard'
 
 alias bat="bat --style=header --style=auto --theme base16"
-
-alias hledger="hledger -s"
-alias eco="hledger bs -X DKK -c '1,000.00 DKK'"
 
 alias analyze_disk_usage="duf"
 

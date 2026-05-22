@@ -1,5 +1,4 @@
 7zip
-alacritty
 anki
 arandr
 atool
@@ -14,6 +13,7 @@ capitaine-cursors
 cargo-update
 chromium
 cmake
+dash
 deno
 devtools
 direnv
@@ -56,7 +56,6 @@ jujutsu
 just
 krita
 lazygit
-lf
 lostfiles
 lua-language-server
 man-db
@@ -132,6 +131,5 @@ yazi
 yt-dlp
 zathura
 zathura-pdf-mupdf
-zellij
 zenith
 zoxide
