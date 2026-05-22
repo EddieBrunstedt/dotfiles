@@ -9,7 +9,7 @@ window-padding-x = 0
 window-padding-y = 0
 window-decoration = server
 
-background = #000000
+theme = Flexoki Dark
 
 keybind = ctrl+enter=unbind
 
