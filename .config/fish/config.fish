@@ -9,6 +9,9 @@ end
 
 stty -ixon 2>/dev/null
 
+# Zig toolchain managed by zvm
+fish_add_path -g ~/.local/share/zvm/bin
+
 set -g fish_greeting
 set -g fish_key_bindings fish_vi_key_bindings
 
@@ -64,13 +67,22 @@ function y
     rm -f -- "$tmp"
 end
 
-# Make fzf show hidden files/directories
+# fzf.fish: hidden files in pickers, eza-tree previews for directories
 set -g fzf_fd_opts --hidden --follow --exclude=.git
+set -g fzf_preview_dir_cmd eza --tree --color=always --icons=auto --group-directories-first
 
-# Start ssh-agent if not already running
+# Defaults for direct `fzf` invocations
+set -gx FZF_DEFAULT_COMMAND 'fd --type f --hidden --follow --exclude=.git'
+set -gx FZF_DEFAULT_OPTS '--height=50% --layout=reverse --border --cycle --info=inline'
+
+# Point ssh at the systemd-managed agent socket
 set -gx SSH_AUTH_SOCK "$XDG_RUNTIME_DIR/ssh-agent.socket"
 
 if status is-interactive
+    # Rebind fzf.fish: Ctrl-T for file/dir picker; skip history binding so atuin keeps Ctrl-R.
+    # Must run before atuin init so atuin's ctrl-r binding wins.
+    fzf_configure_bindings --directory=ctrl-t --history=
+
     starship init fish | source
     zoxide init fish | source
     navi widget fish | source
