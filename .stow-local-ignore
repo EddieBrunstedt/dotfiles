@@ -1,0 +1,18 @@
+# Filenames stow should skip in this package (one regex per line).
+# Defining this file replaces stow's built-in defaults, so list them too.
+
+# Version control
+^/\.git$
+^/\.gitignore$
+^/\.gitmodules$
+^/\.gitattributes$
+
+# Repo metadata
+^/README.*$
+^/LICENSE.*$
+^/COPYING$
+
+# This repo's own setup files
+^/justfile$
+^/\.stowrc$
+^/\.stow-local-ignore$
