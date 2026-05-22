@@ -1,0 +1,12 @@
+[Unit]
+Description=Simple X hotkey daemon
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Environment=PATH=%h/.local/bin/statusbar:%h/.local/bin:%h/.cargo/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+ExecStart=/usr/bin/sxhkd
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target

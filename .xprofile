@@ -5,15 +5,10 @@
 
 # X server configuration
 xsetroot -cursor_name left_ptr # Set cursor on root window
-xset r rate 200 50             # Keyboard repeat rate
 xset -dpms                     # Disable monitor power saving
 xset s off                     # Disable screensaver
 xset s noblank                 # Prevent screen blanking
 
-# Launch background services
-sxhkd &              # Keybindings
-dwmblocksrs &        # Status bar
-nitrogen --restore & # Wallpaper
-unclutter &          # Hide idle cursor
-dunst &              # Notifications
-mullvad-vpn &        # VPN
+# Hand off to user systemd; graphical-session.target activates everything else
+systemctl --user import-environment DISPLAY XAUTHORITY PATH SHELL BROWSER TERMINAL EDITOR LANG
+systemctl --user start --no-block dwm-session.target
