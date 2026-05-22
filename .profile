@@ -9,6 +9,11 @@ export READER="zathura"
 export TERMINAL="ghostty"
 export VISUAL="nvim"
 
+# Secret environment variables
+secret_env_loader="$HOME/.local/bin/load-secret-env"
+[ -x "$secret_env_loader" ] && eval "$("$secret_env_loader" --sh)"
+unset secret_env_loader
+
 # PATH configuration
 export PNPM_HOME="$HOME/.local/share/pnpm"
 

@@ -6,6 +6,11 @@
 #Allows you to cd into directory merely by typing the directory name.
 shopt -s autocd
 
+# Load secret environment variables if available.
+secret_env_loader="$HOME/.local/bin/load-secret-env"
+[ -x "$secret_env_loader" ] && eval "$("$secret_env_loader" --sh)"
+unset secret_env_loader
+
 #Infinite history
 HISTSIZE= HISTFILESIZE= # Infinite history.
 

@@ -1,4 +1,11 @@
-source ~/.secrets/env
+# Load secret environment variables if available.
+set -l secret_env_loader "$HOME/.local/bin/load-secret-env"
+if test -x "$secret_env_loader"
+    for line in ($secret_env_loader | string split0)
+        set -l pair (string split -m1 = -- $line)
+        test (count $pair) -eq 2; and set -gx $pair[1] $pair[2]
+    end
+end
 
 stty -ixon 2>/dev/null
 

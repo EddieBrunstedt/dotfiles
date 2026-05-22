@@ -1,4 +1,4 @@
-let secret_env_path = $"($env.HOME)/.secrets/env"
+let secret_env_loader = $"($env.HOME)/.local/bin/load-secret-env"
 
 $env.config.cursor_shape.vi_insert = "line"
 $env.config.cursor_shape.vi_normal = "block"
@@ -19,17 +19,16 @@ alias nvm = fnm
 alias vim = nvim
 
 # load secret environment variables if available
-if ($secret_env_path | path exists) {
-  load-env (open $secret_env_path
-    | lines -s
-    | where ($it | str trim | is-not-empty)
-    | split column '=' -n 2
-    | update column2 {
-      |row| $row.column2
-        | str replace '~' $"($env.HOME)"
-        | str replace '$HOME' $"($env.HOME)"
-      }
-    | transpose -rd)
+if ($secret_env_loader | path exists) {
+  let secret_env = (^$secret_env_loader | complete)
+
+  if $secret_env.exit_code == 0 {
+    load-env ($secret_env.stdout
+      | split row (char nul)
+      | where {|line| $line != "" }
+      | split column "=" key value -n 2
+      | reduce -f {} {|row, acc| $acc | insert $row.key $row.value })
+  }
 }
 
 # enable Starship
