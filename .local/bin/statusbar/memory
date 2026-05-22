@@ -1,4 +1,4 @@
 #!/bin/bash
 
-mem="$(free -hw | awk '/^Mem:/ {print $3 "/" $2}' | sed 's/i//g')"
-printf "%9s" "$mem"
+mem="$(free -h | awk '/^Mem:/ {print $3}')"
+printf "%6s" "$mem"
