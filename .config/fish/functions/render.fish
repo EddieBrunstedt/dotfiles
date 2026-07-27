@@ -12,6 +12,7 @@ function render --description 'Render a file as nicely as possible in a new wind
 
     set -l abs (path resolve $file)
     set -l ext (string lower (path extension $file))
+    set -l url
 
     switch $ext
         case .md .markdown
@@ -23,11 +24,9 @@ function render --description 'Render a file as nicely as possible in a new wind
                 --metadata pagetitle=(path basename $file) \
                 $abs --output $out
             or return
-            chromium --app=file://$out --no-first-run &>/dev/null &
-            disown
+            set url file://$out
         case .html .htm
-            chromium --app=file://$abs --no-first-run &>/dev/null &
-            disown
+            set url file://$abs
         case ''
             echo "render: '$file' has no extension, don't know how to render it" >&2
             return 1
@@ -35,4 +34,9 @@ function render --description 'Render a file as nicely as possible in a new wind
             echo "render: unsupported extension '$ext'" >&2
             return 1
     end
+
+    qutebrowser --basedir ~/.local/share/render-qb \
+        --config-py ~/.config/render/qb.py \
+        --target window $url &>/dev/null &
+    disown
 end
