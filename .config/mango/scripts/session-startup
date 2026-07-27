@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# session-startup — launch apps and place each on its HOME tag, ONCE.
+#
+# How it works: for each entry we launch the app, then poll mango's IPC
+# (mmsg) until the app's window(s) actually appear, and tagsilent-move each
+# NEW window to its tag. Because we wait for the window, slow starters (e.g.
+# Steam's loading splash) are handled; because we use tagsilent, your current
+# view is never dragged along — you can keep working on another tag.
+#
+# This is a ONE-SHOT placement, NOT a windowrule. Later ad-hoc launches of
+# these same apps (e.g. opening LibreWolf mid-task to check something) are
+# left wherever you open them — this script only runs when you run it.
+#
+# Trigger it from a keybind, or add it to exec-once to run at login.
+# Edit the list at the bottom: <appid-regex> <tag> <launch command...>
+
+set -u
+TIMEOUT=60          # seconds to keep catching an app's windows after launch
+POLL=0.5            # seconds between IPC polls
+
+# Tag to land on after boot. focus_on_activate=0 in config.conf means no
+# client (including LibreWolf's xdg-activation request) can yank the view,
+# so this can fire immediately — no need to wait for anything below.
+# STARTUP_TAG=3
+# mmsg dispatch view,"$STARTUP_TAG",0 >/dev/null 2>&1
+
+# ids of currently-open windows whose appid matches the given regex
+ids_for() {
+  mmsg get all-clients 2>/dev/null \
+    | jq -r --arg a "$1" '.clients[] | select(.appid|test($a)) | .id'
+}
+
+# launch_place <appid-regex> <tag> <cmd...>
+launch_place() {
+  local appid_re=$1 tag=$2; shift 2
+
+  # snapshot windows of this appid already open, so we only move NEW ones
+  local before=" "
+  local id
+  while read -r id; do [[ -n $id ]] && before="$before$id "; done < <(ids_for "$appid_re")
+
+  # launch detached so this script (and the compositor) don't own the process
+  setsid -f "$@" >/dev/null 2>&1
+
+  local deadline=$((SECONDS + TIMEOUT))
+  local moved=" "
+  while (( SECONDS < deadline )); do
+    while read -r id; do
+      [[ -z $id ]] && continue
+      case "$before" in *" $id "*) continue;; esac   # was already open — skip
+      case "$moved"  in *" $id "*) continue;; esac   # already moved — skip
+      mmsg dispatch tagsilent,"$tag",0 client,"$id" >/dev/null 2>&1
+      moved="$moved$id "
+    done < <(ids_for "$appid_re")
+    sleep "$POLL"
+  done
+}
+
+# ── your startup layout ── edit freely; each line runs in parallel ──────────
+# appid regex is matched against the window's appid (see: mmsg get all-clients).
+# ^…$ anchors it so e.g. the ghostty rule doesn't also grab com.ghostty.scratchpad.
+#            appid regex                tag   command to launch
+# launch_place '^com\.mitchellh\.ghostty$' 1   ghostty                  &
+# LibreWolf requests xdg-activation at startup; harmless now that
+# focus_on_activate=0 — it just gets the urgent flag on its tag.
+launch_place '^steam$'                   4   steam                    &
+# launch_place '^librewolf$'               1   librewolf                &
+launch_place '^Spotify$'                 2   spotify                  &
+launch_place '^vesktop$'                 3   mullvad-exclude vesktop  &
+
+wait

@@ -7,7 +7,7 @@
 [fetch]
 	prune = true
 [credential]
-	helper = store
+	helper = libsecret
 [pull]
 	ff = only
 [delta]

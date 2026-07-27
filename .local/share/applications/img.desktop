@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
 Name=Image viewer
-Exec=/home/nilo/.local/bin/nsxiv-rifle %f
+Exec=/usr/bin/swayimg %f

@@ -1,0 +1,128 @@
+// -*- mode: jsonc -*-
+// Right side mirrors ~/.config/dwmblocksrs/dwmblocksrs.yaml:
+//   cpubusy → memory → routebps → protonmail → mullvad → volume → date
+// Each custom/* module = one dwmblocks segment (exec/interval/signal).
+// Scripts already print their own icons, so format is just "{}".
+{
+    "position": "bottom",
+    "height": 30,
+    "spacing": 4,
+    "modules-left": [
+        "mango/workspaces",
+        "mango/layout",
+        "mango/window"
+    ],
+    "modules-center": [],
+    "modules-right": [
+        "custom/cpubusy",
+        "custom/memory",
+        "custom/routebps",
+        "custom/protonmail",
+        "custom/mullvad",
+        "custom/volume",
+        "custom/voxtype",
+        "clock",
+        "custom/dunst",
+        "tray"
+    ],
+
+    // ── compositor integration (mango) ──────────────────────────────
+    "mango/workspaces": {
+        "format": "{icon}",
+        "hide-empty": true,
+        "on-click": "activate",
+        "on-click-right": "toggle"
+    },
+    "mango/layout": {
+        "format": "[{symbol}]"
+    },
+    "mango/window": {
+        "format": "{title}",
+        "icon": false
+    },
+
+    // ── status scripts (from dwmblocksrs) ───────────────────────────
+    // dwmblocksrs: cpubusy, interval 1
+    "custom/cpubusy": {
+        "exec": "cpubusy",
+        "interval": 1,
+        "tooltip": false
+    },
+    // dwmblocksrs: memory, interval 5
+    "custom/memory": {
+        "exec": "memory",
+        "interval": 5,
+        "tooltip": false
+    },
+    // dwmblocksrs: routebps, interval 1
+    "custom/routebps": {
+        "exec": "routebps",
+        "interval": 1,
+        "tooltip": false
+    },
+    // dwmblocksrs: protonmail-status, interval 5
+    "custom/protonmail": {
+        "exec": "protonmail-status",
+        "interval": 5,
+        "on-click": "xdg-open https://mail.proton.me/",
+        "tooltip": false
+    },
+    // dwmblocksrs: mullvad-status, interval 30, signals: [2]
+    // refresh manually with: pkill -RTMIN+2 waybar
+    "custom/mullvad": {
+        "exec": "mullvad-status",
+        "interval": 30,
+        "signal": 2,
+        "on-click": "mullvad-menu",
+        "tooltip": false
+    },
+    // dwmblocksrs: volume, interval 10, signals: [1]
+    // refresh manually with: pkill -RTMIN+1 waybar
+    "custom/volume": {
+        "exec": "volume",
+        "interval": 10,
+        "signal": 1,
+        "on-click": "pavucontrol",
+        "on-scroll-up": "pamixer -i 2 && pkill -RTMIN+1 waybar",
+        "on-scroll-down": "pamixer -d 2 && pkill -RTMIN+1 waybar",
+        "tooltip": false
+    },
+    // Voxtype's native status stream: stopped / idle / recording / transcribing.
+    // Left click starts the service; right click stops it; middle click restarts it.
+    "custom/voxtype": {
+        "exec": "voxtype status --follow --format json --extended",
+        "return-type": "json",
+        "format": "{icon}",
+        "format-icons": {
+            "idle": "\uf130",
+            "recording": "\uf111",
+            "transcribing": "\uf110",
+            "stopped": "\uf131"
+        },
+        "tooltip": true,
+        "on-click": "systemctl --user start voxtype.service",
+        "on-click-middle": "systemctl --user restart voxtype.service",
+        "on-click-right": "systemctl --user stop voxtype.service"
+    },
+    // notification state (dunst): 🔔 active / 🔕 paused.
+    // signal 3 → refresh instantly with: pkill -RTMIN+3 waybar (dunst-toggle does this)
+    "custom/dunst": {
+        "exec": "dunst-status",
+        "interval": 5,
+        "signal": 3,
+        "on-click": "dunst-toggle",
+        "tooltip": false
+    },
+    // dwmblocksrs: date, args: ["+⏰ %m-%d %a %H:%M"], interval 1
+    "clock": {
+        "interval": 1,
+        "format": "⏰ {:%m-%d %a %H:%M}",
+        "format-alt": "⏰ {:%Y-%m-%d %H:%M:%S}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+
+    // system tray — app indicator icons (Discord, nm-applet, …)
+    "tray": {
+        "spacing": 10
+    }
+}

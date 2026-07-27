@@ -1,6 +1,6 @@
 #!/bin/sh
-# Mullvad VPN status indicator for dwmblocksrs.
-# Triggered every N seconds by the bar, and on RTMIN+2 from mullvad-menu.
+# Mullvad VPN status indicator for Waybar.
+# Polled every 30 seconds and refreshed on RTMIN+2 from mullvad-menu.
 
 out=$(mullvad status --json 2>/dev/null) || { printf '🔓 ?'; exit 0; }
 

@@ -1,0 +1,24 @@
+#!/bin/sh
+# Kill the focused client, then focus the first visible tiled window.
+# Bound to Super+Shift+c.
+#
+# Why the wait loop: killclient only *requests* a close. Apps that prompt on
+# unsaved changes (or otherwise refuse) keep their window, so we must not move
+# focus in that case. We poll until the killed client's id leaves all-clients,
+# and only then run the compatibility helper. If it never leaves (close was
+# declined), we time out and leave focus exactly where it was.
+
+id=$(mmsg get focusing-client | jq -r '.id // empty')
+mmsg dispatch killclient >/dev/null
+[ -n "$id" ] || exit 0
+
+# Poll up to ~500ms (25 x 20ms) for the window to actually go away.
+i=0
+while [ "$i" -lt 25 ]; do
+	present=$(mmsg get all-clients | jq -r --arg id "$id" 'any(.clients[]; (.id|tostring) == $id)')
+	if [ "$present" != "true" ]; then
+		exec /home/nilo/.config/mango/scripts/focus-master
+	fi
+	sleep 0.02
+	i=$((i + 1))
+done

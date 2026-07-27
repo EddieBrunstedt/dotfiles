@@ -1,131 +1,422 @@
 #!/bin/sh
 
-# Mullvad VPN dmenu controller.
-# Triggered by sxhkd; signals dwmblocksrs (RTMIN+2) to refresh the bar instantly
-# after any state-changing action.
-#
-# All notifications share NOTIFY_ID so successive ones replace the previous
-# (e.g. "Connecting…" → "Connected to …" in place, no notification stack).
+# Mullvad VPN controller for Wayland/MangoWC.
+# Opened from Waybar or Mango; signals Waybar (RTMIN+2) after state changes.
+# Successive notifications replace one another instead of forming a stack.
 
 SIGNAL_SLOT=2
 NOTIFY_ID=9001
-DMENU="dmenu -i -b -fn monospace:size=11 -nb #1E1D2F -sb #4a4a58 -sf #D9E0EE"
+
+runtime_dir=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+[ -d "$runtime_dir" ] || runtime_dir=${TMPDIR:-/tmp}
+WATCH_FILE="$runtime_dir/mullvad-menu-watch-$(id -u)"
 
 refresh() {
-    pkill -x -RTMIN+$SIGNAL_SLOT dwmblocksrs 2>/dev/null
+    pkill -x "-RTMIN+$SIGNAL_SLOT" waybar 2>/dev/null || :
 }
 
 notify() {
-    # $1 = summary, $2 = body (optional)
-    notify-send -r "$NOTIFY_ID" -a Mullvad "$1" "${2:-}"
+    # $1 = summary, $2 = body, $3 = urgency (optional)
+    notify-send -e -r "$NOTIFY_ID" -a Mullvad -i mullvad-vpn \
+        -u "${3:-normal}" "$1" "${2:-}" >/dev/null 2>&1 || :
 }
 
-# Poll mullvad status until $1 matches, or ~30s elapse. Returns 0 on match.
-wait_for_state() {
-    target="$1"
-    for _ in $(seq 1 60); do
-        sleep 0.5
-        state="$(mullvad status --json 2>/dev/null | jq -r '.state' 2>/dev/null)"
-        [ "$state" = "$target" ] && return 0
-    done
-    return 1
+escape_markup() {
+    printf '%s' "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
+}
+
+menu() {
+    # $1 = prompt, $2 = visible rows, $3 = informational message (optional)
+    if [ -n "${3:-}" ]; then
+        rofi -dmenu -i -no-custom -p "$1" -l "$2" \
+            -mesg "$(escape_markup "$3")"
+    else
+        rofi -dmenu -i -no-custom -p "$1" -l "$2"
+    fi
+}
+
+new_generation() {
+    printf '%s-%s\n' "$$" "$(date +%s%N)"
+}
+
+set_generation() {
+    generation_tmp="$WATCH_FILE.$$"
+    (umask 077; printf '%s\n' "$1" > "$generation_tmp") || return 1
+    mv -f "$generation_tmp" "$WATCH_FILE"
+}
+
+is_current_generation() {
+    [ -r "$WATCH_FILE" ] || return 1
+    IFS= read -r current_generation < "$WATCH_FILE" || return 1
+    [ "$current_generation" = "$1" ]
+}
+
+status_json() {
+    mullvad status --json 2>/dev/null
+}
+
+status_state() {
+    printf '%s' "$1" | jq -er '.state'
 }
 
 connected_info() {
-    mullvad status --json | jq -r '"\(.details.location.city), \(.details.location.country) — \(.details.location.hostname)"'
+    printf '%s' "$1" | jq -er '
+        (.details.location // {}) as $location
+        | "\($location.city // "Unknown city"), \($location.country // "Unknown country") — \($location.hostname // "unknown relay")"
+    '
 }
 
-# Background watcher: wait until tunnel is up, then replace the "Connecting…" toast.
-watch_connect() {
-    (
-        if wait_for_state connected; then
-            notify "🔒 Connected" "$(connected_info)"
-        else
-            notify "⚠ Mullvad" "Connection attempt timed out"
-        fi
-        refresh
-    ) &
-}
+watch_state() {
+    target_state=$1
+    require_transition=$2
+    expected_country=$3
+    generation=$4
+    ready_file=$5
+    stream_file="$ready_file.stream"
+    action_file="$ready_file.action"
+    listener_pid=
+    country_mismatch=no
+    latest_json=
+    latest_state=
+    next_line=1
+    attempts=0
 
-watch_disconnect() {
-    (
-        if wait_for_state disconnected; then
-            notify "🔓 Disconnected"
-        else
-            notify "⚠ Mullvad" "Disconnect attempt timed out"
-        fi
-        refresh
-    ) &
-}
+    # Invoked directly and by traps below.
+    # shellcheck disable=SC2329
+    cleanup_watch() {
+        [ -z "$listener_pid" ] || kill "$listener_pid" 2>/dev/null || :
+        [ -z "$listener_pid" ] || wait "$listener_pid" 2>/dev/null || :
+        rm -f "$ready_file" "$stream_file" "$action_file"
+    }
+    trap 'cleanup_watch; exit 0' HUP INT TERM
+    trap cleanup_watch EXIT
 
-notify_status() {
-    if ! out="$(mullvad status -v 2>&1)"; then
-        notify "🔒 Mullvad" "daemon unreachable"
-        return
+    if ! (umask 077; : > "$stream_file"); then
+        return 1
     fi
-    notify "🔒 Mullvad" "$out"
+
+    # status listen prints the current state first, then every tunnel-state event.
+    # Starting it before the action means even a fast reconnect transition is seen.
+    timeout 31 mullvad status --json listen > "$stream_file" 2>/dev/null &
+    listener_pid=$!
+
+    while [ "$attempts" -lt 620 ]; do
+        is_current_generation "$generation" || return 0
+
+        # Drain every complete event currently buffered before deciding. This keeps
+        # a target event from hiding a later error while the command is still running.
+        while watcher_json=$(sed -n "${next_line}p" "$stream_file") \
+            && [ -n "$watcher_json" ]; do
+            next_line=$((next_line + 1))
+            watcher_state=$(status_state "$watcher_json" 2>/dev/null) || continue
+            latest_json=$watcher_json
+            latest_state=$watcher_state
+            [ -e "$ready_file" ] || (umask 077; : > "$ready_file")
+            if [ "$watcher_state" != "$target_state" ]; then
+                require_transition=no
+            fi
+        done
+
+        # If the event stream dies after becoming ready, fall back to a periodic
+        # snapshot so the watcher still finishes and cleans up its action marker.
+        if [ -e "$action_file" ] && ! kill -0 "$listener_pid" 2>/dev/null \
+            && [ $((attempts % 10)) -eq 0 ]; then
+            if fallback_json=$(status_json) \
+                && fallback_state=$(status_state "$fallback_json" 2>/dev/null); then
+                latest_json=$fallback_json
+                latest_state=$fallback_state
+                if [ "$fallback_state" != "$target_state" ]; then
+                    require_transition=no
+                fi
+            fi
+        fi
+
+        if [ -e "$action_file" ] && [ -n "$latest_state" ]; then
+            if [ "$latest_state" = error ]; then
+                watcher_error=$(printf '%s' "$latest_json" | jq -r '
+                    (.details.cause // .details // "Tunnel entered an error state")
+                    | if type == "string" then . else tostring end
+                ' 2>/dev/null)
+                is_current_generation "$generation" || return 0
+                notify "⚠ Mullvad" "${watcher_error:-Tunnel entered an error state}" critical
+                refresh
+                return 0
+            fi
+
+            if [ "$latest_state" = "$target_state" ] \
+                && [ "$require_transition" = no ]; then
+                if [ -n "$expected_country" ]; then
+                    watcher_hostname=$(printf '%s' "$latest_json" \
+                        | jq -er '.details.location.hostname' 2>/dev/null) || {
+                            sleep 0.05
+                            attempts=$((attempts + 1))
+                            continue
+                        }
+                    case "$watcher_hostname" in
+                        "$expected_country"-*) ;;
+                        *)
+                            country_mismatch=yes
+                            sleep 0.05
+                            attempts=$((attempts + 1))
+                            continue
+                            ;;
+                    esac
+                fi
+
+                case "$target_state" in
+                    connected)
+                        watcher_info=$(connected_info "$latest_json" 2>/dev/null) \
+                            || watcher_info="Tunnel established"
+                        is_current_generation "$generation" || return 0
+                        notify "🔒 Connected" "$watcher_info"
+                        ;;
+                    disconnected)
+                        is_current_generation "$generation" || return 0
+                        notify "🔓 Disconnected" ""
+                        ;;
+                esac
+                refresh
+                return 0
+            fi
+        fi
+
+        attempts=$((attempts + 1))
+        sleep 0.05
+    done
+
+    is_current_generation "$generation" || return 0
+    if [ "$country_mismatch" = yes ]; then
+        notify "⚠ Mullvad" "Connected, but country $expected_country was not reached" critical
+    elif [ -e "$ready_file" ]; then
+        notify "⚠ Mullvad" "Timed out waiting for $target_state" critical
+    else
+        notify "⚠ Mullvad" "Could not listen for tunnel state changes" critical
+    fi
+    refresh
+    return 1
 }
 
-pick_country() {
-    countries="$(mullvad relay list | grep -E '^[A-Za-z].*\([a-z]+\)$')"
-    [ -z "$countries" ] && { notify "🔒 Mullvad" "no relay list available"; return; }
-    country="$(printf '%s\n' "$countries" | $DMENU -l 20 -p 'Connect to country:')" || return
-    [ -z "$country" ] && return
-    code="$(printf '%s' "$country" | sed -E 's/.*\(([a-z]+)\)$/\1/')"
-    mullvad relay set location "$code" >/dev/null
-    notify "🔒 Mullvad" "Connecting to $country…"
-    mullvad reconnect >/dev/null
-    # let the daemon leave 'connected' before we start polling for it
-    sleep 1
-    watch_connect
+run_transition() {
+    # $1 = target state, $2 = require a non-target state first,
+    # $3 = expected country code (optional), $4/$5 = progress text
+    target_state=$1
+    require_transition=$2
+    expected_country=$3
+    progress_summary=$4
+    progress_body=$5
+    shift 5
+
+    generation=$(new_generation)
+    if ! set_generation "$generation"; then
+        notify "⚠ Mullvad" "Could not create the state watcher" critical
+        return 1
+    fi
+
+    ready_file="$runtime_dir/mullvad-menu-ready-$generation"
+    watch_state "$target_state" "$require_transition" "$expected_country" \
+        "$generation" "$ready_file" </dev/null >/dev/null 2>&1 &
+    watcher_pid=$!
+
+    ready_attempts=0
+    while [ ! -e "$ready_file" ] && [ "$ready_attempts" -lt 40 ]; do
+        sleep 0.05
+        ready_attempts=$((ready_attempts + 1))
+    done
+    if [ ! -e "$ready_file" ]; then
+        kill "$watcher_pid" 2>/dev/null || :
+        wait "$watcher_pid" 2>/dev/null || :
+        notify "⚠ Mullvad" "Could not start the state listener" critical
+        return 1
+    fi
+
+    notify "$progress_summary" "$progress_body"
+    if ! command_error=$(mullvad "$@" 2>&1); then
+        if is_current_generation "$generation"; then
+            set_generation "cancelled-$generation" >/dev/null 2>&1 || :
+        fi
+        kill "$watcher_pid" 2>/dev/null || :
+        wait "$watcher_pid" 2>/dev/null || :
+        notify "⚠ Mullvad" "${command_error:-Command failed: mullvad $*}" critical
+        refresh
+        return 1
+    fi
+
+    if ! (umask 077; : > "$ready_file.action"); then
+        kill "$watcher_pid" 2>/dev/null || :
+        wait "$watcher_pid" 2>/dev/null || :
+        notify "⚠ Mullvad" "Could not release the state listener" critical
+        refresh
+        return 1
+    fi
+
     refresh
 }
 
-toggle_auto_connect() {
-    cur="$(mullvad auto-connect get 2>/dev/null | awk '{print $NF}')"
-    if [ "$cur" = "on" ]; then
-        mullvad auto-connect set off >/dev/null
-        notify "🔒 Mullvad" "Auto-connect disabled"
-    else
-        mullvad auto-connect set on >/dev/null
-        notify "🔒 Mullvad" "Auto-connect enabled"
+notify_status() {
+    if ! output=$(mullvad status -v 2>&1); then
+        notify "⚠ Mullvad" "${output:-Daemon unreachable}" critical
+        return 1
     fi
+    notify "🔒 Mullvad status" "$output"
 }
 
-options="Connect
+set_auto_connect() {
+    target=$1
+    if ! command_error=$(mullvad auto-connect set "$target" 2>&1); then
+        notify "⚠ Mullvad" "${command_error:-Could not change auto-connect}" critical
+        return 1
+    fi
+
+    case "$target" in
+        on)  notify "🔒 Mullvad" "Auto-connect enabled" ;;
+        off) notify "🔒 Mullvad" "Auto-connect disabled" ;;
+    esac
+}
+
+toggle_auto_connect() {
+    auto_output=$(mullvad auto-connect get 2>/dev/null) || {
+        notify "⚠ Mullvad" "Could not read the auto-connect setting" critical
+        return 1
+    }
+    auto_state=$(printf '%s\n' "$auto_output" \
+        | sed -n 's/^Autoconnect: \(on\|off\)$/\1/p')
+
+    case "$auto_state" in
+        on)  set_auto_connect off ;;
+        off) set_auto_connect on ;;
+        *)
+            notify "⚠ Mullvad" "Unexpected auto-connect response: $auto_output" critical
+            return 1
+            ;;
+    esac
+}
+
+pick_country() {
+    if ! relay_output=$(LC_ALL=C mullvad relay list 2>&1); then
+        notify "⚠ Mullvad" "${relay_output:-Could not retrieve the relay list}" critical
+        return 1
+    fi
+
+    countries=$(printf '%s\n' "$relay_output" \
+        | sed -nE 's/^([^[:space:]].*) \(([a-z]{2})\)$/\1 (\2)/p')
+    if [ -z "$countries" ]; then
+        notify "⚠ Mullvad" "No countries found in the relay list" critical
+        return 1
+    fi
+
+    country=$(printf '%s\n' "$countries" \
+        | menu "Connect to country" 20 "Choose any relay in a country") || return 0
+    [ -n "$country" ] || return 0
+
+    code=$(printf '%s\n' "$country" \
+        | sed -nE 's/^.*\(([a-z]{2})\)$/\1/p')
+    case "$code" in
+        [a-z][a-z]) ;;
+        *)
+            notify "⚠ Mullvad" "Invalid country selection: $country" critical
+            return 1
+            ;;
+    esac
+
+    if ! command_error=$(mullvad relay set location "$code" 2>&1); then
+        notify "⚠ Mullvad" "${command_error:-Could not select $country}" critical
+        return 1
+    fi
+
+    run_transition connected yes "$code" \
+        "🔒 Mullvad" "Connecting to $country…" reconnect
+}
+
+for dependency in rofi mullvad jq notify-send pkill timeout; do
+    if ! command -v "$dependency" >/dev/null 2>&1; then
+        printf 'mullvad-menu: required command not found: %s\n' "$dependency" >&2
+        command -v notify-send >/dev/null 2>&1 \
+            && notify-send -u critical "Mullvad menu" "Required command not found: $dependency"
+        exit 1
+    fi
+done
+
+current_json=$(status_json 2>/dev/null) || current_json=
+current_state=$(status_state "$current_json" 2>/dev/null) || current_state=unavailable
+
+auto_output=$(mullvad auto-connect get 2>/dev/null) || auto_output=
+auto_state=$(printf '%s\n' "$auto_output" \
+    | sed -n 's/^Autoconnect: \(on\|off\)$/\1/p')
+case "$auto_state" in
+    on)  auto_action="Disable auto-connect" ;;
+    off) auto_action="Enable auto-connect" ;;
+    *)   auto_action="Toggle auto-connect" ;;
+esac
+
+case "$current_state" in
+    connected)
+        current_info=$(connected_info "$current_json" 2>/dev/null) \
+            || current_info="location unavailable"
+        menu_message="Connected: $current_info"
+        options="Disconnect
+Reconnect
+Pick country…
+Show status
+$auto_action"
+        ;;
+    disconnected)
+        menu_message="Disconnected"
+        options="Connect
+Pick country…
+Show status
+$auto_action"
+        ;;
+    connecting)
+        menu_message="Connecting…"
+        options="Disconnect
+Show status
+$auto_action"
+        ;;
+    disconnecting)
+        menu_message="Disconnecting…"
+        options="Show status
+$auto_action"
+        ;;
+    *)
+        menu_message="Status unavailable"
+        options="Connect
 Disconnect
 Reconnect
-Show status
 Pick country…
-Toggle auto-connect"
+Show status
+$auto_action"
+        ;;
+esac
 
-choice="$(printf '%s\n' "$options" | $DMENU -l 6 -p 'Mullvad:')" || exit 0
+if [ -n "$auto_state" ]; then
+    menu_message="$menu_message
+Auto-connect: $auto_state"
+fi
+
+choice=$(printf '%s\n' "$options" | menu "Mullvad" 6 "$menu_message") || exit 0
+[ -n "$choice" ] || exit 0
 
 case "$choice" in
     Connect)
-        notify "🔒 Mullvad" "Connecting…"
-        mullvad connect >/dev/null
-        watch_connect
-        refresh
+        run_transition connected no "" "🔒 Mullvad" "Connecting…" connect
         ;;
     Disconnect)
-        notify "🔓 Mullvad" "Disconnecting…"
-        mullvad disconnect >/dev/null
-        watch_disconnect
-        refresh
+        run_transition disconnected no "" "🔓 Mullvad" "Disconnecting…" disconnect
         ;;
     Reconnect)
-        notify "🔒 Mullvad" "Reconnecting…"
-        mullvad reconnect >/dev/null
-        sleep 1
-        watch_connect
-        refresh
+        run_transition connected yes "" "🔒 Mullvad" "Reconnecting…" reconnect
         ;;
     "Show status")
         notify_status
         ;;
     "Pick country…")
         pick_country
+        ;;
+    "Enable auto-connect")
+        set_auto_connect on
+        ;;
+    "Disable auto-connect")
+        set_auto_connect off
         ;;
     "Toggle auto-connect")
         toggle_auto_connect

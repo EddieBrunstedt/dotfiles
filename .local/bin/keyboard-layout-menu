@@ -1,0 +1,30 @@
+#!/bin/sh
+#Set keyboard layout with mmsg and rofi (Wayland/Mango)
+
+# Layouts must be listed in xkb_rules_layout in ~/.config/mango/config.conf.
+# Mango only exposes a cycle dispatcher (switch_keyboard_layout), so cycle
+# until the compositor reports the chosen layout as active.
+
+list='us (English)
+se (Swedish)
+dk (Danish)'
+
+chosen=$(printf '%s\n' "$list" | rofi -dmenu -i -l 3 -p "Keyboard layout")
+
+[ "$chosen" != "" ] || exit
+
+case "$(printf '%s\n' "$chosen" | awk '{print $1}')" in
+    us) target="English (US)" ;;
+    se) target="Swedish" ;;
+    dk) target="Danish" ;;
+    *) exit 1 ;;
+esac
+
+current() { mmsg get keyboardlayout | sed 's/.*"layout":"\([^"]*\)".*/\1/'; }
+
+i=0
+while [ "$(current)" != "$target" ] && [ $i -lt 3 ]; do
+    mmsg dispatch switch_keyboard_layout >/dev/null
+    sleep 0.1
+    i=$((i+1))
+done

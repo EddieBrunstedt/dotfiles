@@ -1,0 +1,6 @@
+#!/bin/sh
+# Pause/unpause dunst notifications, then refresh the Waybar dunst segment
+# immediately (RTMIN+3 matches "signal": 3 in waybar config.jsonc).
+# Bound to SUPER+SHIFT,n in mango and to the bar segment's on-click.
+dunstctl set-paused toggle
+pkill -RTMIN+3 waybar

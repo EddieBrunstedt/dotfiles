@@ -1,0 +1,8 @@
+#!/bin/sh
+# Waybar segment: notification state. Refreshed every interval and instantly
+# via `pkill -RTMIN+3 waybar` (see dunst-toggle). Prints its own icon.
+if [ "$(dunstctl is-paused 2>/dev/null)" = "true" ]; then
+    echo "🔕"
+else
+    echo "🔔"
+fi

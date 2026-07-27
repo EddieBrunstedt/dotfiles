@@ -1,9 +1,0 @@
-#!/usr/bin/env sh
-
-list="xrandr --output DP-0 --mode 3440x1440 -r 99.98\nxrandr --output DP-0 --mode 1920x1080 -r 239.96"
-
-setting=$(echo -e $list | dmenu -i -b -fn 'monospace:size=11' -nb '#1E1D2F' -sb '#4a4a58' -sf '#D9E0EE' -l 2)
-
-[ "$setting" != "" ] || exit
-
-$setting;

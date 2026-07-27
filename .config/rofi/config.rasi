@@ -1,0 +1,5 @@
+configuration {
+	font: "Mono Lisa Medium 12";
+}
+
+@theme "/usr/share/rofi/themes/Arc-Dark.rasi"

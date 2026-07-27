@@ -31,8 +31,10 @@ clean-orphans-apply:
 enable-services:
     systemctl --user daemon-reload
     systemctl --user enable \
-        dwmblocksrs.service \
-        sxhkd.service \
-        unclutter.service \
-        nitrogen-restore.service \
-        protonmail-bridge.service
+        forgejo-runner.service \
+        protonmail-bridge.service \
+        vault-cleanup.service \
+        waybar.service
+    # soteria's packaged unit installs to default.target; wire it to the
+    # graphical session instead
+    systemctl --user add-wants graphical-session.target soteria.service

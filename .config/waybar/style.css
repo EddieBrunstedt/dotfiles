@@ -1,0 +1,119 @@
+/*
+ * Waybar style — flat, minimal, modeled on dwm (Catppuccin Mocha).
+ * Palette mirrors ~/projects/dwm/repos/dwm/config.h:
+ *   base #1e1e2e  surface0 #313244  surface1 #45475a
+ *   text #cdd6f4  lavender #b4befe (accent / SchemeSel)
+ * Design goals: no rounded corners, no per-module colors, uniform status
+ * text like a dwm bar. Color is used only to signal state (muted/critical).
+ */
+
+* {
+    font-family: monospace, "Symbols Nerd Font";
+    font-size: 12pt;   /* matches dwm's "monospace:size=12" (points, not px) */
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+    /* kill the stock example's hover box-shadow underline */
+    box-shadow: none;
+    text-shadow: none;
+}
+
+window#waybar {
+    background-color: #1e1e2e;
+    color: #cdd6f4;
+}
+
+tooltip {
+    background-color: #181825;
+    border: 1px solid #45475a;
+    color: #cdd6f4;
+}
+
+tooltip label {
+    color: #cdd6f4;
+}
+
+/* ── workspaces (mango ext/workspaces) ───────────────────────────── */
+#workspaces {
+    margin: 0;
+    padding: 0;
+}
+
+#workspaces button {
+    padding: 0 8px;
+    background-color: transparent;
+    color: #cdd6f4;
+}
+
+#workspaces button:hover {
+    background-color: #313244;   /* surface0 */
+    color: #cdd6f4;
+}
+
+#workspaces button.active {
+    background-color: #b4befe;   /* lavender — dwm SchemeSel accent */
+    color: #1e1e2e;
+}
+
+#workspaces button.urgent {
+    background-color: #f38ba8;   /* red */
+    color: #1e1e2e;
+}
+
+/* ── Mango layout and focused-window title ──────────────────────── */
+#layout {
+    padding-left: 8px;
+    color: #bac2de;
+}
+
+#window {
+    padding: 0 8px;
+    color: #bac2de;              /* slightly dimmer than primary text */
+}
+
+window#waybar.empty #window {
+    background: transparent;
+}
+
+/* ── right-side status modules: uniform, flat, dwm-like ──────────── */
+#custom-cpubusy,
+#custom-memory,
+#custom-routebps,
+#custom-protonmail,
+#custom-mullvad,
+#custom-volume,
+#custom-voxtype,
+#clock,
+#tray {
+    padding: 0 8px;
+    background-color: transparent;
+    color: #cdd6f4;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+}
+
+/* ── Voxtype: ready / recording / transcribing / stopped ─────────── */
+#custom-voxtype.idle {
+    color: #a6e3a1;
+}
+
+#custom-voxtype.recording {
+    color: #f38ba8;
+    animation: voxtype-pulse 1s ease-in-out infinite;
+}
+
+#custom-voxtype.transcribing {
+    color: #f9e2af;
+}
+
+#custom-voxtype.stopped {
+    color: #6c7086;
+}
+
+@keyframes voxtype-pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.45; }
+    100% { opacity: 1; }
+}

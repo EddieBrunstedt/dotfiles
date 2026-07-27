@@ -1,14 +1,20 @@
 #!/bin/sh
-#Set white temperatature with redshift and dmenu
+#Set white temperatature with gammastep and rofi (Wayland)
 
-list="6500 K (default day)\n4500 K (default night)\n4000 K\n3500 K\n3000 K\n2500 K "
+list='6500 K (default day)
+4500 K (default night)
+4000 K
+3500 K
+3000 K
+2500 K '
 
-chosen=$(echo -e $list | dmenu -i -l 6 -fn monospace-12)
+chosen=$(printf '%s\n' "$list" | rofi -dmenu -i -l 6 -p "White temp")
 
 [ "$chosen" != "" ] || exit
 
-echo $chosen | head -n1 | awk '{print $1;}'
+center=$(printf '%s\n' "$chosen" | awk 'NR == 1 { print $1; exit }')
 
-center=$(echo $chosen | head -n1 | awk '{print $1;}')
-
-redshift -P -O $center
+# On Wayland the gamma resets when the client exits, so gammastep must keep
+# running to hold the temperature. Replace any running instance and detach.
+pkill -x gammastep
+setsid -f gammastep -P -O "$center" >/dev/null 2>&1

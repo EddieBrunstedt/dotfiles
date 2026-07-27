@@ -1,16 +1,33 @@
+# command = direct:/usr/bin/tmux new-session -A -s main
+
+confirm-close-surface = false
+
 font-family = "monospace"
 font-size = 12
 
-confirm-close-surface = false
-quit-after-last-window-closed = true
-
-gtk-titlebar = false
-window-padding-x = 0
-window-padding-y = 0
-window-decoration = server
-
-theme = Flexoki Dark
+gtk-titlebar = true
 
 keybind = ctrl+enter=unbind
 
-gtk-custom-css = ./custom.css
+# Scrollback navigation
+keybind = alt+y=scroll_page_lines:-1
+keybind = alt+e=scroll_page_lines:1
+# keybind = alt+k=scroll_page_lines:-3
+# keybind = alt+j=scroll_page_lines:3
+keybind = alt+u=scroll_page_fractional:-0.5
+keybind = alt+d=scroll_page_fractional:0.5
+keybind = alt+b=scroll_page_up
+keybind = alt+f=scroll_page_down
+
+quit-after-last-window-closed = false
+
+resize-overlay = never
+
+scrollback-limit = 50000000
+
+theme = Flexoki Dark
+
+window-decoration = none
+window-padding-balance = true
+window-padding-x = 3
+window-padding-y = 3

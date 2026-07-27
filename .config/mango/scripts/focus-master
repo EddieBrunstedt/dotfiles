@@ -1,0 +1,43 @@
+#!/bin/sh
+# Legacy IPC fallback for focusing the first visible tiled window.
+# New bindings should use Mango's native `focus_first_tiled` dispatcher.
+# This helper remains for callers such as `kill-focus-master`.
+#
+# We can't use `focusid`: sloppyfocus=1 makes focus follow the mouse and
+# focusid doesn't move the cursor, so focus snaps back. `focusstack` warps the
+# cursor (warpcursor=1), so we step through layout order until reaching the
+# first tiled client.
+
+# Active monitor and its tags.
+{
+	read -r mon
+	read -r tags
+} <<EOF
+$(mmsg get all-monitors | jq -r '.monitors[] | select(.active) | .name, (.active_tags | tojson)')
+EOF
+[ -n "$mon" ] || exit 0
+
+# From the on-screen clients (this monitor, active tags, not minimized or
+# scratchpad): the first tiled target, focused client, and walk limit.
+{
+	read -r master
+	read -r focused
+	read -r n
+} <<EOF
+$(mmsg get all-clients | jq -r --arg mon "$mon" --argjson tags "$tags" '
+	[ .clients[]
+	  | select(.monitor == $mon)
+	  | select(.tags | any(. as $t | $tags | index($t)))
+	  | select((.is_minimized or .is_scratchpad or .is_namedscratchpad) | not) ]
+	| (map(select(.is_floating | not)) | first | .id // ""),
+	  (map(select(.is_focused)) | first | .id // ""),
+	  length')
+EOF
+[ -n "$master" ] || exit 0
+
+i=0
+while [ "$i" -lt "$n" ] && [ "$focused" != "$master" ]; do
+	mmsg dispatch focusstack,next >/dev/null
+	focused=$(mmsg get focusing-client | jq -r '.id // empty')
+	i=$((i + 1))
+done

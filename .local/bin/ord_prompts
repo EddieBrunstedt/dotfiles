@@ -4,11 +4,11 @@
 display_names=("Fix grammar" "Get definition" "Shorten" "Summarize" "ELI5" "Explain code" "Commit message" "Summarize logs" "Checklist" "Improve prompt")
 commands=("ord_grammar" "ord_definition" "ord_shorten" "ord_summarize" "ord_eli5" "ord_explain_code" "ord_commit_message" "ord_summarize_logs" "ord_checklist" "ord_improve_prompt")
 
-# Convert display names array to a newline-separated string for dmenu
+# Convert display names array to a newline-separated string for rofi
 options=$(printf "%s\n" "${display_names[@]}")
 
-# Show the dmenu prompt to the user and get the chosen option
-chosen=$(echo "$options" | dmenu -i -l 20 -fn monospace-12)
+# Show the rofi prompt to the user and get the chosen option
+chosen=$(echo "$options" | rofi -dmenu -i -l "${#display_names[@]}" -p "Ord prompt")
 
 # Exit if nothing was chosen
 [ "$chosen" != "" ] || exit

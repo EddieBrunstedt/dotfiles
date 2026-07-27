@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# wallpaper — start swaybg with the current wallpaper, or a solid color if
+# no image is set yet. Re-running it swaps the wallpaper live (it replaces
+# the previous swaybg), so it works both from exec-once and by hand after
+# changing the image.
+#
+# Wallpapers live in ~/.local/share/wallpapers under their original names.
+# To set/change your wallpaper, point the `current` symlink at one of them:
+#   ln -sfn ~/.local/share/wallpapers/<image> ~/.local/share/wallpapers/current
+# then run this script again. Any format swaybg groks (png/jpg/webp) works.
+
+WALL="$HOME/.local/share/wallpapers/current"
+FALLBACK_COLOR="#1a1b26"   # shown until you set an image
+
+# kill the previous instance only once the new one is ready would flicker
+# less, but swaybg has no handoff — a brief blank on swap is normal.
+pkill -x swaybg 2>/dev/null
+
+if [[ -e $WALL ]]; then
+  exec swaybg -i "$WALL" -m fill
+else
+  exec swaybg -c "$FALLBACK_COLOR"
+fi

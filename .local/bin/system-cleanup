@@ -1,0 +1,51 @@
+#!/bin/sh
+
+available_kb() {
+    df -Pk / "$HOME" /var/cache/pacman/pkg /var/lib/docker /var/log 2>/dev/null |
+        awk 'NR > 1 && !seen[$1]++ { total += $4 } END { printf "%.0f\n", total }'
+}
+
+human_kb() {
+    if command -v numfmt >/dev/null 2>&1; then
+        numfmt --to=iec-i --suffix=B "$(( $1 * 1024 ))"
+    else
+        awk -v kib="$1" 'BEGIN {
+            split("KiB MiB GiB TiB", units)
+            value = kib
+            unit = 1
+            while (value >= 1024 && unit < 4) {
+                value /= 1024
+                unit++
+            }
+            printf "%.1f %s\n", value, units[unit]
+        }'
+    fi
+}
+
+before_kb=$(available_kb)
+printf 'Available disk space before cleanup: %s\n\n' "$(human_kb "$before_kb")"
+
+paru -Scc -d --noconfirm
+docker system prune --all --force
+pnpm store prune
+npm cache verify
+go clean -cache -testcache
+tldr --clear-cache
+sudo journalctl --vacuum-size=500M
+
+cache=${XDG_CACHE_HOME:-"$HOME/.cache"}
+if [ -d "$cache" ]; then
+    find "$cache" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+fi
+
+after_kb=$(available_kb)
+difference_kb=$((after_kb - before_kb))
+
+printf '\nAvailable disk space after cleanup:  %s\n' "$(human_kb "$after_kb")"
+if [ "$difference_kb" -gt 0 ]; then
+    printf 'Disk space reclaimed:              %s\n' "$(human_kb "$difference_kb")"
+elif [ "$difference_kb" -lt 0 ]; then
+    printf 'Available disk space decreased by: %s\n' "$(human_kb "$((-difference_kb))")"
+else
+    printf 'No net change in available disk space.\n'
+fi

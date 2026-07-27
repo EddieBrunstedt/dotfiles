@@ -1,0 +1,8 @@
+#!/bin/sh
+# Full-screen screenshot → satty annotation (crop inside satty when needed).
+# Bound to Print. Save-to-file and copy-to-clipboard are chosen in satty's UI.
+dir=~/screenshots
+mkdir -p "$dir"
+grim - | satty --filename - \
+  --output-filename "$dir/%Y%m%d_%H%M%S.png" \
+  --early-exit --copy-command wl-copy

@@ -18,7 +18,6 @@ alias \
 
 # Text and file viewers
 alias \
-    bat="bat --style=header --style=auto --theme base16" \
     ccat="highlight --out-format=ansi" \
     diff="diff --color=auto" \
     grep="grep --color=auto" \

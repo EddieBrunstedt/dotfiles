@@ -39,7 +39,8 @@ unset path_prepend
 # Less/Man page configuration
 export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
 export MANWIDTH=80
-export LESS=-R
+# R: pass ANSI colors through, F: quit if it fits one screen, X: keep output on screen after quit
+export LESS=-RFX
 export LESS_TERMCAP_mb=$'\e[1;32m'
 export LESS_TERMCAP_md=$'\e[1;32m'
 export LESS_TERMCAP_me=$'\e[0m'
@@ -53,4 +54,4 @@ export QT_QPA_PLATFORMTHEME="gtk3"
 export _JAVA_AWT_WM_NONREPARENTING=1
 export MOZ_USE_XINPUT2="1"
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
-export _ZO_EXCLUDE_DIRS="/run/media/*"
+export _ZO_EXCLUDE_DIRS="$HOME:$XDG_RUNTIME_DIR/*:$HOME/vault/*:$HOME/shared/downloads/*"

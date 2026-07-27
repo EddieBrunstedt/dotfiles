@@ -1,0 +1,12 @@
+[Unit]
+Description=Remove a dangling ~/vault symlink left over from a previous session
+
+[Service]
+Type=oneshot
+# Remove ~/vault only if it is a broken symlink (target gone, e.g. tmpfs wiped
+# by a reboot). A live mount leaves the target present, so it is untouched; a
+# real file/dir is not a symlink, so it is untouched. Exits 0 either way.
+ExecStart=/bin/sh -c 'if [ -L "%h/vault" ] && [ ! -e "%h/vault" ]; then rm -f "%h/vault"; fi'
+
+[Install]
+WantedBy=default.target

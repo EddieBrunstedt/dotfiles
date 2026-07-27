@@ -1,0 +1,19 @@
+[Unit]
+Description=Forgejo Actions runner (Codeberg)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.config/forgejo-runner
+ExecStart=/usr/bin/forgejo-runner daemon \
+  --url https://codeberg.org/ \
+  --uuid fa725fda-6407-4dfe-af0e-12907ae515c2 \
+  --token-url file://%h/.config/forgejo-runner/runner-token \
+  --label docker:docker://node:20-bookworm \
+  --label native:host
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
