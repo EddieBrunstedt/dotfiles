@@ -1,6 +1,0 @@
-#!/bin/sh
-# Runs /usr/bin/opencode with only the key it needs. See ~/.secret/README.md
-set -eu
-OPENROUTER_API_KEY=$(sec OPENROUTER_API_KEY)
-export OPENROUTER_API_KEY
-exec /usr/bin/opencode "$@"

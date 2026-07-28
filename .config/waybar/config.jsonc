@@ -69,7 +69,7 @@
     // Each tick costs two sops decryptions, hence interval 60 rather than 5.
     // signal 4 → refresh instantly with: pkill -RTMIN+4 waybar
     "custom/protonmail": {
-        "exec": "/home/nilo/.local/bin/protonmail-status",
+        "exec": "/home/nilo/.local/bin/shims/protonmail-status",
         "interval": 60,
         "signal": 4,
         "on-click": "xdg-open https://mail.proton.me/",

@@ -45,6 +45,9 @@ path_prepend "$HOME/.local/share/zvm/bin"
 path_prepend "$HOME/.cargo/bin"
 path_prepend "$HOME/.local/bin/statusbar"
 path_prepend "$HOME/.local/bin"
+# Last, so it wins: secret-injecting shims must shadow both /usr/bin and
+# ~/.cargo/bin. See ~/.secret/README.md.
+path_prepend "$HOME/.local/bin/shims"
 export PATH
 unset -f path_prepend
 

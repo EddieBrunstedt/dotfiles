@@ -6,8 +6,8 @@ Variable names are cleartext so the inventory is reviewable in `git diff`. Value
 
 ```
 claude                                   the tool that needs the key
-  └─ ~/.local/bin/claude                 shim: shadows /usr/bin/claude on $PATH
-       └─ sec ANTHROPIC_API_KEY
+  └─ ~/.local/bin/shims/claude           symlink to _shim, first on $PATH
+       └─ sec ANTHROPIC_API_KEY          per the shims manifest
             └─ sops -d --extract '["ANTHROPIC_API_KEY"]' env.optimusprime.sops.yaml
                  ├─ SOPS_AGE_KEY_CMD → secret-tool → age identity from the keyring
                  └─ value on stdout
@@ -81,21 +81,48 @@ Cost: ~21ms for a machine-file value, ~41ms for a shared-file value (two sops in
 ## Adding a secret
 
 1. `sops ~/.secret/env.<file>.sops.yaml`, add a `NAME: value` line, save.
-2. If a tool reads it from the environment, add a shim at `~/.dotfiles/.local/bin/<tool>`:
-
-   ```sh
-   #!/bin/sh
-   # Runs /usr/bin/TOOL with only the key it needs.
-   set -eu
-   SOME_API_KEY=$(sec SOME_API_KEY)
-   export SOME_API_KEY
-   exec /usr/bin/TOOL "$@"
-   ```
-
-   `chmod 755`, then `just restow`. `~/.local/bin` precedes `/usr/bin` on `$PATH`.
+2. If a tool reads it from the environment, give it a shim — see below.
 3. Commit. The diff shows `ENC[...]`, never the value.
 
-Assign and `export` in shims. Never `env VAR=value TOOL` — that exposes the value in `/proc/<pid>/cmdline`.
+## Shims
+
+Tools that insist on reading a secret from their environment get one, via
+`~/.dotfiles/.local/bin/shims/`. That directory is first on `$PATH`, ahead of both `/usr/bin` and
+`~/.cargo/bin`.
+
+It contains one real script, `_shim`, plus a symlink per tool. `_shim` reads `$0` to learn which
+tool it was invoked as, looks that name up in `manifest`, exports exactly the secrets listed, and
+execs the real binary.
+
+`manifest` is the authoritative record of **which tool can see which secret**:
+
+```
+# tool              real binary                      secrets
+claude              /usr/bin/claude                  ANTHROPIC_API_KEY
+codex               /usr/bin/codex                   OPENAI_API_KEY
+opencode            /usr/bin/opencode                OPENROUTER_API_KEY
+protonmail-status   ~/.cargo/bin/protonmail-status   PROTON_BRIDGE_IMAP_USER PROTON_BRIDGE_IMAP_PASS
+```
+
+Columns: tool name, real binary (absolute, or `~/` for `$HOME`), then one or more secret names.
+Lines starting with `#` are ignored. A tool receives what is listed and nothing else — verified.
+
+To add one:
+
+```fish
+cd ~/.dotfiles/.local/bin/shims
+# append a manifest line, then:
+ln -s _shim <tool>
+cd ~/.dotfiles && just restow
+```
+
+`_shim` fails loudly rather than silently: unknown tool name, missing manifest, or a target that
+is not executable each produce a message on stderr and exit 1. A failed `sec` lookup aborts before
+the real binary is exec'd.
+
+**Never `env VAR=value TOOL`.** `_shim` assigns and exports instead, because an `env` prefix puts
+the value in `/proc/<pid>/cmdline`, readable by any process on the machine for the lifetime of the
+command.
 
 Creating a **new** vault file must be done in `~/.dotfiles/.secret/` followed by `just restow`. Stow symlinks files that existed when it last ran; a new path created under `~/.secret/` is a plain `$HOME` file with no counterpart in the repo, and will never be committed.
 
@@ -107,8 +134,8 @@ Systemd user units have no ambient secrets. If a unit needs one, shim the comman
 
 Worked example, waybar's `custom/protonmail`:
 
-- `~/.local/bin/protonmail-status` wraps the real binary in `~/.cargo/bin`, supplying `PROTON_BRIDGE_IMAP_USER` and `PROTON_BRIDGE_IMAP_PASS`. Waybar's own environment holds neither.
-- The waybar config uses an **absolute path**. Waybar's `PATH` puts `~/.local/bin` first; interactive shells put `~/.cargo/bin` first, so a bare name resolves to a different program in each context.
+- `~/.local/bin/shims/protonmail-status` wraps the real binary in `~/.cargo/bin`, supplying `PROTON_BRIDGE_IMAP_USER` and `PROTON_BRIDGE_IMAP_PASS`. Waybar's own environment holds neither.
+- The waybar config uses an **absolute path**. Waybar inherits its `PATH` from the systemd activation environment, which does not include the shims directory, so a bare name would resolve to the real cargo binary and silently lose its credentials.
 - `"interval": 60` with `"signal": 4` (`pkill -RTMIN+4 waybar`). Each tick costs two decryptions plus an IMAP round-trip, ~200ms. Signals 1–3 are taken by volume, mullvad and dunst.
 
 `waybar.service` sets `SOPS_AGE_KEY_CMD` itself so the bar does not depend on uwsm having sourced `~/.profile`:

@@ -1,6 +1,0 @@
-#!/bin/sh
-# Runs /usr/bin/claude with only the key it needs. See ~/.secret/README.md
-set -eu
-ANTHROPIC_API_KEY=$(sec ANTHROPIC_API_KEY)
-export ANTHROPIC_API_KEY
-exec /usr/bin/claude "$@"

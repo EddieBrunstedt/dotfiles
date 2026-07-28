@@ -27,6 +27,9 @@ fish_add_path -g ~/.local/share/zvm/bin
 # pnpm installs global binaries directly into $PNPM_HOME, not a bin/ below it.
 fish_add_path -g ~/.local/share/pnpm
 fish_add_path -g ~/.npm-global/bin
+# Last, so it wins: secret-injecting shims must shadow both /usr/bin and
+# ~/.cargo/bin. See ~/.secret/README.md.
+fish_add_path -g ~/.local/bin/shims
 
 # Disable fish greeting
 set -g fish_greeting ""
