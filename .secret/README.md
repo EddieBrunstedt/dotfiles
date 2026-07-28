@@ -6,7 +6,7 @@ Variable names are cleartext so the inventory is reviewable in `git diff`. Value
 
 ```
 claude                                   the tool that needs the key
-  └─ ~/.local/bin/shims/claude           symlink to _shim, first on $PATH
+  └─ ~/.local/bin/shims/claude           symlink to the shim, first on $PATH
        └─ sec ANTHROPIC_API_KEY          per the shims manifest
             └─ sops -d --extract '["ANTHROPIC_API_KEY"]' env.optimusprime.sops.yaml
                  ├─ SOPS_AGE_KEY_CMD → secret-tool → age identity from the keyring
@@ -86,13 +86,11 @@ Cost: ~21ms for a machine-file value, ~41ms for a shared-file value (two sops in
 
 ## Shims
 
-Tools that insist on reading a secret from their environment get one, via
-`~/.dotfiles/.local/bin/shims/`. That directory is first on `$PATH`, ahead of both `/usr/bin` and
-`~/.cargo/bin`.
+Tools that insist on reading a secret from their environment get one, via `~/.dotfiles/.local/bin/shims/`. That directory is first on `$PATH`, ahead of both `/usr/bin` and `~/.cargo/bin`.
 
-It contains one real script, `_shim`, plus a symlink per tool. `_shim` reads `$0` to learn which
-tool it was invoked as, looks that name up in `manifest`, exports exactly the secrets listed, and
-execs the real binary.
+It contains a symlink per tool plus the `manifest`, and nothing else — every *executable* in it is a tool you can type. The dispatcher they all point at lives outside `$PATH`, at `~/.local/libexec/shim`, so it cannot be invoked as a command itself. `manifest` is mode 644 and so is skipped by `$PATH` lookup; do not make it executable (it has no shebang, so a shell would read its first data line as a command and re-enter the shim). It reads `$0` to learn which tool it was invoked as, looks that name up in `manifest`, exports exactly the secrets listed, and execs the real binary.
+
+Because `$0` is the symlink the shell resolved off `$PATH`, the dispatcher locates `manifest` and `sec` relative to the shims directory, not to its own location in `libexec`.
 
 `manifest` is the authoritative record of **which tool can see which secret**:
 
@@ -104,25 +102,20 @@ opencode            /usr/bin/opencode                OPENROUTER_API_KEY
 protonmail-status   ~/.cargo/bin/protonmail-status   PROTON_BRIDGE_IMAP_USER PROTON_BRIDGE_IMAP_PASS
 ```
 
-Columns: tool name, real binary (absolute, or `~/` for `$HOME`), then one or more secret names.
-Lines starting with `#` are ignored. A tool receives what is listed and nothing else — verified.
+Columns: tool name, real binary (absolute, or `~/` for `$HOME`), then one or more secret names. Lines starting with `#` are ignored. A tool receives what is listed and nothing else — verified.
 
 To add one:
 
 ```fish
 cd ~/.dotfiles/.local/bin/shims
 # append a manifest line, then:
-ln -s _shim <tool>
+ln -s ../../libexec/shim <tool>
 cd ~/.dotfiles && just restow
 ```
 
-`_shim` fails loudly rather than silently: unknown tool name, missing manifest, or a target that
-is not executable each produce a message on stderr and exit 1. A failed `sec` lookup aborts before
-the real binary is exec'd.
+The shim fails loudly rather than silently: unknown tool name, missing manifest, or a target that is not executable each produce a message on stderr and exit 1. A failed `sec` lookup aborts before the real binary is exec'd.
 
-**Never `env VAR=value TOOL`.** `_shim` assigns and exports instead, because an `env` prefix puts
-the value in `/proc/<pid>/cmdline`, readable by any process on the machine for the lifetime of the
-command.
+**Never `env VAR=value TOOL`.** The shim assigns and exports instead, because an `env` prefix puts the value in `/proc/<pid>/cmdline`, readable by any process on the machine for the lifetime of the command.
 
 Creating a **new** vault file must be done in `~/.dotfiles/.secret/` followed by `just restow`. Stow symlinks files that existed when it last ran; a new path created under `~/.secret/` is a plain `$HOME` file with no counterpart in the repo, and will never be committed.
 
@@ -138,19 +131,12 @@ Worked example, waybar's `custom/protonmail`:
 - The waybar config uses an **absolute path**. Waybar inherits its `PATH` from the systemd activation environment, which does not include the shims directory, so a bare name would resolve to the real cargo binary and silently lose its credentials.
 - `"interval": 60` with `"signal": 4` (`pkill -RTMIN+4 waybar`). Each tick costs two decryptions plus an IMAP round-trip, ~200ms. Signals 1–3 are taken by volume, mullvad and dunst.
 
-Units get `SOPS_AGE_KEY_CMD` from `~/.config/environment.d/10-defaults.conf`, which `systemd --user`
-reads natively — no unit-level `Environment=` needed. It is a command string, not a secret, and is
-the one variable here that may legitimately enter the systemd/D-Bus activation environment.
+Units get `SOPS_AGE_KEY_CMD` from `~/.config/environment.d/10-defaults.conf`, which `systemd --user` reads natively — no unit-level `Environment=` needed. It is a command string, not a secret, and is the one variable here that may legitimately enter the systemd/D-Bus activation environment.
 
 Two consequences of using `environment.d`:
 
-- A change takes effect for units on `systemctl --user daemon-reload`, but the **compositor keeps
-  the environment it started with**, so anything it launches — terminals, and their non-fish
-  shells — only picks it up after a re-login.
-- Had this been set with a unit-level `Environment=` instead, the whole assignment would need
-  quoting: systemd splits `Environment=` on whitespace, so the unquoted form sets
-  `SOPS_AGE_KEY_CMD=secret-tool` and discards the rest — present, plausible to `grep`, and
-  non-functional. `environment.d` has no such rule; the value is taken verbatim to end of line.
+- A change takes effect for units on `systemctl --user daemon-reload`, but the **compositor keeps the environment it started with**, so anything it launches — terminals, and their non-fish shells — only picks it up after a re-login.
+- Had this been set with a unit-level `Environment=` instead, the whole assignment would need quoting: systemd splits `Environment=` on whitespace, so the unquoted form sets `SOPS_AGE_KEY_CMD=secret-tool` and discards the rest — present, plausible to `grep`, and non-functional. `environment.d` has no such rule; the value is taken verbatim to end of line.
 
 ## New machine
 
@@ -221,12 +207,12 @@ Rotating a value means revoking the old credential at the provider, not merely o
 
 Rotation was deferred on 2026-07-28.
 
-| Value                     | Reissue at             |
-| ------------------------- | ---------------------- |
-| `ANTHROPIC_API_KEY`       | console.anthropic.com  |
-| `OPENAI_API_KEY`          | platform.openai.com    |
-| `OPENROUTER_API_KEY`      | openrouter.ai/keys     |
-| `RAPIDAPI_KEY`            | rapidapi.com/developer |
+| Value                     | Reissue at                              |
+| ------------------------- | --------------------------------------- |
+| `ANTHROPIC_API_KEY`       | console.anthropic.com                   |
+| `OPENAI_API_KEY`          | platform.openai.com                     |
+| `OPENROUTER_API_KEY`      | openrouter.ai/keys                      |
+| `RAPIDAPI_KEY`            | rapidapi.com/developer                  |
 | `PROTON_BRIDGE_IMAP_PASS` | not independently rotatable — see below |
 
 `PROTON_BRIDGE_IMAP_USER` is an account address, not a credential.
@@ -237,39 +223,24 @@ For each: issue the new value, revoke the old, `sops ~/.secret/env.<file>.sops.y
 
 Established empirically on 2026-07-28 with Bridge 3.25.0. Do not repeat this.
 
-Only `protonmail-bridge-core` is installed — no GUI — and the CLI has no regenerate-password
-command (`login`, `logout`, `list`, `info`, `delete`, `clear`, `change`, `repair`, …). Neither of
-the obvious approaches works:
+Only `protonmail-bridge-core` is installed — no GUI — and the CLI has no regenerate-password command (`login`, `logout`, `list`, `info`, `delete`, `clear`, `change`, `repair`, …). Neither of the obvious approaches works:
 
-- `logout <n>` then `login` — password unchanged. Logout only disconnects; the vault entry
-  survives.
-- `delete <n>` then `login` — password unchanged, despite the vault entry genuinely being
-  destroyed and rebuilt. Bridge's own log confirms `Deleting vault user` followed by
-  `Adding vault user` / `Creating new user`.
+- `logout <n>` then `login` — password unchanged. Logout only disconnects; the vault entry survives.
+- `delete <n>` then `login` — password unchanged, despite the vault entry genuinely being destroyed and rebuilt. Bridge's own log confirms `Deleting vault user` followed by `Adding vault user` / `Creating new user`.
 
-`BridgePass` is therefore not a random local token. It derives from account-side material keyed by
-the Proton `userID`, which is unchanged by any local operation. `clear` would wipe preferences as
-well but re-login yields the same `userID`, so it will not help either.
+`BridgePass` is therefore not a random local token. It derives from account-side material keyed by the Proton `userID`, which is unchanged by any local operation. `clear` would wipe preferences as well but re-login yields the same `userID`, so it will not help either.
 
-**The only lever is changing the Proton account password** at account.proton.me. Verify with
-`info 0` afterwards rather than assuming — that step is inference, not something confirmed here.
+**The only lever is changing the Proton account password** at account.proton.me. Verify with `info 0` afterwards rather than assuming — that step is inference, not something confirmed here.
 
-Weigh it accordingly: this credential authenticates only against `127.0.0.1:1143` and `:1025`, is
-not reachable off the machine, and anyone able to use it already has code execution as this user
-and could call `sec` directly. Changing the account password forces re-login on every device. It
-is reasonable to treat this as lower priority than the four API keys, which are remotely
-exploitable and cheap to reissue.
+Weigh it accordingly: this credential authenticates only against `127.0.0.1:1143` and `:1025`, is not reachable off the machine, and anyone able to use it already has code execution as this user and could call `sec` directly. Changing the account password forces re-login on every device. It is reasonable to treat this as lower priority than the four API keys, which are remotely exploitable and cheap to reissue.
 
-After changing it, read the new value with `info 0` in `protonmail-bridge-core --cli` (stop the
-service first — it runs `--noninteractive`), then:
+After changing it, read the new value with `info 0` in `protonmail-bridge-core --cli` (stop the service first — it runs `--noninteractive`), then:
 
 ```fish
 sops ~/.secret/env.optimusprime.sops.yaml     # replace PROTON_BRIDGE_IMAP_PASS
 pkill -RTMIN+4 waybar
 ```
 
-Confirm the counter renders. `protonmail-status` is the only consumer of this credential — no mail
-client is configured against Bridge — so nothing else needs updating.
+Confirm the counter renders. `protonmail-status` is the only consumer of this credential — no mail client is configured against Bridge — so nothing else needs updating.
 
-Bridge listens on `127.0.0.1:1143` (IMAP) and `127.0.0.1:1025` (SMTP) only. This credential is not
-a Proton account password and is not reachable off the machine; it grants local mailbox access.
+Bridge listens on `127.0.0.1:1143` (IMAP) and `127.0.0.1:1025` (SMTP) only. This credential is not a Proton account password and is not reachable off the machine; it grants local mailbox access.

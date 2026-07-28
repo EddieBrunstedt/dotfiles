@@ -1,7 +1,7 @@
-# Which tool may see which secret. Read by `_shim`.
+# Which tool may see which secret. Read by ~/.local/libexec/shim.
 #
 # Each entry needs a matching symlink in this directory:
-#     ln -s _shim <tool>
+#     ln -s ../../libexec/shim <tool>
 #
 # Columns: tool, real binary (absolute, or ~/ for $HOME), secret names.
 # A tool receives exactly the secrets listed here and nothing else.

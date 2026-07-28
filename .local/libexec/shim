@@ -1,21 +1,25 @@
 #!/bin/sh
 # Secret-injecting shim dispatcher.
 #
-# Invoked through a symlink named after the tool. Looks that name up in
-# `manifest`, fetches the listed secrets with `sec`, exports them, and execs
-# the real binary. Nothing else in the environment is touched.
+# Invoked through a symlink in ~/.local/bin/shims named after the tool. Looks
+# that name up in `manifest`, fetches the listed secrets with `sec`, exports
+# them, and execs the real binary. Nothing else in the environment is touched.
 #
-# Adding a tool: one manifest line, one symlink here, `just restow`.
+# Adding a tool: one manifest line, one symlink in shims/, `just restow`.
 # See ~/.secret/README.md.
 set -eu
 
+# $0 is the symlink the shell resolved off $PATH, not this file, so $dir is the
+# shims directory rather than the libexec directory holding this script. That is
+# what we want: `manifest` and `sec` are located relative to the shims dir.
+# Running this script directly finds no manifest beside it and exits 1.
 name=${0##*/}
 dir=$(dirname -- "$0")
 manifest=${SHIM_MANIFEST:-$dir/manifest}
 
-# `sec` lives one level up, in ~/.local/bin. Resolve it by location rather than
-# relying on $PATH, which is not dependable when a shim is exec'd by a systemd
-# unit. Fall back to $PATH if the layout ever changes.
+# `sec` lives one level up from shims/, in ~/.local/bin. Resolve it by location
+# rather than relying on $PATH, which is not dependable when a shim is exec'd by
+# a systemd unit. Fall back to $PATH if the layout ever changes.
 sec=$dir/../sec
 [ -x "$sec" ] || sec=sec
 
