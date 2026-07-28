@@ -1,209 +1,257 @@
-# `~/.secret/` — encrypted secrets, decrypted on demand
+# Secrets
 
-## 1. What this is
+Encrypted secret values, tracked in git, decrypted on demand per process.
 
-Secrets live here as an **encrypted, git-tracked file per machine**. Variable _names_ stay in cleartext so the inventory is reviewable in `git diff`; _values_ are encrypted with [age](https://age-encryption.org/) via [sops](https://github.com/getsops/sops). Nothing is loaded into any shell's environment. Each value is decrypted on demand and reaches only the one process that asked for it.
+Variable names are cleartext so the inventory is reviewable in `git diff`. Values are encrypted
+with [age](https://age-encryption.org/) via [sops](https://github.com/getsops/sops). Nothing is
+loaded into any shell environment.
 
 ```
-claude                                    (the app that needs the key)
-  │
-  └─ shim: ~/.local/bin/claude
-       │
+claude                                   the tool that needs the key
+  └─ ~/.local/bin/claude                 shim: shadows /usr/bin/claude on $PATH
        └─ sec ANTHROPIC_API_KEY
-            │
             └─ sops -d --extract '["ANTHROPIC_API_KEY"]' env.optimusprime.sops.yaml
-                 │
-                 ├─ SOPS_AGE_KEY_CMD → secret-tool lookup ... → age identity   ← only keyring use
-                 └─ prints the value on stdout
+                 ├─ SOPS_AGE_KEY_CMD → secret-tool → age identity from the keyring
+                 └─ value on stdout
 ```
 
-## 2. The two layers
+Two independent layers:
 
-| Layer       | What                                  | Where                                                             |
-| ----------- | ------------------------------------- | ----------------------------------------------------------------- |
-| Vault       | encrypted values + cleartext manifest | `~/.dotfiles/.secret/*.sops.yaml`, in git; stowed to `~/.secret/` |
-| Key custody | one age identity                      | GNOME keyring, PAM-unlocked at login                              |
+| Layer | Contents | Location |
+|---|---|---|
+| Vault | encrypted values, cleartext names | `~/.dotfiles/.secret/*.sops.yaml`, in git |
+| Key custody | one age identity | GNOME keyring, PAM-unlocked at login |
 
-The keyring holds **only the age identity** — one secret instead of six.
+The age identity is kept in the keyring rather than a key file because this machine's root
+filesystem and swap are unencrypted (`/dev/sda3`, `/dev/sda2`, plain ext4, no LUKS). A key file
+would be readable from any live USB, and the vault ships to a git remote. The keyring's `login`
+collection is encrypted at rest with the login password.
 
-It is filed under two arbitrary lookup attributes, `xdg:schema=dev.dotfiles.age` and `name=sops`:
+## Requirements
+
+`sops`, `age`, `libsecret` (`secret-tool`), `gnome-keyring`, `stow`, `just`.
+
+The keyring must be PAM-unlocked at login. On this machine that is `pam_gnome_keyring.so
+auto_start` in `/etc/pam.d/greetd`, which covers the graphical session.
+
+**`/etc/pam.d/login` does not include `pam_gnome_keyring`.** A TTY login therefore does not unlock
+the keyring itself; it works only while a graphical session is concurrently logged in, because all
+sessions for this user share one systemd user instance and one D-Bus user bus, and the collection
+is already unlocked there. A cold boot straight to a TTY leaves the keyring locked and `sec` will
+fail. To fix that, add `pam_gnome_keyring.so` to `/etc/pam.d/login` (`auth optional` plus
+`session optional … auto_start`), matching the greetd stack.
+
+## Layout
+
+`.secret/` is stowed: `~/.secret/` and `~/.dotfiles/.secret/` are the same files via symlinks.
+
+| File | Contents | Sensitive |
+|---|---|---|
+| `.sops.yaml` | age recipients per file — public keys | no |
+| `.gitignore` | allow-list; only encrypted files may be committed | no |
+| `README.md` | this file | no |
+| `env.<hostname>.sops.yaml` | machine-specific values | values encrypted |
+| `env.shared.sops.yaml` | values common to all machines | values encrypted |
+
+Current contents:
+
+| File | Values |
+|---|---|
+| `env.optimusprime.sops.yaml` | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `PROTON_BRIDGE_IMAP_PASS` |
+| `env.shared.sops.yaml` | `RAPIDAPI_KEY`, `PROTON_BRIDGE_IMAP_USER` |
+
+Placement rule: a value goes in the shared file if it is identical on every machine
+(account-scoped keys, account addresses); in the machine file if it is issued or revoked per
+machine. The Proton pair is split accordingly — `sec` reassembles it transparently.
+
+The keyring item holding the age identity is filed under two lookup attributes:
 
 ```fish
 secret-tool lookup xdg:schema dev.dotfiles.age name sops
 ```
 
-Those attributes are **a filing label, nothing else** — `secret-tool` does a plain exact-string
-match to find the one item among everything else in the keyring (browser passwords, git
-credentials, Proton Bridge's own entries). They grant no permission and prove no identity; what
-protects the secret is that the keyring is unlocked by the login password and only this UID can
-read it. `dev.dotfiles.age` is just reverse-DNS-style naming, the same convention as
-`org.gnome.keyring.Note`. Any string would work — the only thing that matters is that the
-**store** and **lookup** strings match exactly, in all four places the command appears:
-`conf.d/sops.fish`, `~/.profile`, `waybar.service`, and this file.
+These are an arbitrary label, not a credential. The exact strings must match between store and
+lookup, and appear in four places: `.config/fish/conf.d/sops.fish`, `.profile`,
+`.config/systemd/user/waybar.service`, and this file.
 
-**"Why not just keep the age identity in a `0600` file?"** Because the root filesystem on this machine is **not encrypted** (`/dev/sda3`, plain ext4, no LUKS), and neither is swap (`sda2`). A key file at `~/.config/sops/age/keys.txt` would be readable by anyone who boots a USB stick, and since the vault itself is in a public-ish git repo, that would make the whole thing trivially openable. The keyring's `login` collection is encrypted at rest with the login password and unlocked by `pam_gnome_keyring.so` at login, so the identity is never at rest in the clear.
-
-## 3. Files
-
-The directory **is stowed**: `~/.secret/` and `~/.dotfiles/.secret/` are the same files, reached through symlinks. Read and edit either way.
-
-| File                         | Holds                                                             | Secret?          |
-| ---------------------------- | ----------------------------------------------------------------- | ---------------- |
-| `.sops.yaml`                 | which age recipients each file encrypts to — **public keys only** | no               |
-| `.gitignore`                 | allow-list; blocks anything that isn't an encrypted file          | no               |
-| `README.md`                  | this file                                                         | no               |
-| `env.optimusprime.sops.yaml` | this machine's values                                             | values encrypted |
-| `env.shared.sops.yaml`       | values shared across all machines                                 | values encrypted |
-
-Where the six values live:
-
-| File                         | Values                                                      | Why                                                                           |
-| ---------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `env.shared.sops.yaml`       | `RAPIDAPI_KEY`                                              | account-scoped; quotas are per-account, so splitting per machine buys nothing |
-|                              | `PROTON_BRIDGE_IMAP_USER`                                   | the Proton account address — identical on every machine                       |
-| `env.optimusprime.sops.yaml` | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY` | plausibly revoked or attributed per machine                                   |
-|                              | `PROTON_BRIDGE_IMAP_PASS`                                   | Bridge issues a distinct IMAP password per installation                       |
-
-The Proton pair is deliberately split across the two files. `sec` reassembles it transparently — `protonmail-status` reads one value from each and never knows the difference.
-
-> **Editing an existing vault file via `~/.secret/` is fine; creating a new one must be done in `~/.dotfiles/.secret/`, followed by `just restow`.**
->
-> Stow symlinks the files that existed when it last ran. A _new_ path created under `~/.secret/` is an ordinary `$HOME` file with no counterpart in the repo, so it would never be committed — and would be lost on the next machine. This is the most likely way for a future secret to end up untracked.
-
-Two sops behaviours worth knowing:
-
-- **`sops $FILE` exits 200 with "File has not changed, exiting"** if you quit the editor without editing. That is success, not failure.
-- sops writes **in place**. Editing through the `~/.secret/` symlink does not replace it with a regular file; the symlink and inode survive `sops set`, the editor flow, and `updatekeys`.
-
-## 4. Daily use
+## Daily use
 
 ```fish
-sops ~/.secret/env.optimusprime.sops.yaml             # add or change a secret
 sec OPENAI_API_KEY                                    # read one value
-curl -H "Authorization: Bearer $(sec OPENAI_API_KEY)" # fish (4.x) and bash both
+sops ~/.secret/env.optimusprime.sops.yaml             # add or change values
+curl -H "Authorization: Bearer $(sec OPENAI_API_KEY)" # fish 4.x and bash
 ```
-
-nushell:
 
 ```nu
 http get -H ["Authorization" $"Bearer (sec OPENAI_API_KEY)"] $url
 ```
 
-`sec` prints with **no trailing newline**, so `$(sec NAME)` is byte-exact.
+`sec NAME` resolves `env.$HOSTNAME.sops.yaml` first, then `env.shared.sops.yaml`; exits 1 with a
+message on stderr if the name is in neither. Output has no trailing newline, so `$(sec NAME)` is
+byte-exact.
 
-Machine file wins over shared: `sec` tries `env.$HOSTNAME.sops.yaml` first, then `env.shared.sops.yaml`, and exits 1 with a message on stderr if the name is in neither.
+**Secrets are not in the environment.** `$OPENAI_API_KEY` is empty in a shell. Use `$(sec NAME)`,
+or a shim for tools that read the environment.
 
-## 5. The behavioural change — read this before assuming something is broken
+Cost: ~21ms for a machine-file value, ~41ms for a shared-file value (two sops invocations, since
+the machine file is tried first). Not suitable for tight loops or sub-minute polling.
 
-**`$OPENAI_API_KEY` is empty in a shell now. That is by design.** Secrets are no longer exported into any shell environment, interactive or otherwise. The replacement idiom is `$(sec NAME)`, or a shim for tools that insist on reading the environment.
+## Adding a secret
 
-If a tool suddenly cannot authenticate, the question is not "did the keyring break" but "does this tool have a shim".
-
-## 6. Adding a new secret
-
-1. `sops ~/.secret/env.optimusprime.sops.yaml` — or `env.shared.sops.yaml` if every machine gets the same value. (Creating a _brand new_ file? See the rule in §3.)
-2. Add a `NAME: value` line. Save.
-3. If a tool needs it in its environment, add a shim in `~/.dotfiles/.local/bin/`:
+1. `sops ~/.secret/env.<file>.sops.yaml`, add a `NAME: value` line, save.
+2. If a tool reads it from the environment, add a shim at `~/.dotfiles/.local/bin/<tool>`:
 
    ```sh
    #!/bin/sh
-   # Runs /usr/bin/TOOL with only the key it needs. See ~/.secret/README.md
+   # Runs /usr/bin/TOOL with only the key it needs.
    set -eu
    SOME_API_KEY=$(sec SOME_API_KEY)
    export SOME_API_KEY
    exec /usr/bin/TOOL "$@"
    ```
 
-   `chmod 755`, then `just restow`. `~/.local/bin` precedes `/usr/bin` on `$PATH`, so the shim shadows the real binary.
+   `chmod 755`, then `just restow`. `~/.local/bin` precedes `/usr/bin` on `$PATH`.
+3. Commit. The diff shows `ENC[...]`, never the value.
 
-   **The rule that makes this safe:** assign to a variable and `export` it. Never `env VAR=value TOOL`, which exposes the value in `/proc/<pid>/cmdline` to every process on the machine for the lifetime of the command.
-4. `just restow` and commit. The diff will show `ENC[...]`, never the value.
+Assign and `export` in shims. Never `env VAR=value TOOL` — that exposes the value in
+`/proc/<pid>/cmdline`.
 
-## 6b. Background services (systemd user units)
+Creating a **new** vault file must be done in `~/.dotfiles/.secret/` followed by `just restow`.
+Stow symlinks files that existed when it last ran; a new path created under `~/.secret/` is a
+plain `$HOME` file with no counterpart in the repo, and will never be committed.
 
-This is the case that was silently broken before, and the least obvious one.
+`sops FILE` exits 200 with "File has not changed, exiting" if the editor made no change. That is
+success.
 
-**Systemd user units have no ambient secrets, by design.** They are not shells; nothing sources a profile for them. If a unit needs a secret, **shim the command it executes** — do not put values in `Environment=` or an `EnvironmentFile=`, because unit environments are world-readable via `systemctl --user show`.
+## Background services
 
-Worked example, `custom/protonmail` in waybar:
+Systemd user units have no ambient secrets. If a unit needs one, shim the command it executes.
+Do not put values in `Environment=` or `EnvironmentFile=` — unit environments are readable via
+`systemctl --user show`.
 
-- `~/.local/bin/protonmail-status` is a shim wrapping the real Rust binary in `~/.cargo/bin`, supplying `PROTON_BRIDGE_IMAP_USER` and `PROTON_BRIDGE_IMAP_PASS`.
-- Waybar's own environ holds **neither** value — only the short-lived shim process does.
+Worked example, waybar's `custom/protonmail`:
 
-Three gotchas, all learned the hard way:
+- `~/.local/bin/protonmail-status` wraps the real binary in `~/.cargo/bin`, supplying
+  `PROTON_BRIDGE_IMAP_USER` and `PROTON_BRIDGE_IMAP_PASS`. Waybar's own environment holds neither.
+- The waybar config uses an **absolute path**. Waybar's `PATH` puts `~/.local/bin` first;
+  interactive shells put `~/.cargo/bin` first, so a bare name resolves to a different program in
+  each context.
+- `"interval": 60` with `"signal": 4` (`pkill -RTMIN+4 waybar`). Each tick costs two decryptions
+  plus an IMAP round-trip, ~200ms. Signals 1–3 are taken by volume, mullvad and dunst.
 
-- **Use an absolute path in the waybar config.** Waybar's `PATH` puts `~/.local/bin` first, but an interactive shell puts `~/.cargo/bin` first, so a bare `protonmail-status` resolves to a _different program_ in the two contexts.
-- **Tune the interval.** Every tick costs two sops decryptions plus an IMAP round-trip, ~200ms total on this machine. At the old `"interval": 5` that was ~17k decryptions a day for a mail counter, so the interval went 5 → 60 and gained `"signal": 4` for manual refresh (`pkill -RTMIN+4 waybar`). Signals 1, 2 and 3 were already taken by volume, mullvad and dunst.
-- **Quote `Environment=` in the unit file.** `waybar.service` sets `SOPS_AGE_KEY_CMD` so the bar does not depend on uwsm having sourced `~/.profile`. systemd splits `Environment=` on whitespace, so the _unquoted_ form silently sets `SOPS_AGE_KEY_CMD=secret-tool` and discards the rest — the variable is present, looks right to `grep -c`, and does not work. The whole assignment must be inside double quotes.
+`waybar.service` sets `SOPS_AGE_KEY_CMD` itself so the bar does not depend on uwsm having sourced
+`~/.profile`:
 
-`SOPS_AGE_KEY_CMD` is a **command string, not a secret**, which is why it is safe in a unit file, in `conf.d/`, in `~/.profile`, and in git. It is also the one variable that _may_ legitimately enter the systemd/D-Bus activation environment.
+```ini
+Environment="SOPS_AGE_KEY_CMD=secret-tool lookup xdg:schema dev.dotfiles.age name sops"
+```
 
-## 7. Adding a second machine
+**The quotes are load-bearing.** systemd splits `Environment=` on whitespace; unquoted, this sets
+`SOPS_AGE_KEY_CMD=secret-tool` and discards the rest. The variable is then present and looks
+correct to `grep`, but does not work.
 
-1. On the new machine, generate an identity and store it in **its own** keyring:
+`SOPS_AGE_KEY_CMD` is a command string, not a secret. It is safe in unit files, `conf.d/`,
+`~/.profile`, and git, and is the one variable here that may legitimately enter the systemd/D-Bus
+activation environment.
+
+## New machine
+
+Two cases. Both end with the new host able to decrypt.
+
+### The previous machine is gone — restore from escrow
+
+1. Install requirements. Clone the dotfiles repo.
+2. Restore the escrowed identity into the new keyring:
+
    ```sh
-   id=$(age-keygen | grep -v '^#')
-   printf '%s' "$id" | secret-tool store --label='sops age identity' \
-       xdg:schema dev.dotfiles.age name sops
-   printf '%s\n' "$id" | age-keygen -y      # note the public key
-   unset id
+   printf '%s' 'AGE-SECRET-KEY-1...' | secret-tool store \
+       --label='sops age identity' xdg:schema dev.dotfiles.age name sops
    ```
-2. Add a rule to `.sops.yaml` for `env.<newhost>.sops.yaml` with that public key.
-3. Add the same public key to the `env.shared` rule, comma-separated.
-4. **From an existing machine:** `sops updatekeys .secret/env.shared.sops.yaml`
 
-**Editing `.sops.yaml` alone does nothing to files that are already encrypted.** Creation rules apply at creation. `updatekeys` is what rewraps the data key for the new recipient; the encrypted values themselves are untouched.
+3. `just install`, then open a new shell so `SOPS_AGE_KEY_CMD` is set.
+4. `sec RAPIDAPI_KEY` should work immediately — the restored identity is a recipient of both files.
+5. Rename the machine file to the new hostname and re-encrypt it to a fresh identity if you want
+   the old key retired (see below). Otherwise `sec` will not find machine-scoped values, because
+   it looks for `env.$HOSTNAME.sops.yaml`.
 
-## 8. Recovery, and the rotatable-only rule
+Without the escrowed identity the encrypted values are unrecoverable. See *Key custody* below.
 
-There is no backdoor. Without the age identity, the encrypted values are gone.
+### Adding a machine alongside an existing one
 
-**A copy of the identity has been escrowed off this machine** (operator's decision, 2026-07-28). Where it lives is deliberately not recorded here.
+On the new machine:
 
-Even without escrow this would be survivable, and that reasoning is worth keeping: every value in the vault today can be reissued — the four API keys in their provider consoles, the Bridge password in the Proton Bridge UI, and `PROTON_BRIDGE_IMAP_USER` is an account address, not a credential. Losing the key would cost an afternoon of rotation, not data. It would also not cost the _inventory_: because sops keeps names in cleartext, `git show -- .secret/` still says exactly what needs rotating.
+```sh
+id=$(age-keygen | grep -v '^#')
+printf '%s' "$id" | secret-tool store --label='sops age identity' \
+    xdg:schema dev.dotfiles.age name sops
+printf '%s\n' "$id" | age-keygen -y      # public key
+unset id
+```
+
+Then:
+
+1. Add a `creation_rules` entry in `.sops.yaml` for `env.<newhost>.sops.yaml` with that public key.
+2. Add the same public key to the `env.shared` rule, comma-separated.
+3. **From a machine that can already decrypt:** `sops updatekeys .secret/env.shared.sops.yaml`
+4. Create `env.<newhost>.sops.yaml` in `~/.dotfiles/.secret/`, then `just restow`.
+5. Commit and pull.
+
+Editing `.sops.yaml` alone does nothing to files that are already encrypted — creation rules apply
+at creation. `updatekeys` rewraps the data key for the new recipient; encrypted values are
+untouched.
+
+## Key custody
+
+The age identity is the only thing that decrypts the vault. There is no backdoor.
+
+A copy is escrowed off this machine (2026-07-28). Its location is deliberately not recorded here.
+Verify a stored copy by piping it to `age-keygen -y` and confirming it prints the public key in
+`.sops.yaml`.
+
+Losing the identity means the values are gone and must be **replaced, not recovered**: generate a
+new identity, update `.sops.yaml`, recreate the vault files, and reissue every credential at its
+provider. The inventory survives regardless — names are cleartext, so `git show -- .secret/` lists
+exactly what needs reissuing.
 
 > **This vault holds only rotatable secrets.**
 >
-> The moment something non-rotatable goes in — a recovery code, a TOTP seed, a license key, a password to an account with no self-service reset — the reasoning above stops holding, and escrowing the identity stops being optional.
+> That constraint is what makes losing the identity an inconvenience rather than a loss. Anything
+> non-rotatable — TOTP seeds, recovery codes, license keys, credentials for accounts without
+> self-service reset — breaks it.
 
-### Outstanding: these values have never been rotated
+Rotating a value means revoking the old credential at the provider, not merely overwriting it.
+Superseded ciphertext remains in git history and stays decryptable by anyone who later obtains the
+key.
 
-**Every value in this vault should still be treated as compromised.** All six were confirmed present in `systemctl --user show-environment` under the design that preceded `secret-env` — i.e. in the environment block of every process in the graphical session, including Steam, Vesktop and every browser content process. They have not been rotated since.
+## Limitations
 
-Migrating them here re-encrypted the same exposed values; it did not fix this. Rotation was **explicitly deferred by the operator on 2026-07-28**, with the migration itself taking priority.
+- Unencrypted root filesystem and swap: decrypted values in process memory can reach disk.
+- Any process running as this user can call `sec`. Inherent to unattended decryption.
+- Systemd units require a shim per command. A unit needing a secret without exec'ing a wrappable
+  command would need `LoadCredentialEncrypted=`.
+- The repo has a remote (`git@gitlab.com:EddieBrunstedt/dotfiles.git`). Values are encrypted;
+  variable names, file names and commit history are not.
 
-| Value                     | Where to rotate                                   |
-| ------------------------- | ------------------------------------------------- |
-| `ANTHROPIC_API_KEY`       | console.anthropic.com                             |
-| `OPENAI_API_KEY`          | platform.openai.com                               |
-| `OPENROUTER_API_KEY`      | openrouter.ai/keys                                |
-| `RAPIDAPI_KEY`            | rapidapi.com/developer                            |
-| `PROTON_BRIDGE_IMAP_PASS` | Proton Bridge UI — regenerate the IMAP credential |
+## Outstanding
 
-`PROTON_BRIDGE_IMAP_USER` is an account address, not a credential; nothing to rotate. Note the Bridge password leaked alongside the API keys and is easy to overlook, because the earlier audit wrongly classified it as unused (§9).
+**The five rotatable values have never been rotated and should be treated as compromised.** They
+were present in `systemctl --user show-environment` under an earlier arrangement, and therefore in
+the environment of every process in the graphical session. At least one `env` dump containing all
+of them was captured into `~/.claude/history.jsonl` on 2026-06-12. Migrating them here re-encrypted
+the same exposed values.
 
-For each: issue the new value, revoke the old one, then `sops ~/.secret/env.<file>.sops.yaml`, replace the value, save, commit. Verify with `sec NAME` and by running the consuming tool; for the Bridge password, `pkill -RTMIN+4 waybar` and confirm the counter still renders.
+Rotation was deferred on 2026-07-28.
 
-## 9. What this replaced, and why
+| Value | Reissue at |
+|---|---|
+| `ANTHROPIC_API_KEY` | console.anthropic.com |
+| `OPENAI_API_KEY` | platform.openai.com |
+| `OPENROUTER_API_KEY` | openrouter.ai/keys |
+| `RAPIDAPI_KEY` | rapidapi.com/developer |
+| `PROTON_BRIDGE_IMAP_PASS` | Proton Bridge UI |
 
-It replaced `~/.local/bin/secret-env`, a 259-line bespoke shell script that pulled six secrets out of the GNOME keyring and exported all of them into every interactive shell. See `~/secret-env-current-approach.md` for the full description.
+`PROTON_BRIDGE_IMAP_USER` is an account address, not a credential.
 
-The failure that produced it: the arrangement _before_ `secret-env` kept secrets in a `0600` file sourced from `~/.profile`, and uwsm sources `~/.profile` into the systemd and D-Bus **activation environments** — putting all six keys into the environment block of every process in the graphical session. `secret-env` fixed that by loading them only in interactive shells. This design goes further and removes them from ambient environments entirely.
-
-**Residual limitation, stated honestly:** any process running as this user can still just call `sec`. That is inherent to unattended decryption — the keyring is unlocked, so anything with your UID can reach it. What changed is that a secret is no longer sitting in readable memory of every shell and every GUI app by default; it now exists briefly, in one process, on demand.
-
-### A correction to the record
-
-`~/secret-env-current-approach.md` §6.8 states that `PROTON_BRIDGE_IMAP_USER` and `PROTON_BRIDGE_IMAP_PASS` have no known consumer, and §6.9 states that no systemd user unit currently needs a secret. **Both are wrong.** Waybar's `custom/protonmail` module runs `protonmail-status`, which reads both from the environment — and, being a systemd user unit, never received them. The module had been **silently broken** since the migration described in §2: no output, exit 0, no error anywhere. This migration is what fixed it.
-
-The audit missed it because `protonmail-status` is a **compiled Rust binary** in `~/.cargo/bin`, not a script in the dotfiles repo, so a text search for `PROTON_BRIDGE` found nothing.
-
-> **The lesson worth writing down: a grep for variable names finds shell scripts, not binaries.**
-
-## 10. Known limitations
-
-- **Unencrypted root filesystem and unencrypted swap.** Decrypted values live in process memory and can reach disk via swap. This is the reason the age identity is in the keyring rather than a file, but it bounds how much that buys.
-- **Any process running as this user can call `sec`.** Inherent to unattended decryption; see §9.
-- **Systemd units need a shim per command.** A unit that needs a secret _without_ exec'ing a wrappable command would need `LoadCredentialEncrypted=` or its own arrangement.
-- **Decryption is not free.** ~21ms for a value in the machine file, ~41ms for one in `env.shared.sops.yaml` — a shared value costs double because `sec` tries the machine file first and misses, spawning sops twice. Fine for a per-process fetch; not something to put in a tight loop or a one-second poll. (For reference, the waybar shim totals ~200ms, but ~128ms of that is the Rust binary's own IMAP round-trip, not encryption.)
-- **The vault is only as private as the repo.** Values are encrypted, but variable names, file names, and commit history are not. That is a deliberate trade for reviewability.
+For each: issue the new value, revoke the old, `sops ~/.secret/env.<file>.sops.yaml`, replace,
+save, commit. Verify with `sec NAME` and by running the consuming tool. After changing the Bridge
+password, `pkill -RTMIN+4 waybar` and confirm the counter still renders.
