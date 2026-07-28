@@ -6,10 +6,10 @@
 #Allows you to cd into directory merely by typing the directory name.
 shopt -s autocd
 
-# Load secret environment variables if available.
-secret_env_loader="$HOME/.local/bin/load-secret-env"
-[ -x "$secret_env_loader" ] && eval "$("$secret_env_loader" --sh)"
-unset secret_env_loader
+# Secrets come from the login keyring, not a file on disk. Guarded because
+# ~/.local/bin is only on PATH once ~/.profile has run, and bash sources this
+# file directly in non-login interactive shells too.
+command -v secret-env >/dev/null 2>&1 && eval "$(secret-env export --sh)"
 
 #Infinite history
 HISTSIZE= HISTFILESIZE= # Infinite history.

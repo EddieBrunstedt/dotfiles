@@ -1,22 +1,29 @@
-# XDG Base Directory
-export XDG_CONFIG_HOME="$HOME/.config"
+# POSIX login-shell environment.
+#
+# Almost everything that used to live here has moved one layer down, because
+# uwsm's environment preloader sources this file and exports the delta into the
+# systemd and D-Bus activation environments — i.e. anything set here ends up in
+# the environment of every process in the graphical session:
+#
+#   ~/.config/environment.d/*.conf   session-wide vars (editors, pager, cursor,
+#                                    SSH_AUTH_SOCK, …) — read natively by
+#                                    `systemd --user`, no shell needed
+#   ~/.config/uwsm/env               Wayland/NVIDIA vars for the graphical
+#                                    session, sourced by uwsm before mango
+#   ~/.config/fish/config.fish       interactive-shell-only settings, incl. the
+#                                    API keys pulled from the login keyring
+#
+# What stays here is what genuinely needs a POSIX shell and must be shared by
+# both fish and bash.
 
-# Default applications
-export ALTERNATE_EDITOR="nvim"
-export BROWSER="librewolf"
-export EDITOR="nvim"
-export READER="zathura"
-export TERMINAL="ghostty"
-export VISUAL="nvim"
-
-# Secret environment variables
-secret_env_loader="$HOME/.local/bin/load-secret-env"
-[ -x "$secret_env_loader" ] && eval "$("$secret_env_loader" --sh)"
-unset secret_env_loader
-
-# PATH configuration
-export PNPM_HOME="$HOME/.local/share/pnpm"
-
+# ── PATH ──
+# PATH is assembled here on purpose. It cannot move to environment.d: that
+# file's ${PATH} expands against the environment *generator's* PATH, which is
+# the bare /usr/local/bin:/usr/bin — so prepending there would silently discard
+# everything /etc/profile.d/*.sh contributes (cuda, jvm, rustup, perl). A login
+# shell has already run those, so appending to $PATH here is correct.
+#
+# PNPM_HOME itself is set in environment.d/10-defaults.conf.
 path_prepend() {
     [ -d "$1" ] || return
     case ":$PATH:" in
@@ -27,31 +34,37 @@ path_prepend() {
     esac
 }
 
-path_prepend "$PNPM_HOME"
-path_prepend "$HOME/.yarn/bin"
+# pnpm puts global binaries directly in $PNPM_HOME, not in a bin/ below it —
+# the empty ~/.local/share/pnpm/bin is not the right entry.
+path_prepend "$HOME/.local/share/pnpm"
+path_prepend "$HOME/.npm-global/bin"
 path_prepend "$HOME/.local/share/zvm/bin"
 path_prepend "$HOME/.cargo/bin"
 path_prepend "$HOME/.local/bin/statusbar"
 path_prepend "$HOME/.local/bin"
 export PATH
-unset path_prepend
+unset -f path_prepend
 
-# Less/Man page configuration
-export LESSOPEN="| /usr/bin/highlight -O ansi %s 2>/dev/null"
-export MANWIDTH=80
-# R: pass ANSI colors through, F: quit if it fits one screen, X: keep output on screen after quit
-export LESS=-RFX
-export LESS_TERMCAP_mb=$'\e[1;32m'
-export LESS_TERMCAP_md=$'\e[1;32m'
-export LESS_TERMCAP_me=$'\e[0m'
-export LESS_TERMCAP_se=$'\e[0m'
-export LESS_TERMCAP_so=$'\e[01;33m'
-export LESS_TERMCAP_ue=$'\e[0m'
-export LESS_TERMCAP_us=$'\e[1;4;31m'
+# ── less(1) colours ──
+# These stay in shell config because their values are raw ESC bytes, which the
+# environment.d format cannot express, and because they only affect `less` in a
+# terminal — no GUI app ever reads them. Both fish and bash inherit them from
+# the login shell.
+#
+# Built with printf rather than $'\e[…]': this file is sourced by uwsm's
+# environment preloader with plain /bin/sh, and $'…' is a bashism that would
+# store the literal characters if /bin/sh were ever dash.
+esc=$(printf '\033')
+export LESS_TERMCAP_mb="${esc}[1;32m"
+export LESS_TERMCAP_md="${esc}[1;32m"
+export LESS_TERMCAP_me="${esc}[0m"
+export LESS_TERMCAP_se="${esc}[0m"
+export LESS_TERMCAP_so="${esc}[01;33m"
+export LESS_TERMCAP_ue="${esc}[0m"
+export LESS_TERMCAP_us="${esc}[1;4;31m"
+unset esc
 
-# Application-specific configuration
-export QT_QPA_PLATFORMTHEME="gtk3"
-export _JAVA_AWT_WM_NONREPARENTING=1
-export MOZ_USE_XINPUT2="1"
-export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+# ── zoxide ──
+# Needs $XDG_RUNTIME_DIR expanded at read time, which environment.d cannot do
+# for a glob-containing value without quoting surprises.
 export _ZO_EXCLUDE_DIRS="$HOME:$XDG_RUNTIME_DIR/*:$HOME/vault/*:$HOME/shared/downloads/*"

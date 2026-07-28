@@ -1,4 +1,5 @@
 7zip
+age
 anki
 atool
 base
@@ -111,6 +112,7 @@ shellcheck
 shfmt
 signal-desktop
 slurp
+sops
 starship
 stow
 stress
@@ -130,7 +132,6 @@ uwsm
 veracrypt
 vnstat
 watchexec
-waybar
 wayland-protocols
 wayland-utils
 wget

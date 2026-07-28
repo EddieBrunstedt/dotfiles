@@ -10,22 +10,21 @@ if test -n "$XDG_RUNTIME_DIR"; and test "$(readlink $fish_hist)" != "$hist_targe
     ln -s "$hist_target" "$fish_hist"
 end
 
-# Load secret environment variables if available.
-set -l secret_env_loader "$HOME/.local/bin/load-secret-env"
-if test -x "$secret_env_loader"
-    for line in ($secret_env_loader | string split0)
-        set -l pair (string split -m1 = -- $line)
-        test (count $pair) -eq 2; and set -gx $pair[1] $pair[2]
-    end
-end
+# Secrets are NOT loaded here: conf.d/ is sourced for non-interactive fish too.
+# They come from the login keyring in config.fish's interactive block instead.
 
-# Zig toolchain managed by zvm
+# $PATH. These mirror ~/.profile on purpose rather than duplicating it by
+# accident: under uwsm, fish inherits a fully-built PATH from the systemd
+# activation environment and fish_add_path is a no-op (it skips entries already
+# present). But fish never sources ~/.profile, so a plain TTY login with fish as
+# the login shell would otherwise start with no ~/.local/bin — and config.fish
+# calls `secret-env` from there. Keep this list in sync with ~/.profile.
+fish_add_path -g ~/.local/bin
+fish_add_path -g ~/.local/bin/statusbar
+fish_add_path -g ~/.cargo/bin
 fish_add_path -g ~/.local/share/zvm/bin
-
-# pnpm
-fish_add_path -g ~/.local/share/pnpm/bin
-
-# npm global installs (prefix = ~/.npm-global)
+# pnpm installs global binaries directly into $PNPM_HOME, not a bin/ below it.
+fish_add_path -g ~/.local/share/pnpm
 fish_add_path -g ~/.npm-global/bin
 
 # Disable fish greeting
@@ -39,8 +38,10 @@ set -g fzf_preview_dir_cmd eza --tree --color=always --icons=auto --group-direct
 set -gx FZF_DEFAULT_COMMAND 'fd --type f --hidden --follow --exclude=.git'
 set -gx FZF_DEFAULT_OPTS '--height=50% --layout=reverse --border --cycle --info=inline'
 
-# Point ssh at the systemd-managed agent socket
-set -gx SSH_AUTH_SOCK "$XDG_RUNTIME_DIR/ssh-agent.socket"
+# SSH_AUTH_SOCK now comes from ~/.config/environment.d/10-defaults.conf, so GUI
+# git clients get it too. Set here as well only for a TTY login without uwsm,
+# where nothing has read environment.d.
+set -q SSH_AUTH_SOCK; or set -gx SSH_AUTH_SOCK "$XDG_RUNTIME_DIR/ssh-agent.socket"
 
 # Batdiff uses delta
 set -gx BATDIFF_USE_DELTA true

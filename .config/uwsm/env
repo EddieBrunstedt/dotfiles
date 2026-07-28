@@ -1,0 +1,40 @@
+# Graphical-session environment, sourced by uwsm's environment preloader
+# (/usr/lib/uwsm/prepare-env.sh) before the compositor starts. The resulting
+# delta is exported into the systemd *and* D-Bus activation environments.
+#
+# WHY NOT mango's `env=` lines: those only populate the environment of clients
+# mango itself spawns. Anything started as a user unit or by D-Bus activation —
+# app-com.mitchellh.ghostty.service, protonmail-bridge, dunst, xdg-desktop-
+# portal, anything launched via `uwsm app` — never sees them. Setting the
+# variables here covers both, so a Wayland-native app behaves the same whether
+# you launch it from a keybind or systemd starts it.
+#
+# This IS a POSIX shell file (unlike ~/.config/environment.d/*.conf), so
+# quoting and conditionals are available. Keep it to environment only.
+#
+# Sourced for every compositor. Per-compositor overrides would go in
+# ~/.config/uwsm/env-mango, but nothing here is mango-specific — it is all
+# "this machine has an NVIDIA GPU and runs Wayland".
+
+# ── NVIDIA ──
+# GBM/GLX vendor selection so OpenGL/GLX clients (games, Xwayland) use NVIDIA.
+export GBM_BACKEND=nvidia-drm
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+# VA-API hardware video decode (needs libva-nvidia-driver, installed).
+export LIBVA_DRIVER_NAME=nvidia
+
+# ── Native Wayland for the big toolkits ──
+export MOZ_ENABLE_WAYLAND=1
+export ELECTRON_OZONE_PLATFORM_HINT=auto
+# Prefer Wayland, fall back to xcb for Qt apps without Wayland support.
+export QT_QPA_PLATFORM='wayland;xcb'
+
+# NOTE: SDL_VIDEODRIVER intentionally NOT set to wayland — it breaks some games.
+# XDG_SESSION_TYPE / XDG_CURRENT_DESKTOP intentionally omitted; the session sets
+# them, and overriding them here would confuse portal and autostart matching.
+
+# ── Xwayland ──
+# Legacy AWT workaround: without it, Java GUI apps under a non-reparenting WM
+# render as grey boxes. Harmless for everything else, and only reaches Xwayland
+# clients. Drop it if you never run a Java desktop app.
+export _JAVA_AWT_WM_NONREPARENTING=1

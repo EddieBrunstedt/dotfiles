@@ -1,5 +1,3 @@
-let secret_env_loader = $"($env.HOME)/.local/bin/load-secret-env"
-
 $env.config.cursor_shape.vi_insert = "line"
 $env.config.cursor_shape.vi_normal = "block"
 $env.config.edit_mode = 'vi'
@@ -18,9 +16,11 @@ alias man = batman
 alias nvm = fnm
 alias vim = nvim
 
-# load secret environment variables if available
-if ($secret_env_loader | path exists) {
-  let secret_env = (^$secret_env_loader | complete)
+# API keys etc. from the login keyring (see `secret-env --help`). Not exported
+# from ~/.profile, because uwsm pushes that into the systemd and D-Bus
+# activation environments — i.e. into every process in the graphical session.
+if (which secret-env | is-not-empty) {
+  let secret_env = (^secret-env export --nul | complete)
 
   if $secret_env.exit_code == 0 {
     load-env ($secret_env.stdout
