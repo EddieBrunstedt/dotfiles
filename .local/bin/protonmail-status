@@ -1,0 +1,9 @@
+#!/bin/sh
+# Waybar's custom/protonmail module. Wraps the real binary in ~/.cargo/bin,
+# which reads these two from the environment. Waybar is a systemd user unit and
+# has no ambient secrets by design. See ~/.secret/README.md
+set -eu
+PROTON_BRIDGE_IMAP_USER=$(sec PROTON_BRIDGE_IMAP_USER)
+PROTON_BRIDGE_IMAP_PASS=$(sec PROTON_BRIDGE_IMAP_PASS)
+export PROTON_BRIDGE_IMAP_USER PROTON_BRIDGE_IMAP_PASS
+exec "$HOME/.cargo/bin/protonmail-status" "$@"

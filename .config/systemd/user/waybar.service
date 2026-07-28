@@ -5,6 +5,15 @@ After=graphical-session.target
 
 [Service]
 Type=exec
+# custom/protonmail runs a shim that decrypts two values out of ~/.secret/,
+# which needs sops to know where the age identity lives. This is a COMMAND
+# string, not a secret — safe in a unit file, which is world-readable via
+# `systemctl --user show`. Set here rather than inherited from ~/.profile so
+# the bar does not depend on uwsm's profile-sourcing having run; that module
+# was already silently broken once. See ~/.secret/README.md.
+# Quotes are load-bearing: systemd splits Environment= on whitespace, so the
+# unquoted form silently sets SOPS_AGE_KEY_CMD=secret-tool and drops the rest.
+Environment="SOPS_AGE_KEY_CMD=secret-tool lookup xdg:schema dev.nilo.age name sops"
 # Only run in a wlroots/mango graphical session (matches XDG_CURRENT_DESKTOP)
 ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""
 ExecStart=/usr/bin/waybar

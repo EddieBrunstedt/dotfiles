@@ -16,20 +16,9 @@ alias man = batman
 alias nvm = fnm
 alias vim = nvim
 
-# API keys etc. from the login keyring (see `secret-env --help`). Not exported
-# from ~/.profile, because uwsm pushes that into the systemd and D-Bus
-# activation environments — i.e. into every process in the graphical session.
-if (which secret-env | is-not-empty) {
-  let secret_env = (^secret-env export --nul | complete)
-
-  if $secret_env.exit_code == 0 {
-    load-env ($secret_env.stdout
-      | split row (char nul)
-      | where {|line| $line != "" }
-      | split column "=" key value -n 2
-      | reduce -f {} {|row, acc| $acc | insert $row.key $row.value })
-  }
-}
+# Secrets are not loaded into the environment. Use `sec NAME` on demand:
+#   http get -H ["Authorization" $"Bearer (sec OPENAI_API_KEY)"] $url
+# See ~/.secret/README.md
 
 # enable Starship
 mkdir ($nu.data-dir | path join "vendor/autoload")

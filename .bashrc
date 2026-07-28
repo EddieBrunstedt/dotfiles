@@ -6,10 +6,9 @@
 #Allows you to cd into directory merely by typing the directory name.
 shopt -s autocd
 
-# Secrets come from the login keyring, not a file on disk. Guarded because
-# ~/.local/bin is only on PATH once ~/.profile has run, and bash sources this
-# file directly in non-login interactive shells too.
-command -v secret-env >/dev/null 2>&1 && eval "$(secret-env export --sh)"
+# Secrets are not loaded into the environment. Use `sec NAME` on demand:
+#   curl -H "Authorization: Bearer $(sec OPENAI_API_KEY)" ...
+# See ~/.secret/README.md
 
 #Infinite history
 HISTSIZE= HISTFILESIZE= # Infinite history.

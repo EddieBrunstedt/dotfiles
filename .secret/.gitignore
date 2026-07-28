@@ -1,0 +1,6 @@
+# Only encrypted files belong here. Anything else is assumed to be a mistake.
+*
+!.gitignore
+!.sops.yaml
+!README.md
+!*.sops.yaml

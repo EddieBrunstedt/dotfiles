@@ -1,0 +1,17 @@
+# Which age recipients each secrets file is encrypted to.
+# These are PUBLIC keys — this file is not sensitive.
+# First matching rule wins, so order matters.
+#
+# Adding a second machine:
+#   1. generate an identity on it, store in ITS keyring, note its public key
+#   2. add a rule here for env.<newhost>.sops.yaml
+#   3. add its public key to the env.shared rule below (comma-separated)
+#   4. from THIS machine: sops updatekeys .secret/env.shared.sops.yaml
+#      (rewraps the data key; encrypted values are untouched)
+
+creation_rules:
+  - path_regex: env\.optimusprime\.sops\.yaml$
+    age: age1ra4z6lrcms8msguavep6lwmfa9462zqjlgeshlckdauv0w5dwg3qcs2sqq
+
+  - path_regex: env\.shared\.sops\.yaml$
+    age: age1ra4z6lrcms8msguavep6lwmfa9462zqjlgeshlckdauv0w5dwg3qcs2sqq

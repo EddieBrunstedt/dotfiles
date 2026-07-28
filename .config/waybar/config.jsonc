@@ -60,10 +60,18 @@
         "interval": 1,
         "tooltip": false
     },
-    // dwmblocksrs: protonmail-status, interval 5
+    // dwmblocksrs: protonmail-status, was interval 5
+    // Absolute path on purpose: this is a shim in ~/.local/bin that wraps the
+    // real binary in ~/.cargo/bin and supplies PROTON_BRIDGE_IMAP_{USER,PASS}
+    // from the sops vault. Waybar's PATH puts ~/.local/bin first but an
+    // interactive shell puts ~/.cargo/bin first, so a bare name would resolve
+    // to a different program in the two contexts. See ~/.secret/README.md.
+    // Each tick costs two sops decryptions, hence interval 60 rather than 5.
+    // signal 4 → refresh instantly with: pkill -RTMIN+4 waybar
     "custom/protonmail": {
-        "exec": "protonmail-status",
-        "interval": 5,
+        "exec": "/home/nilo/.local/bin/protonmail-status",
+        "interval": 60,
+        "signal": 4,
         "on-click": "xdg-open https://mail.proton.me/",
         "tooltip": false
     },

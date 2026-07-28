@@ -10,8 +10,11 @@
 #                                    `systemd --user`, no shell needed
 #   ~/.config/uwsm/env               Wayland/NVIDIA vars for the graphical
 #                                    session, sourced by uwsm before mango
-#   ~/.config/fish/config.fish       interactive-shell-only settings, incl. the
-#                                    API keys pulled from the login keyring
+#   ~/.config/fish/config.fish       interactive-shell-only settings
+#
+# Secrets are no longer set here, or in any shell. They live encrypted in
+# ~/.secret/ and are fetched per-process with `sec NAME`. See
+# ~/.secret/README.md.
 #
 # What stays here is what genuinely needs a POSIX shell and must be shared by
 # both fish and bash.
@@ -63,6 +66,14 @@ export LESS_TERMCAP_so="${esc}[01;33m"
 export LESS_TERMCAP_ue="${esc}[0m"
 export LESS_TERMCAP_us="${esc}[1;4;31m"
 unset esc
+
+# ── sops ──
+# Where sops finds the age identity that decrypts ~/.secret/*.sops.yaml.
+# See ~/.secret/README.md. Exports a COMMAND, not a secret — which is why it
+# is safe here despite the warning at the top of this file: uwsm will push it
+# into the systemd and D-Bus activation environments, and that is the intended
+# outcome (waybar's protonmail shim needs it). No secret value is exposed.
+export SOPS_AGE_KEY_CMD="secret-tool lookup xdg:schema dev.nilo.age name sops"
 
 # ── zoxide ──
 # Needs $XDG_RUNTIME_DIR expanded at read time, which environment.d cannot do

@@ -1,0 +1,26 @@
+#!/bin/sh
+# Print one secret value to stdout. Machine file wins over shared.
+#
+#   sec ANTHROPIC_API_KEY
+#   curl -H "Authorization: Bearer $(sec OPENAI_API_KEY)" ...
+#
+# Decryption key: age identity in the login keyring, found via SOPS_AGE_KEY_CMD
+# (set in fish conf.d / .profile). See ~/.secret/README.md.
+set -eu
+
+[ $# -eq 1 ] || { echo "usage: sec NAME" >&2; exit 2; }
+
+name=$1
+dir=${SECRETS_DIR:-$HOME/.secret}
+host=${HOSTNAME:-$(uname -n)}
+
+for f in "$dir/env.$host.sops.yaml" "$dir/env.shared.sops.yaml"; do
+    [ -f "$f" ] || continue
+    if v=$(sops -d --extract "[\"$name\"]" "$f" 2>/dev/null) && [ -n "$v" ]; then
+        printf '%s' "$v"
+        exit 0
+    fi
+done
+
+echo "sec: '$name' not found for host '$host' in $dir" >&2
+exit 1

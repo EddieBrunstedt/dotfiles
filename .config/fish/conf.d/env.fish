@@ -10,15 +10,16 @@ if test -n "$XDG_RUNTIME_DIR"; and test "$(readlink $fish_hist)" != "$hist_targe
     ln -s "$hist_target" "$fish_hist"
 end
 
-# Secrets are NOT loaded here: conf.d/ is sourced for non-interactive fish too.
-# They come from the login keyring in config.fish's interactive block instead.
+# Secrets are no longer loaded into any shell, interactive or not. They live
+# encrypted in ~/.secret/ and are fetched per-process with `sec NAME`, or by
+# the per-tool shims in ~/.local/bin. See ~/.secret/README.md.
 
 # $PATH. These mirror ~/.profile on purpose rather than duplicating it by
 # accident: under uwsm, fish inherits a fully-built PATH from the systemd
 # activation environment and fish_add_path is a no-op (it skips entries already
 # present). But fish never sources ~/.profile, so a plain TTY login with fish as
-# the login shell would otherwise start with no ~/.local/bin — and config.fish
-# calls `secret-env` from there. Keep this list in sync with ~/.profile.
+# the login shell would otherwise start with no ~/.local/bin — which is where
+# `sec` and the per-tool shims live. Keep this list in sync with ~/.profile.
 fish_add_path -g ~/.local/bin
 fish_add_path -g ~/.local/bin/statusbar
 fish_add_path -g ~/.cargo/bin
