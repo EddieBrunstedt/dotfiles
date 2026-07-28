@@ -13,7 +13,7 @@ Type=exec
 # was already silently broken once. See ~/.secret/README.md.
 # Quotes are load-bearing: systemd splits Environment= on whitespace, so the
 # unquoted form silently sets SOPS_AGE_KEY_CMD=secret-tool and drops the rest.
-Environment="SOPS_AGE_KEY_CMD=secret-tool lookup xdg:schema dev.nilo.age name sops"
+Environment="SOPS_AGE_KEY_CMD=secret-tool lookup xdg:schema dev.dotfiles.age name sops"
 # Only run in a wlroots/mango graphical session (matches XDG_CURRENT_DESKTOP)
 ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""
 ExecStart=/usr/bin/waybar

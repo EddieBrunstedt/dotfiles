@@ -73,7 +73,7 @@ unset esc
 # is safe here despite the warning at the top of this file: uwsm will push it
 # into the systemd and D-Bus activation environments, and that is the intended
 # outcome (waybar's protonmail shim needs it). No secret value is exposed.
-export SOPS_AGE_KEY_CMD="secret-tool lookup xdg:schema dev.nilo.age name sops"
+export SOPS_AGE_KEY_CMD="secret-tool lookup xdg:schema dev.dotfiles.age name sops"
 
 # ── zoxide ──
 # Needs $XDG_RUNTIME_DIR expanded at read time, which environment.d cannot do
