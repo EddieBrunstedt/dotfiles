@@ -58,7 +58,7 @@ The keyring item holding the age identity is filed under two lookup attributes:
 secret-tool lookup xdg:schema dev.dotfiles.age name sops
 ```
 
-These are an arbitrary label, not a credential. The exact strings must match between store and lookup, and appear in four places: `.config/fish/conf.d/sops.fish`, `.profile`, `.config/systemd/user/waybar.service`, and this file.
+These are an arbitrary label, not a credential. The exact strings must match between store and lookup, and appear in three places: `.config/environment.d/10-defaults.conf`, `.config/fish/conf.d/sops.fish`, and this file.
 
 ## Daily use
 
@@ -138,15 +138,19 @@ Worked example, waybar's `custom/protonmail`:
 - The waybar config uses an **absolute path**. Waybar inherits its `PATH` from the systemd activation environment, which does not include the shims directory, so a bare name would resolve to the real cargo binary and silently lose its credentials.
 - `"interval": 60` with `"signal": 4` (`pkill -RTMIN+4 waybar`). Each tick costs two decryptions plus an IMAP round-trip, ~200ms. Signals 1–3 are taken by volume, mullvad and dunst.
 
-`waybar.service` sets `SOPS_AGE_KEY_CMD` itself so the bar does not depend on uwsm having sourced `~/.profile`:
+Units get `SOPS_AGE_KEY_CMD` from `~/.config/environment.d/10-defaults.conf`, which `systemd --user`
+reads natively — no unit-level `Environment=` needed. It is a command string, not a secret, and is
+the one variable here that may legitimately enter the systemd/D-Bus activation environment.
 
-```ini
-Environment="SOPS_AGE_KEY_CMD=secret-tool lookup xdg:schema dev.dotfiles.age name sops"
-```
+Two consequences of using `environment.d`:
 
-**The quotes are load-bearing.** systemd splits `Environment=` on whitespace; unquoted, this sets `SOPS_AGE_KEY_CMD=secret-tool` and discards the rest. The variable is then present and looks correct to `grep`, but does not work.
-
-`SOPS_AGE_KEY_CMD` is a command string, not a secret. It is safe in unit files, `conf.d/`, `~/.profile`, and git, and is the one variable here that may legitimately enter the systemd/D-Bus activation environment.
+- A change takes effect for units on `systemctl --user daemon-reload`, but the **compositor keeps
+  the environment it started with**, so anything it launches — terminals, and their non-fish
+  shells — only picks it up after a re-login.
+- Had this been set with a unit-level `Environment=` instead, the whole assignment would need
+  quoting: systemd splits `Environment=` on whitespace, so the unquoted form sets
+  `SOPS_AGE_KEY_CMD=secret-tool` and discards the rest — present, plausible to `grep`, and
+  non-functional. `environment.d` has no such rule; the value is taken verbatim to end of line.
 
 ## New machine
 

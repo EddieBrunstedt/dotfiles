@@ -5,7 +5,7 @@
 #   curl -H "Authorization: Bearer $(sec OPENAI_API_KEY)" ...
 #
 # Decryption key: age identity in the login keyring, found via SOPS_AGE_KEY_CMD
-# (set in fish conf.d / .profile). See ~/.secret/README.md.
+# (set in environment.d and fish conf.d). See ~/.secret/README.md.
 set -eu
 
 [ $# -eq 1 ] || { echo "usage: sec NAME" >&2; exit 2; }
