@@ -22,8 +22,9 @@
 # environment generators, which could compute this, do not exist: all the
 # supported generator directories are system-level.
 #
-# Duplicated in ~/.config/fish/conf.d/env.fish, which fish needs for a TTY
-# login because fish never reads this file. Keep the two lists in sync.
+# This is the only copy of the list. fish never reads this file, so for a TTY
+# login ~/.config/fish/conf.d/env.fish recovers the result by running `sh -lc`
+# and importing the PATH that produces — see the comment there.
 path_prepend() {
     [ -d "$1" ] || return
     case ":$PATH:" in
