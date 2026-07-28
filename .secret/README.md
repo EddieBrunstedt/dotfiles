@@ -196,32 +196,43 @@ Rotation was deferred on 2026-07-28.
 | `OPENAI_API_KEY`          | platform.openai.com    |
 | `OPENROUTER_API_KEY`      | openrouter.ai/keys     |
 | `RAPIDAPI_KEY`            | rapidapi.com/developer |
-| `PROTON_BRIDGE_IMAP_PASS` | Bridge CLI — see below |
+| `PROTON_BRIDGE_IMAP_PASS` | not independently rotatable — see below |
 
 `PROTON_BRIDGE_IMAP_USER` is an account address, not a credential.
 
 For each: issue the new value, revoke the old, `sops ~/.secret/env.<file>.sops.yaml`, replace, save, commit. Verify with `sec NAME` and by running the consuming tool.
 
-### Rotating the Bridge IMAP password
+### The Bridge IMAP password cannot be rotated locally
 
-Only `protonmail-bridge-core` is installed — there is no Bridge GUI on this machine, and no
-`regenerate password` command. The bridge password is issued when an account is added to Bridge's
-vault, so re-adding the account is what replaces it.
+Established empirically on 2026-07-28 with Bridge 3.25.0. Do not repeat this.
 
-The service runs `--noninteractive`, so it must be stopped before the CLI can attach:
+Only `protonmail-bridge-core` is installed — no GUI — and the CLI has no regenerate-password
+command (`login`, `logout`, `list`, `info`, `delete`, `clear`, `change`, `repair`, …). Neither of
+the obvious approaches works:
+
+- `logout <n>` then `login` — password unchanged. Logout only disconnects; the vault entry
+  survives.
+- `delete <n>` then `login` — password unchanged, despite the vault entry genuinely being
+  destroyed and rebuilt. Bridge's own log confirms `Deleting vault user` followed by
+  `Adding vault user` / `Creating new user`.
+
+`BridgePass` is therefore not a random local token. It derives from account-side material keyed by
+the Proton `userID`, which is unchanged by any local operation. `clear` would wipe preferences as
+well but re-login yields the same `userID`, so it will not help either.
+
+**The only lever is changing the Proton account password** at account.proton.me. Verify with
+`info 0` afterwards rather than assuming — that step is inference, not something confirmed here.
+
+Weigh it accordingly: this credential authenticates only against `127.0.0.1:1143` and `:1025`, is
+not reachable off the machine, and anyone able to use it already has code execution as this user
+and could call `sec` directly. Changing the account password forces re-login on every device. It
+is reasonable to treat this as lower priority than the four API keys, which are remotely
+exploitable and cheap to reissue.
+
+After changing it, read the new value with `info 0` in `protonmail-bridge-core --cli` (stop the
+service first — it runs `--noninteractive`), then:
 
 ```fish
-systemctl --user stop protonmail-bridge.service
-protonmail-bridge-core --cli
-```
-
-In the CLI: `list` to see the account and its index, `info <n>` to print the current bridge
-password, then `logout <n>` followed by `login`. Run `info <n>` again — if the password is
-unchanged, use `delete <n>` and `login` instead, which always issues a fresh one (at the cost of a
-full local resync). `exit` when done, then:
-
-```fish
-systemctl --user start protonmail-bridge.service
 sops ~/.secret/env.optimusprime.sops.yaml     # replace PROTON_BRIDGE_IMAP_PASS
 pkill -RTMIN+4 waybar
 ```
