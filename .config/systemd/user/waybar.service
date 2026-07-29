@@ -2,6 +2,10 @@
 Description=Waybar status bar
 Documentation=man:waybar(5)
 After=graphical-session.target
+# Stop with the session. Redundant today — Slice=app-graphical.slice below is
+# itself PartOf=graphical-session.target, so the slice already takes waybar
+# down with it. Stated here so that stays true if the Slice= line ever changes.
+PartOf=graphical-session.target
 
 [Service]
 Type=exec

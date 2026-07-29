@@ -5,6 +5,10 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+# Deliberately NOT app.slice: that slice is bound to graphical-session.target
+# (see app.slice.d/graphical.conf), so anything in it dies on Mango logout.
+# This runner starts at boot via Linger=yes and must outlive the compositor.
+Slice=background.slice
 WorkingDirectory=%h/.config/forgejo-runner
 ExecStart=/usr/bin/forgejo-runner daemon \
   --url https://codeberg.org/ \
