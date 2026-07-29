@@ -11,7 +11,7 @@
 # these same apps (e.g. opening LibreWolf mid-task to check something) are
 # left wherever you open them — this script only runs when you run it.
 #
-# Trigger it from a keybind, or add it to exec-once to run at login.
+# Wired to exec-once in config.conf, which is now the only caller.
 # Edit the list at the bottom: <appid-regex> <tag> <launch command...>
 
 set -u
@@ -39,8 +39,17 @@ launch_place() {
   local id
   while read -r id; do [[ -n $id ]] && before="$before$id "; done < <(ids_for "$appid_re")
 
-  # launch detached so this script (and the compositor) don't own the process
-  setsid -f "$@" >/dev/null 2>&1
+  # Launch into the app's own transient systemd unit in app-graphical.slice.
+  # The old `setsid -f` only detached the terminal/session -- it does NOT move
+  # cgroups, so apps piled up inside wayland-wm@mango.desktop.service and were
+  # killed by its KillMode=control-group at logout rather than stopped as units.
+  #
+  # -t service (not the default scope) because a scope runs the command in the
+  # foreground and would block the window-polling loop below; a transient
+  # service is started by the user manager and returns immediately. It inherits
+  # WAYLAND_DISPLAY et al. from the systemd user environment, which is populated
+  # by `exec-once=uwsm finalize` earlier in config.conf.
+  uwsm app -t service -- "$@" >/dev/null 2>&1
 
   local deadline=$((SECONDS + TIMEOUT))
   local moved=" "
