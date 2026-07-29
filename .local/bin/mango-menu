@@ -30,7 +30,6 @@ main=$(printf '%s\n' \
   "Power…" \
   "Reload config" \
   "Restart Waybar" \
-  "Run startup apps" \
   "Set layout…" \
   "Toggle Do Not Disturb" \
   "Dictation…" \
@@ -84,9 +83,6 @@ case "$chosen" in
       notify-send "Audio output" "Default sink: ${pick#*. }"
     fi ;;
 
-  "Run startup apps")
-    setsid -f "$HOME/.config/mango/scripts/session-startup" >/dev/null 2>&1 ;;
-
   "Set layout…")
     layout=$(printf '%s\n' \
       center_tile deck fair right_tile tile vertical_fair vertical_tile \
@@ -97,8 +93,11 @@ case "$chosen" in
     mmsg dispatch reload_config >/dev/null ;;
 
   "Restart Waybar")
-    pkill -x waybar 2>/dev/null
-    setsid -f waybar >/dev/null 2>&1 ;;
+    # waybar is waybar.service (Slice=app-graphical.slice, Restart=on-failure).
+    # pkill + `setsid -f waybar` fought that: the kill looked like a failure and
+    # systemd restarted the unit, while the bare respawn added a second,
+    # unmanaged instance alongside it.
+    systemctl --user restart waybar ;;
 
   "White temperature…")
     "$HOME/.local/bin/whitetemp" ;;
@@ -110,28 +109,36 @@ case "$chosen" in
     "$HOME/.local/bin/dunst-toggle" ;;
 
   "Dictation…")
-    action=$(printf '%s\n' "Activate" "Deactivate" | menu "Dictation")
+    # Labels name the systemctl verb they run, not the capability it grants.
+    action=$(printf '%s\n' "Start service" "Stop service" | menu "Dictation")
     case "$action" in
-      "Activate")
+      "Start service")
         if systemctl --user start "$dictation_service"; then
-          notify-send "Dictation" "Activated — hold Super+V to dictate"
+          notify-send "Dictation" "$dictation_service started — hold Super+V to dictate"
         else
-          notify-send -u critical "Dictation" "Could not start the service"
+          notify-send -u critical "Dictation" "Could not start $dictation_service"
         fi ;;
-      "Deactivate")
+      "Stop service")
         if systemctl --user stop "$dictation_service"; then
-          notify-send "Dictation" "Deactivated"
+          notify-send "Dictation" "$dictation_service stopped"
         else
-          notify-send -u critical "Dictation" "Could not stop the service"
+          notify-send -u critical "Dictation" "Could not stop $dictation_service"
         fi ;;
     esac ;;
 
   "Power…")
-    action=$(printf '%s\n' "Exit Mango" "Power off" "Reboot" "Suspend" | menu "Power")
+    # Each entry runs exactly the one command its label names; none of them
+    # chain a session stop into a power action.
+    action=$(printf '%s\n' "Power off" "Reboot" "Stop Mango session" "Suspend" \
+             | menu "Power")
     case "$action" in
-      "Suspend")    systemctl suspend ;;
-      "Reboot")     confirm "Reboot?"     && systemctl reboot ;;
-      "Power off")  confirm "Power off?"  && systemctl poweroff ;;
-      "Exit Mango") confirm "Exit Mango?" && killall mango ;;
+      "Suspend")   systemctl suspend ;;
+      "Reboot")    confirm "Reboot?"    && systemctl reboot ;;
+      "Power off") confirm "Power off?" && systemctl poweroff ;;
+      # uwsm stop walks wayland-session@mango.desktop.target down in dependency
+      # order. The old `killall mango` yanked the compositor's main process and
+      # left systemd to tear the tree down reactively instead.
+      "Stop Mango session")
+        confirm "Stop Mango session?" && uwsm stop ;;
     esac ;;
 esac
