@@ -1,11 +1,25 @@
 #!/bin/sh
 # spawn: run a command in a new transient systemd user scope.
 #
-# The command is started as its own scope unit under the user manager's
-# app.slice, so it has an independent lifecycle and cgroup from the
-# process that invoked spawn. Resource usage is accounted to that scope,
-# and stdout/stderr go to the systemd journal under the scope's name.
+# Thin wrapper over `uwsm app`, which starts the command as a scope unit in
+# app-graphical.slice under a descriptive name (app-mango-<cmd>-<hash>.scope),
+# so it is legible in `systemctl --user` and the journal. Previously this ran
+# systemd-run directly and produced opaque run-p<pid>-i<id>.scope names.
+#
+# Lifecycle is independent of the CALLER but NOT of the session:
+# app-graphical.slice is PartOf=graphical-session.target, so these stop at
+# logout. (Bare app.slice is not session-bound -- see
+# ~/.config/systemd/user/app-.scope.d/graphical.conf for why.)
+#
+# Assumes a uwsm session: unit names are derived from the compositor, so this
+# is not meant for use over SSH or on a bare TTY.
+#
+# Desktop Entries: uwsm reads the first argument as a Desktop Entry ONLY if it
+# ends in ".desktop" or contains ".desktop:" (main.py, class MainArg). A bare
+# command name always resolves as an executable -- `spawn librewolf` runs the
+# binary, never librewolf.desktop.
 #
 # Usage: spawn <command> [args...]
 # Example: spawn librewolf
-exec systemd-run --user --scope --quiet -- "$@"
+#          spawn org.mozilla.firefox.desktop:new-private-window
+exec uwsm app -- "$@"
