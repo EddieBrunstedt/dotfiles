@@ -12,7 +12,6 @@ biome
 bitwarden
 bun
 caligula
-capitaine-cursors
 cargo-update
 chromium
 cmake
@@ -92,6 +91,7 @@ pacutils
 papirus-icon-theme
 pastel
 perl-file-mimeinfo
+phinger-cursors
 pipewire
 pipewire-jack
 pipewire-pulse

@@ -1,5 +1,5 @@
 # Makes the XCursor library (Xwayland clients, and any toolkit that does not
-# read XCURSOR_THEME) resolve the default cursor to capitaine instead of
+# read XCURSOR_THEME) resolve the default cursor to phinger instead of
 # Adwaita. Kept in sync with XCURSOR_THEME in ~/.config/environment.d/20-theming.conf.
 [Icon Theme]
-Inherits=capitaine-cursors
+Inherits=phinger-cursors-light
