@@ -74,7 +74,6 @@ mediainfo
 mpv
 mtr
 musl
-navi
 neovim
 networkmanager
 nmap
@@ -93,6 +92,7 @@ pastel
 perl-file-mimeinfo
 phinger-cursors
 pipewire
+pipewire-alsa
 pipewire-jack
 pipewire-pulse
 plocate
