@@ -1,6 +1,6 @@
 [mgr]
 prepend_keymap = [
-  { on = ["<C-n>"], run = '''shell 'dragon-drop -a -x "$@"' --confirm''' },
+  { on = ["<C-n>"], run = "plugin dragon", desc = "Drag selected files out" },
 
   # Disable keybinds
   { on = ["q"], run = "noop" },
