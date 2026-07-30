@@ -90,9 +90,13 @@
         "exec": "volume",
         "interval": 10,
         "signal": 1,
-        "on-click": "pavucontrol",
-        "on-scroll-up": "pamixer -i 2 && pkill -RTMIN+1 waybar",
-        "on-scroll-down": "pamixer -d 2 && pkill -RTMIN+1 waybar",
+        // wiremix is a TUI, so it needs a terminal — same invocation as the
+        // Super+Shift+A mango bind. (Was pavucontrol, a PulseAudio-API client.)
+        "on-click": "ghostty -e wiremix -s compat -v output",
+        // wpctl, matching the exec script above and the mango media-key binds
+        // (which step by 5). -l 1.0 caps at 100%, as pamixer did without --allow-boost.
+        "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 2%+ && pkill -RTMIN+1 waybar",
+        "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 2%- && pkill -RTMIN+1 waybar",
         "tooltip": false
     },
     // Voxtype's native status stream: stopped / idle / recording / transcribing.
