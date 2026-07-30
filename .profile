@@ -35,9 +35,9 @@ path_prepend() {
     esac
 }
 
-# pnpm puts global binaries directly in $PNPM_HOME, not in a bin/ below it.
-# PNPM_HOME itself is set in environment.d/10-defaults.conf.
-path_prepend "$HOME/.local/share/pnpm"
+# pnpm 11 moved global binaries to $PNPM_HOME/bin; 10 and earlier put them
+# directly in $PNPM_HOME. PNPM_HOME is set in environment.d/10-defaults.conf.
+path_prepend "$HOME/.local/share/pnpm/bin"
 path_prepend "$HOME/.npm-global/bin"
 path_prepend "$HOME/.local/share/zvm/bin"
 path_prepend "$HOME/.cargo/bin"
