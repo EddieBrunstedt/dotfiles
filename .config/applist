@@ -90,7 +90,6 @@ pacutils
 papirus-icon-theme
 pastel
 perl-file-mimeinfo
-phinger-cursors
 pipewire
 pipewire-alsa
 pipewire-jack
@@ -98,6 +97,7 @@ pipewire-pulse
 plocate
 pnpm
 qbittorrent
+qt5-wayland
 qt6-wayland
 reflector
 resvg
@@ -122,6 +122,7 @@ tenacity
 texinfo
 tmux
 traceroute
+trash-cli
 tree
 ttf-nerd-fonts-symbols
 typescript-language-server
