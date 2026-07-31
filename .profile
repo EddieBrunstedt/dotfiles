@@ -39,7 +39,6 @@ path_prepend() {
 # directly in $PNPM_HOME. PNPM_HOME is set in environment.d/10-defaults.conf.
 path_prepend "$HOME/.local/share/pnpm/bin"
 path_prepend "$HOME/.npm-global/bin"
-path_prepend "$HOME/.local/share/zvm/bin"
 path_prepend "$HOME/.cargo/bin"
 path_prepend "$HOME/.local/bin/statusbar"
 path_prepend "$HOME/.local/bin"
