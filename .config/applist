@@ -61,6 +61,7 @@ hledger
 htmlq
 htop
 hyperfine
+imagemagick
 inetutils
 inter-font
 jq
@@ -96,6 +97,7 @@ openresolv
 openssh
 pacman-contrib
 pacutils
+pandoc-cli
 papirus-icon-theme
 pastel
 perl-file-mimeinfo
@@ -105,6 +107,8 @@ pipewire-jack
 pipewire-pulse
 plocate
 pnpm
+prettier
+protonmail-bridge-core
 qbittorrent
 qt5-wayland
 qt6-wayland
@@ -124,12 +128,17 @@ shfmt
 signal-desktop
 slurp
 sops
+sqlitebrowser
 starship
+steam
 stow
 stress
 swaybg
+swayimg
+taplo-cli
 tealdeer
 tenacity
+terminus-font
 texinfo
 tmux
 traceroute
