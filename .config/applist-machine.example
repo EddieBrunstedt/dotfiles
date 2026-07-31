@@ -1,0 +1,21 @@
+# Machine-specific packages: bootloader, firmware, GPU, network hardware.
+#
+# Unlike the other applists, this file's CONTENTS are gitignored — they differ
+# per machine and are not portable. Only this .example template is committed,
+# so the concept is versioned even though the package names are not.
+#
+# On a new machine: copy this to applist-machine and fill it in with whatever
+# that box needs. package_report counts entries here as tracked, so they stop
+# showing up as untracked noise, but they are deliberately never part of the
+# portable install manifest.
+#
+# cp applist-machine.example applist-machine
+#
+# Example entries (this machine's, as a starting point):
+#
+# grub
+# efibootmgr
+# intel-ucode
+# nvidia-open
+# nvidia-settings
+# iwd

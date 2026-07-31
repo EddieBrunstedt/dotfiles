@@ -5,6 +5,10 @@ set -euo pipefail
 APPLIST="${APPLIST:-$HOME/.config/applist}"
 APPLIST_AUR="${APPLIST_AUR:-$HOME/.config/applist-aur}"
 APPLIST_LOCAL="${APPLIST_LOCAL:-$HOME/.config/applist-local}"
+# Machine-specific and therefore gitignored: boot, firmware and hardware
+# packages differ per machine, so only applist-machine.example is committed.
+# Optional — absent on a machine where it has not been created yet.
+APPLIST_MACHINE="${APPLIST_MACHINE:-$HOME/.config/applist-machine}"
 
 audit=false
 fix_explicit=false
@@ -17,14 +21,18 @@ usage() {
 	cat <<'EOF'
 Usage: package_report [OPTIONS]
 
-Compare the installed system against the official, AUR and local-build
-applists in both directions: packages installed but not listed, and packages
-listed but not installed (or installed only as a dependency). Also reports
-orphans. The default report is local-only and does not refresh package
-databases or contact the AUR.
+Compare the installed system against the official, AUR, local-build and
+machine applists in both directions: packages installed but not listed, and
+packages listed but not installed (or installed only as a dependency). Also
+reports orphans. The default report is local-only and does not refresh
+package databases or contact the AUR.
 
 Entries in applist-local are packages built by hand that exist in no
 repository, so --audit does not try to resolve them.
+
+applist-machine holds hardware-, boot- and firmware-specific packages. Its
+contents differ per machine, so it is gitignored and optional; only
+applist-machine.example is committed. Entries count as tracked.
 
 Options:
   --audit          Also check whether listed packages moved between
@@ -99,15 +107,19 @@ fi
 declare -a official_packages=()
 declare -a aur_packages=()
 declare -a local_packages=()
+declare -a machine_packages=()
 declare -a duplicate_official=()
 declare -a duplicate_aur=()
 declare -a duplicate_local=()
+declare -a duplicate_machine=()
 declare -a overlap_packages=()
 declare -A official_list_set=()
 declare -A aur_list_set=()
 # Used indirectly through load_applist's nameref.
 # shellcheck disable=SC2034
 declare -A local_list_set=()
+# shellcheck disable=SC2034
+declare -A machine_list_set=()
 declare -A tracked_set=()
 input_errors=0
 
@@ -156,6 +168,11 @@ load_applist() {
 load_applist "$APPLIST" official official_packages official_list_set duplicate_official
 load_applist "$APPLIST_AUR" aur aur_packages aur_list_set duplicate_aur
 load_applist "$APPLIST_LOCAL" local local_packages local_list_set duplicate_local
+# Guarded rather than required: the other three lists are committed and must
+# exist, but applist-machine is gitignored and may legitimately be absent.
+if [[ -f $APPLIST_MACHINE ]]; then
+	load_applist "$APPLIST_MACHINE" machine machine_packages machine_list_set duplicate_machine
+fi
 
 if ((input_errors)); then
 	exit 2
@@ -169,6 +186,13 @@ done
 
 for package in "${local_packages[@]}"; do
 	if [[ ${official_list_set[$package]+present} || ${aur_list_set[$package]+present} ]]; then
+		overlap_packages+=("$package")
+	fi
+done
+
+for package in "${machine_packages[@]}"; do
+	if [[ ${official_list_set[$package]+present} || ${aur_list_set[$package]+present} ||
+		${local_list_set[$package]+present} ]]; then
 		overlap_packages+=("$package")
 	fi
 done
@@ -252,7 +276,8 @@ tracked_selected_count=$((selected_count - untracked_count))
 declare -a listed_missing=()
 declare -a listed_as_dependency=()
 
-for package in "${official_packages[@]}" "${aur_packages[@]}" "${local_packages[@]}"; do
+for package in "${official_packages[@]}" "${aur_packages[@]}" "${local_packages[@]}" \
+	"${machine_packages[@]}"; do
 	if [[ ! ${installed_set[$package]+present} ]]; then
 		listed_missing+=("$package")
 	elif [[ ! ${explicit_set[$package]+present} ]]; then
@@ -409,9 +434,9 @@ print_json_report() {
 	printf '  "mode": '
 	json_quote "$selection_mode"
 	printf ',\n'
-	printf '  "configured": {"official": %d, "aur": %d, "local": %d, "unique": %d},\n' \
+	printf '  "configured": {"official": %d, "aur": %d, "local": %d, "machine": %d, "unique": %d},\n' \
 		"${#official_packages[@]}" "${#aur_packages[@]}" "${#local_packages[@]}" \
-		"$configured_count"
+		"${#machine_packages[@]}" "$configured_count"
 	printf '  "installed_selected": %d,\n' "$selected_count"
 	printf '  "tracked_selected": %d,\n' "$tracked_selected_count"
 	printf '  "untracked": {\n'
@@ -438,6 +463,8 @@ print_json_report() {
 	json_array duplicate_aur
 	printf ',\n    "duplicate_local": '
 	json_array duplicate_local
+	printf ',\n    "duplicate_machine": '
+	json_array duplicate_machine
 	printf ',\n    "in_multiple_lists": '
 	json_array overlap_packages
 	printf '\n  },\n'
@@ -482,9 +509,9 @@ print_text_report() {
 	printf '%b══════════════════════════════════════════%b\n' "$BLUE" "$NC"
 	printf '%b         PACKAGE TRACKING REPORT%b\n' "$BLUE" "$NC"
 	printf '%b══════════════════════════════════════════%b\n\n' "$BLUE" "$NC"
-	printf 'Configured packages: %d (%d official, %d AUR, %d local)\n' \
+	printf 'Configured packages: %d (%d official, %d AUR, %d local, %d machine)\n' \
 		"$configured_count" "${#official_packages[@]}" "${#aur_packages[@]}" \
-		"${#local_packages[@]}"
+		"${#local_packages[@]}" "${#machine_packages[@]}"
 	printf '%s: %d\n' "$selection_label" "$selected_count"
 	printf '%bTracked: %d%b\n' "$GREEN" "$tracked_selected_count" "$NC"
 	printf '%bUntracked: %d%b\n' "$YELLOW" "$untracked_count" "$NC"
@@ -512,6 +539,7 @@ print_text_report() {
 	print_package_section "$YELLOW" 'Duplicate entries in the official applist' duplicate_official
 	print_package_section "$YELLOW" 'Duplicate entries in the AUR applist' duplicate_aur
 	print_package_section "$YELLOW" 'Duplicate entries in the local applist' duplicate_local
+	print_package_section "$YELLOW" 'Duplicate entries in the machine applist' duplicate_machine
 	print_package_section "$YELLOW" 'Packages present in more than one applist' overlap_packages
 
 	if $audit; then
@@ -541,7 +569,7 @@ fi
 
 issue_count=$((untracked_count + drift_count + ${#orphan_packages[@]} +
 	${#duplicate_official[@]} + ${#duplicate_aur[@]} + ${#duplicate_local[@]} +
-	${#overlap_packages[@]}))
+	${#duplicate_machine[@]} + ${#overlap_packages[@]}))
 if $audit; then
 	issue_count=$((issue_count + ${#official_moved_to_aur[@]} + ${#aur_moved_to_official[@]} +
 		${#official_missing[@]} + ${#aur_missing[@]} + ${#audit_query_errors[@]}))
