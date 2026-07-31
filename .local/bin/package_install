@@ -8,6 +8,9 @@ set -Eeuo pipefail
 
 readonly OFFICIAL_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist"
 readonly AUR_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-aur"
+# Packages built by hand; listed for package_report's benefit, never installed
+# here because they exist in no repository.
+readonly LOCAL_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-local"
 
 if [[ -t 1 && -z ${NO_COLOR:-} ]]; then
 	readonly RED=$'\033[0;31m'
@@ -169,4 +172,19 @@ case $1 in
 	;;
 esac
 
+report_local_packages() {
+	local -a packages=()
+	[[ -f $LOCAL_LIST ]] || return 0
+	read_packages "$LOCAL_LIST" packages
+	((${#packages[@]})) || return 0
+
+	printf '\n'
+	print_msg "${#packages[@]} local builds are not installed by this script:" "$YELLOW"
+	printf '  %s\n' "${packages[@]}"
+	print_msg "Build them by hand with makepkg (see $LOCAL_LIST)." "$YELLOW"
+}
+
+report_local_packages
+
+printf '\n'
 print_msg "Done!" "$GREEN"

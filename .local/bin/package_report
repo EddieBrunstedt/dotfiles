@@ -4,8 +4,10 @@ set -euo pipefail
 
 APPLIST="${APPLIST:-$HOME/.config/applist}"
 APPLIST_AUR="${APPLIST_AUR:-$HOME/.config/applist-aur}"
+APPLIST_LOCAL="${APPLIST_LOCAL:-$HOME/.config/applist-local}"
 
 audit=false
+fix_explicit=false
 json=false
 leaf=false
 no_color=false
@@ -15,25 +17,35 @@ usage() {
 	cat <<'EOF'
 Usage: package_report [OPTIONS]
 
-Report explicitly installed packages that are absent from the official and
-AUR applists. The default report is local-only and does not refresh package
+Compare the installed system against the official, AUR and local-build
+applists in both directions: packages installed but not listed, and packages
+listed but not installed (or installed only as a dependency). Also reports
+orphans. The default report is local-only and does not refresh package
 databases or contact the AUR.
 
+Entries in applist-local are packages built by hand that exist in no
+repository, so --audit does not try to resolve them.
+
 Options:
-  --audit       Also check whether listed packages moved between repositories
-                or disappeared (uses the local sync DB and contacts the AUR)
-  --leaf        Check explicit leaf packages (pacman -Qqet) instead of all
-                explicitly installed packages (pacman -Qqe)
-  --json        Emit machine-readable JSON
-  --no-color    Disable colored output
-  --strict      Exit with status 1 when the report finds an issue
-  -h, --help    Show this help
+  --audit          Also check whether listed packages moved between
+                   repositories or disappeared (uses the local sync DB and
+                   contacts the AUR)
+  --leaf           Check explicit leaf packages (pacman -Qqet) instead of all
+                   explicitly installed packages (pacman -Qqe). Only affects
+                   the installed-but-not-listed check.
+  --fix-explicit   Mark every listed package that is currently installed as a
+                   dependency with 'pacman -D --asexplicit' (needs root)
+  --json           Emit machine-readable JSON
+  --no-color       Disable colored output
+  --strict         Exit with status 1 when the report finds an issue
+  -h, --help       Show this help
 EOF
 }
 
 while (($#)); do
 	case "$1" in
 	--audit) audit=true ;;
+	--fix-explicit) fix_explicit=true ;;
 	--leaf) leaf=true ;;
 	--json) json=true ;;
 	--no-color) no_color=true ;;
@@ -56,7 +68,7 @@ if ! command -v pacman >/dev/null 2>&1; then
 	exit 2
 fi
 
-for file in "$APPLIST" "$APPLIST_AUR"; do
+for file in "$APPLIST" "$APPLIST_AUR" "$APPLIST_LOCAL"; do
 	if [[ ! -f $file ]]; then
 		printf 'Error: %s not found.\n' "$file" >&2
 		exit 2
@@ -86,13 +98,16 @@ fi
 
 declare -a official_packages=()
 declare -a aur_packages=()
+declare -a local_packages=()
 declare -a duplicate_official=()
 declare -a duplicate_aur=()
+declare -a duplicate_local=()
 declare -a overlap_packages=()
 declare -A official_list_set=()
+declare -A aur_list_set=()
 # Used indirectly through load_applist's nameref.
 # shellcheck disable=SC2034
-declare -A aur_list_set=()
+declare -A local_list_set=()
 declare -A tracked_set=()
 input_errors=0
 
@@ -140,6 +155,7 @@ load_applist() {
 
 load_applist "$APPLIST" official official_packages official_list_set duplicate_official
 load_applist "$APPLIST_AUR" aur aur_packages aur_list_set duplicate_aur
+load_applist "$APPLIST_LOCAL" local local_packages local_list_set duplicate_local
 
 if ((input_errors)); then
 	exit 2
@@ -147,6 +163,12 @@ fi
 
 for package in "${aur_packages[@]}"; do
 	if [[ ${official_list_set[$package]+present} ]]; then
+		overlap_packages+=("$package")
+	fi
+done
+
+for package in "${local_packages[@]}"; do
+	if [[ ${official_list_set[$package]+present} || ${aur_list_set[$package]+present} ]]; then
 		overlap_packages+=("$package")
 	fi
 done
@@ -170,14 +192,42 @@ if ! foreign_output=$(pacman -Qqm); then
 	exit 2
 fi
 
+if ! installed_output=$(pacman -Qq); then
+	printf 'Error: pacman -Qq failed.\n' >&2
+	exit 2
+fi
+
+if ! explicit_output=$(pacman -Qqe); then
+	printf 'Error: pacman -Qqe failed.\n' >&2
+	exit 2
+fi
+
+# pacman exits 1 when there is nothing to report, which is not an error here.
+orphan_output=$(pacman -Qqdt || true)
+
 declare -a selected_packages=()
 declare -a untracked_repository=()
 declare -a untracked_foreign=()
+declare -a orphan_packages=()
 declare -A foreign_set=()
+declare -A installed_set=()
+declare -A explicit_set=()
 
 while IFS= read -r package; do
 	[[ -n $package ]] && foreign_set["$package"]=1
 done <<<"$foreign_output"
+
+while IFS= read -r package; do
+	[[ -n $package ]] && installed_set["$package"]=1
+done <<<"$installed_output"
+
+while IFS= read -r package; do
+	[[ -n $package ]] && explicit_set["$package"]=1
+done <<<"$explicit_output"
+
+while IFS= read -r package; do
+	[[ -n $package ]] && orphan_packages+=("$package")
+done <<<"$orphan_output"
 
 while IFS= read -r package; do
 	[[ -z $package ]] && continue
@@ -195,6 +245,46 @@ configured_count=${#tracked_set[@]}
 selected_count=${#selected_packages[@]}
 untracked_count=$((${#untracked_repository[@]} + ${#untracked_foreign[@]}))
 tracked_selected_count=$((selected_count - untracked_count))
+
+# The checks above only answer "is this installed package listed?". These answer
+# the reverse — "is this listed package actually installed, and installed
+# explicitly?" — which is what keeps the applists usable as an install manifest.
+declare -a listed_missing=()
+declare -a listed_as_dependency=()
+
+for package in "${official_packages[@]}" "${aur_packages[@]}" "${local_packages[@]}"; do
+	if [[ ! ${installed_set[$package]+present} ]]; then
+		listed_missing+=("$package")
+	elif [[ ! ${explicit_set[$package]+present} ]]; then
+		listed_as_dependency+=("$package")
+	fi
+done
+
+drift_count=$((${#listed_missing[@]} + ${#listed_as_dependency[@]}))
+
+declare -a fixed_explicit=()
+
+if $fix_explicit && ((${#listed_as_dependency[@]})); then
+	pacman_fix=(pacman -D --asexplicit)
+	if ((EUID != 0)); then
+		if ! command -v sudo >/dev/null 2>&1; then
+			printf 'Error: --fix-explicit needs root or sudo.\n' >&2
+			exit 2
+		fi
+		pacman_fix=(sudo "${pacman_fix[@]}")
+	fi
+
+	if ! "${pacman_fix[@]}" "${listed_as_dependency[@]}" >/dev/null; then
+		printf 'Error: failed to update install reasons.\n' >&2
+		exit 2
+	fi
+
+	# Used indirectly through print_package_section's nameref.
+	# shellcheck disable=SC2034
+	fixed_explicit=("${listed_as_dependency[@]}")
+	listed_as_dependency=()
+	drift_count=${#listed_missing[@]}
+fi
 
 declare -a official_moved_to_aur=()
 declare -a aur_moved_to_official=()
@@ -319,8 +409,9 @@ print_json_report() {
 	printf '  "mode": '
 	json_quote "$selection_mode"
 	printf ',\n'
-	printf '  "configured": {"official": %d, "aur": %d, "unique": %d},\n' \
-		"${#official_packages[@]}" "${#aur_packages[@]}" "$configured_count"
+	printf '  "configured": {"official": %d, "aur": %d, "local": %d, "unique": %d},\n' \
+		"${#official_packages[@]}" "${#aur_packages[@]}" "${#local_packages[@]}" \
+		"$configured_count"
 	printf '  "installed_selected": %d,\n' "$selected_count"
 	printf '  "tracked_selected": %d,\n' "$tracked_selected_count"
 	printf '  "untracked": {\n'
@@ -330,12 +421,24 @@ print_json_report() {
 	printf ',\n    "foreign": '
 	json_array untracked_foreign
 	printf '\n  },\n'
+	printf '  "drift": {\n'
+	printf '    "count": %d,\n' "$drift_count"
+	printf '    "not_installed": '
+	json_array listed_missing
+	printf ',\n    "installed_as_dependency": '
+	json_array listed_as_dependency
+	printf '\n  },\n'
+	printf '  "orphans": '
+	json_array orphan_packages
+	printf ',\n'
 	printf '  "input_warnings": {\n'
 	printf '    "duplicate_official": '
 	json_array duplicate_official
 	printf ',\n    "duplicate_aur": '
 	json_array duplicate_aur
-	printf ',\n    "in_both_lists": '
+	printf ',\n    "duplicate_local": '
+	json_array duplicate_local
+	printf ',\n    "in_multiple_lists": '
 	json_array overlap_packages
 	printf '\n  },\n'
 	printf '  "audit": '
@@ -379,11 +482,16 @@ print_text_report() {
 	printf '%b══════════════════════════════════════════%b\n' "$BLUE" "$NC"
 	printf '%b         PACKAGE TRACKING REPORT%b\n' "$BLUE" "$NC"
 	printf '%b══════════════════════════════════════════%b\n\n' "$BLUE" "$NC"
-	printf 'Configured packages: %d (%d official, %d AUR)\n' \
-		"$configured_count" "${#official_packages[@]}" "${#aur_packages[@]}"
+	printf 'Configured packages: %d (%d official, %d AUR, %d local)\n' \
+		"$configured_count" "${#official_packages[@]}" "${#aur_packages[@]}" \
+		"${#local_packages[@]}"
 	printf '%s: %d\n' "$selection_label" "$selected_count"
 	printf '%bTracked: %d%b\n' "$GREEN" "$tracked_selected_count" "$NC"
-	printf '%bUntracked: %d%b\n\n' "$YELLOW" "$untracked_count" "$NC"
+	printf '%bUntracked: %d%b\n' "$YELLOW" "$untracked_count" "$NC"
+	printf '%bListed but missing or not explicit: %d%b\n' "$YELLOW" "$drift_count" "$NC"
+	printf '%bOrphans: %d%b\n\n' "$YELLOW" "${#orphan_packages[@]}" "$NC"
+
+	print_package_section "$GREEN" 'Marked as explicitly installed' fixed_explicit
 
 	print_package_section "$MAGENTA" 'Untracked repository packages' untracked_repository
 	print_package_section "$MAGENTA" 'Untracked foreign packages (typically AUR or manual)' untracked_foreign
@@ -392,9 +500,19 @@ print_text_report() {
 		printf '%bAll selected packages are included in an applist.%b\n\n' "$GREEN" "$NC"
 	fi
 
+	print_package_section "$RED" 'Listed but not installed' listed_missing
+	print_package_section "$YELLOW" 'Listed but installed as a dependency (not explicit)' listed_as_dependency
+
+	if ((drift_count == 0)); then
+		printf '%bEvery listed package is installed and marked explicit.%b\n\n' "$GREEN" "$NC"
+	fi
+
+	print_package_section "$YELLOW" 'Orphans (installed as a dependency, nothing requires them)' orphan_packages
+
 	print_package_section "$YELLOW" 'Duplicate entries in the official applist' duplicate_official
 	print_package_section "$YELLOW" 'Duplicate entries in the AUR applist' duplicate_aur
-	print_package_section "$YELLOW" 'Packages present in both applists' overlap_packages
+	print_package_section "$YELLOW" 'Duplicate entries in the local applist' duplicate_local
+	print_package_section "$YELLOW" 'Packages present in more than one applist' overlap_packages
 
 	if $audit; then
 		printf '%bREPOSITORY AUDIT%b\n\n' "$BLUE" "$NC"
@@ -421,7 +539,9 @@ else
 	print_text_report
 fi
 
-issue_count=$((untracked_count + ${#duplicate_official[@]} + ${#duplicate_aur[@]} + ${#overlap_packages[@]}))
+issue_count=$((untracked_count + drift_count + ${#orphan_packages[@]} +
+	${#duplicate_official[@]} + ${#duplicate_aur[@]} + ${#duplicate_local[@]} +
+	${#overlap_packages[@]}))
 if $audit; then
 	issue_count=$((issue_count + ${#official_moved_to_aur[@]} + ${#aur_moved_to_official[@]} +
 		${#official_missing[@]} + ${#aur_missing[@]} + ${#audit_query_errors[@]}))
