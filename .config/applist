@@ -7,7 +7,6 @@ base-devel
 bat
 bat-extras
 bfs
-bind
 biome
 bitwarden
 bun
@@ -22,7 +21,7 @@ direnv
 docker
 docker-buildx
 docker-compose
-dog
+doggo
 dosfstools
 dprint
 duf
@@ -48,7 +47,6 @@ git
 git-delta
 github-cli
 glab
-glances
 glow
 gnome-themes-extra
 godot
@@ -56,13 +54,13 @@ gopls
 gparted
 greetd
 greetd-tuigreet
+grim
 highlight
 hledger
 htmlq
 htop
 hyperfine
 imagemagick
-inetutils
 inter-font
 jq
 jujutsu
@@ -107,7 +105,6 @@ pipewire
 pipewire-alsa
 pipewire-jack
 pipewire-pulse
-plocate
 pnpm
 prettier
 protonmail-bridge-core
@@ -116,7 +113,6 @@ qt5-wayland
 qt6-wayland
 qutebrowser
 reaper
-reflector
 resvg
 ripgrep
 rofi
@@ -128,7 +124,6 @@ seatd
 shellcheck
 shfmt
 signal-desktop
-slurp
 sops
 sqlitebrowser
 starship
@@ -142,9 +137,7 @@ taplo-cli
 tealdeer
 tenacity
 terminus-font
-texinfo
 tmux
-traceroute
 trash-cli
 tree
 tree-sitter-cli
@@ -155,7 +148,6 @@ unrar
 unzip
 uwsm
 veracrypt
-vnstat
 vulkan-tools
 watchexec
 wayland-protocols
@@ -171,12 +163,9 @@ wtype
 xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-wlr
-xed
 xorg-xwayland
 yazi
-ydotool
 yt-dlp
 zathura
 zathura-pdf-mupdf
-zenith
 zoxide
