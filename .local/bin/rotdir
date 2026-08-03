@@ -1,9 +1,0 @@
-#!/bin/sh
-
-# Adds the possible to open an image from the file manager in sxiv and press the
-# next/previous keys to key through the rest of the images in the same directory
-# by rotating the content of a directory based on the first chosen file.
-
-[ -z "$1" ] && echo "usage: rotdir regex 2>&1" && exit 1
-base="$(basename "$1")"
-ls "$PWD" | awk -v BASE="$base" 'BEGIN { lines = ""; m = 0; } { if ($0 == BASE) { m = 1; } } { if (!m) { if (lines) { lines = lines"\n"; } lines = lines""$0; } else { print $0; } } END { print lines; }'
