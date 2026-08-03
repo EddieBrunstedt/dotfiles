@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Session-lock entry point. Keep pre-lock policy here so manual keybindings and
+# future idle/suspend hooks all behave identically.
+set -u
+
+# Mango numbers layouts from 1 here; xkb_rules_layout starts with `us`.
+# A layout-switch failure must never prevent the screen from locking.
+if ! mmsg dispatch switch_keyboard_layout,1 >/dev/null; then
+  printf 'lock-screen: could not switch Mango keyboard layout to us\n' >&2
+fi
+
+# Locking implies do-not-disturb: whoever is next to the screen at *unlock* time
+# is not necessarily whoever locked it, so notifications must not pop up on
+# return. Deliberately one-way — unpausing is a manual decision (SUPER+SHIFT+n,
+# or the Waybar segment) taken once it is safe to read them.
+# Failure must never prevent the screen from locking.
+if dunstctl set-paused true >/dev/null 2>&1; then
+  # Refresh the Waybar segment immediately, as dunst-toggle does
+  # (RTMIN+3 matches "signal": 3 in waybar config.jsonc).
+  pkill -RTMIN+3 waybar || :
+else
+  printf 'lock-screen: could not pause dunst notifications\n' >&2
+fi
+
+# Pause first, then close: pausing moves anything currently on screen into the
+# waiting queue, and close-all clears that queue as well as the display. In this
+# order nothing can slip through in between, and nothing survives to be replayed
+# when notifications are unpaused. Closed popups go to history (history_length =
+# 1000 in dunstrc) and are readable later with `dunstctl history-pop`.
+dunstctl close-all >/dev/null 2>&1 || printf 'lock-screen: could not clear pending notifications\n' >&2
+
+exec /usr/bin/swaylock "$@"

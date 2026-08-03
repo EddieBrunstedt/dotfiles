@@ -1,0 +1,36 @@
+# Read the exact same `current` image as swaybg. Wallpapers intended for use
+# should already be sized appropriately for the display.
+image=/home/nilo/.local/share/wallpapers/current
+scaling=fill
+# Safe background if no wallpaper has been selected or the image cannot load.
+color=020202
+# Always accept the password using US layout, but do not show a layout label.
+hide-keyboard-layout
+
+# The wallpaper is strictly grayscale: near-black (#000) through graphite
+# (#434343). Keep the normal indicator monochrome, with restrained status
+# accents only while verifying, reporting an error, or showing Caps Lock.
+inside-color=020202d9
+inside-clear-color=020202d9
+inside-caps-lock-color=020202d9
+inside-ver-color=020202d9
+inside-wrong-color=020202d9
+
+ring-color=434343ff
+ring-clear-color=707070ff
+ring-caps-lock-color=a59672ff
+ring-ver-color=8f9d91ff
+ring-wrong-color=a56f6fff
+
+text-color=d6d6d6ff
+text-clear-color=d6d6d6ff
+text-caps-lock-color=d8c89fff
+text-ver-color=c4d0c6ff
+text-wrong-color=e0aaaaff
+
+key-hl-color=a3a3a3ff
+bs-hl-color=707070ff
+caps-lock-key-hl-color=c1b184ff
+caps-lock-bs-hl-color=8f825fff
+line-uses-ring
+separator-color=00000000

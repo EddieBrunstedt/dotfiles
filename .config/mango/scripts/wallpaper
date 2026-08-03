@@ -17,7 +17,7 @@ FALLBACK_COLOR="#1a1b26"   # shown until you set an image
 pkill -x swaybg 2>/dev/null
 
 if [[ -e $WALL ]]; then
-  exec swaybg -i "$WALL" -m fill
+  exec swaybg -c "$FALLBACK_COLOR" -i "$WALL" -m fill
 else
   exec swaybg -c "$FALLBACK_COLOR"
 fi
