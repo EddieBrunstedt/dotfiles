@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
 Name=File Manager
-Exec=ghostty -e yazi %f
+Exec=uwsm app -- ghostty -e yazi %f

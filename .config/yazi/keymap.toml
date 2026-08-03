@@ -10,8 +10,7 @@ prepend_keymap = [
 
   # Static bookmarks
   { on = [";", "C"], run = "cd ~/.config", desc = "Config" },
-  { on = [";", "C"], run = "cd ~/.config", desc = "Config" },
-  { on = [";", "D"], run = "cd ~/desktop", desc = "Dotfiles" },
+  { on = [";", "D"], run = "cd ~/.dotfiles", desc = "Dotfiles" },
   { on = [";", "c"], run = "cd ~/code", desc = "Code" },
   { on = [";", "d"], run = "cd ~/desktop", desc = "Desktop" },
   { on = [";", "h"], run = "cd ~", desc = "Home" },

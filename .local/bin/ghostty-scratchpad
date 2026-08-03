@@ -1,5 +1,5 @@
 #!/bin/sh
-# Single-flight launcher for the Super+z dropdown scratchpad terminal.
+# Single-flight launcher for the Super+\ dropdown scratchpad terminal.
 #
 # mango's toggle_named_scratchpad runs this ONLY when no scratchpad window
 # exists (i.e. the terminal is truly closed) -- when one exists it just

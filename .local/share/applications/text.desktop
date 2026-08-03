@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
 Name=Text editor
-Exec=ghostty -e nvim %f
+Exec=uwsm app -- ghostty -e nvim %f

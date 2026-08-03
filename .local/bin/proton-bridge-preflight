@@ -1,0 +1,32 @@
+#!/bin/sh
+# Wait until Proton Mail Bridge has a usable network path, then exit.
+#
+# Run as ExecStartPre for protonmail-bridge.service. Bridge fails its initial
+# login if it starts before the tunnel is up, and retries slowly afterwards.
+#
+# Always exits 0: this gates startup timing, it does not decide whether Bridge
+# is allowed to run. If the wait times out, Bridge starts anyway and retries.
+set -u
+
+TIMEOUT=60
+API=https://mail-api.proton.me/
+
+# Only wait on the VPN when the daemon is actually enabled on this machine.
+vpn_ready() {
+    systemctl is-enabled --quiet mullvad-daemon.service 2>/dev/null || return 0
+    mullvad status --json 2>/dev/null | jq -e '.state == "connected"' >/dev/null 2>&1
+}
+
+api_ready() { curl -sm 2 -o /dev/null "$API"; }
+
+i=0
+while [ "$i" -lt "$TIMEOUT" ]; do
+    if vpn_ready && api_ready; then
+        exit 0
+    fi
+    sleep 1
+    i=$((i + 1))
+done
+
+echo "proton-bridge-preflight: timed out after ${TIMEOUT}s; starting anyway" >&2
+exit 0

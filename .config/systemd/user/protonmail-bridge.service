@@ -4,7 +4,7 @@ After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
-ExecStartPre=/bin/sh -c 'for i in $(seq 1 60); do { ! systemctl is-enabled --quiet mullvad-daemon.service 2>/dev/null || mullvad status 2>/dev/null | head -1 | grep -qE "^(Tunnel status: )?Connected$"; } && curl -sm 2 -o /dev/null https://mail-api.proton.me/ && exit 0; sleep 1; done; exit 0'
+ExecStartPre=%h/.local/bin/proton-bridge-preflight
 ExecStart=/usr/bin/protonmail-bridge-core --noninteractive
 Restart=on-failure
 RestartSec=10

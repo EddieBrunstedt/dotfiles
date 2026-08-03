@@ -11,6 +11,9 @@ readonly AUR_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-aur"
 # Packages built by hand; listed for package_report's benefit, never installed
 # here because they exist in no repository.
 readonly LOCAL_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-local"
+# Hardware, boot and firmware packages. Gitignored and optional — see
+# applist-machine.example. Installed from the official repos.
+readonly MACHINE_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-machine"
 
 if [[ -t 1 && -z ${NO_COLOR:-} ]]; then
 	readonly RED=$'\033[0;31m'
@@ -40,7 +43,9 @@ Usage: ${0##*/} OPTION
 Options:
   -o, --official  Install official packages from applist
   -a, --aur       Install AUR packages from applist-aur
+  -m, --machine   Install machine packages from applist-machine
   -b, --both      Install both official and AUR packages
+  -A, --all       Install official, AUR and machine packages
   -h, --help      Display this help message
 EOF
 }
@@ -102,30 +107,36 @@ read_packages() {
 	done <"$file"
 }
 
-install_official_packages() {
+# install_from_list <label> <file> <installer command...>
+install_from_list() {
+	local label=$1 file=$2
+	shift 2
 	local -a packages=()
-	read_packages "$OFFICIAL_LIST" packages
+	read_packages "$file" packages
 
 	if ((${#packages[@]} == 0)); then
-		print_msg "No packages found in $OFFICIAL_LIST" "$YELLOW"
+		print_msg "No packages found in $file" "$YELLOW"
 		return
 	fi
 
-	print_msg "Installing ${#packages[@]} official packages from $OFFICIAL_LIST..." "$GREEN"
-	sudo pacman -S --needed -- "${packages[@]}"
+	print_msg "Installing ${#packages[@]} $label packages from $file..." "$GREEN"
+	"$@" -S --needed -- "${packages[@]}"
 }
 
-install_aur_packages() {
+install_official_packages() { install_from_list official "$OFFICIAL_LIST" sudo pacman; }
+install_aur_packages() { install_from_list AUR "$AUR_LIST" paru; }
+install_machine_packages() { install_from_list machine "$MACHINE_LIST" sudo pacman; }
+
+report_local_packages() {
 	local -a packages=()
-	read_packages "$AUR_LIST" packages
+	[[ -f $LOCAL_LIST ]] || return 0
+	read_packages "$LOCAL_LIST" packages
+	((${#packages[@]})) || return 0
 
-	if ((${#packages[@]} == 0)); then
-		print_msg "No packages found in $AUR_LIST" "$YELLOW"
-		return
-	fi
-
-	print_msg "Installing ${#packages[@]} AUR packages from $AUR_LIST..." "$GREEN"
-	paru -S --needed -- "${packages[@]}"
+	printf '\n'
+	print_msg "${#packages[@]} local builds are not installed by this script:" "$YELLOW"
+	printf '  %s\n' "${packages[@]}"
+	print_msg "Build them by hand with makepkg (see $LOCAL_LIST)." "$YELLOW"
 }
 
 if (($# != 1)); then
@@ -144,9 +155,17 @@ case $1 in
 -a | --aur)
 	check_file "$AUR_LIST"
 	;;
+-m | --machine)
+	check_file "$MACHINE_LIST"
+	;;
 -b | --both)
 	check_file "$OFFICIAL_LIST"
 	check_file "$AUR_LIST"
+	;;
+-A | --all)
+	check_file "$OFFICIAL_LIST"
+	check_file "$AUR_LIST"
+	check_file "$MACHINE_LIST"
 	;;
 *)
 	print_msg "Invalid option: $1" "$RED" >&2
@@ -165,24 +184,22 @@ case $1 in
 -a | --aur)
 	install_aur_packages
 	;;
+-m | --machine)
+	install_machine_packages
+	;;
 -b | --both)
 	install_official_packages
 	printf '\n'
 	install_aur_packages
 	;;
-esac
-
-report_local_packages() {
-	local -a packages=()
-	[[ -f $LOCAL_LIST ]] || return 0
-	read_packages "$LOCAL_LIST" packages
-	((${#packages[@]})) || return 0
-
+-A | --all)
+	install_official_packages
 	printf '\n'
-	print_msg "${#packages[@]} local builds are not installed by this script:" "$YELLOW"
-	printf '  %s\n' "${packages[@]}"
-	print_msg "Build them by hand with makepkg (see $LOCAL_LIST)." "$YELLOW"
-}
+	install_aur_packages
+	printf '\n'
+	install_machine_packages
+	;;
+esac
 
 report_local_packages
 

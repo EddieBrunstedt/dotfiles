@@ -1,28 +1,19 @@
 #!/usr/bin/env bash
-# session-startup — launch apps and place each on its HOME tag, ONCE.
+# session-startup — launch apps and place each on its home tag, once.
 #
-# How it works: for each entry we launch the app, then poll mango's IPC
-# (mmsg) until the app's window(s) actually appear, and tagsilent-move each
-# NEW window to its tag. Because we wait for the window, slow starters (e.g.
-# Steam's loading splash) are handled; because we use tagsilent, your current
-# view is never dragged along — you can keep working on another tag.
+# For each entry: launch the app, poll mango's IPC until its window(s) appear,
+# and tagsilent-move each new window to its tag. Waiting for the window handles
+# slow starters (Steam's splash); tagsilent keeps the current view put.
 #
-# This is a ONE-SHOT placement, NOT a windowrule. Later ad-hoc launches of
-# these same apps (e.g. opening LibreWolf mid-task to check something) are
-# left wherever you open them — this script only runs when you run it.
+# One-shot placement, not a windowrule — ad-hoc relaunches during the day stay
+# wherever you open them. Wired to exec-once in config.conf.
 #
-# Wired to exec-once in config.conf, which is now the only caller.
 # Edit the list at the bottom: <appid-regex> <tag> <launch command...>
 
 set -u
-TIMEOUT=60          # seconds to keep catching an app's windows after launch
+TIMEOUT=60          # give up waiting for a first window after this long
+SETTLE=5            # keep catching further windows this long after the first
 POLL=0.5            # seconds between IPC polls
-
-# Tag to land on after boot. focus_on_activate=0 in config.conf means no
-# client (including LibreWolf's xdg-activation request) can yank the view,
-# so this can fire immediately — no need to wait for anything below.
-# STARTUP_TAG=3
-# mmsg dispatch view,"$STARTUP_TAG",0 >/dev/null 2>&1
 
 # ids of currently-open windows whose appid matches the given regex
 ids_for() {
@@ -39,16 +30,9 @@ launch_place() {
   local id
   while read -r id; do [[ -n $id ]] && before="$before$id "; done < <(ids_for "$appid_re")
 
-  # Launch into the app's own transient systemd unit in app-graphical.slice.
-  # The old `setsid -f` only detached the terminal/session -- it does NOT move
-  # cgroups, so apps piled up inside wayland-wm@mango.desktop.service and were
-  # killed by its KillMode=control-group at logout rather than stopped as units.
-  #
-  # -t service (not the default scope) because a scope runs the command in the
-  # foreground and would block the window-polling loop below; a transient
-  # service is started by the user manager and returns immediately. It inherits
-  # WAYLAND_DISPLAY et al. from the systemd user environment, which is populated
-  # by `exec-once=uwsm finalize` earlier in config.conf.
+  # -t service, not the default scope: a scope runs in the foreground and would
+  # block the polling loop below. Transient units land in app-graphical.slice
+  # and inherit WAYLAND_DISPLAY from the systemd user environment.
   uwsm app -t service -- "$@" >/dev/null 2>&1
 
   local deadline=$((SECONDS + TIMEOUT))
@@ -60,21 +44,20 @@ launch_place() {
       case "$moved"  in *" $id "*) continue;; esac   # already moved — skip
       mmsg dispatch tagsilent,"$tag",0 client,"$id" >/dev/null 2>&1
       moved="$moved$id "
+      # First window placed: stop waiting out the full timeout, but linger
+      # briefly so an app that opens several windows gets all of them.
+      (( deadline > SECONDS + SETTLE )) && deadline=$((SECONDS + SETTLE))
     done < <(ids_for "$appid_re")
     sleep "$POLL"
   done
 }
 
-# ── your startup layout ── edit freely; each line runs in parallel ──────────
+# ── startup layout ── each line runs in parallel ────────────────────────────
 # appid regex is matched against the window's appid (see: mmsg get all-clients).
-# ^…$ anchors it so e.g. the ghostty rule doesn't also grab com.ghostty.scratchpad.
-#            appid regex                tag   command to launch
-# launch_place '^com\.mitchellh\.ghostty$' 1   ghostty                  &
-# LibreWolf requests xdg-activation at startup; harmless now that
-# focus_on_activate=0 — it just gets the urgent flag on its tag.
-launch_place '^steam$'                   4   steam                    &
-# launch_place '^librewolf$'               1   librewolf                &
-launch_place '^Spotify$'                 2   spotify                  &
-launch_place '^vesktop$'                 3   mullvad-exclude vesktop  &
+# ^…$ anchors it so e.g. a ghostty rule would not also grab the scratchpad.
+#            appid regex   tag   command to launch
+launch_place '^steam$'      4    steam                    &
+launch_place '^Spotify$'    2    spotify                  &
+launch_place '^vesktop$'    3    mullvad-exclude vesktop  &
 
 wait

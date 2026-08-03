@@ -48,7 +48,9 @@ def open_yazi(uris):
     if override:
         command = shlex.split(override) + [path]
     else:
-        command = ["ghostty", "-e", "yazi", path]
+        # Through `uwsm app` so the terminal lands in app-graphical.slice as its
+        # own unit, rather than inheriting this service's cgroup.
+        command = ["uwsm", "app", "--", "ghostty", "-e", "yazi", path]
 
     subprocess.Popen(
         command,
