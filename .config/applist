@@ -19,7 +19,6 @@ dash
 deno
 devtools
 direnv
-discord
 docker
 docker-buildx
 docker-compose
@@ -52,6 +51,7 @@ glab
 glances
 glow
 gnome-themes-extra
+godot
 gopls
 gparted
 greetd
@@ -137,6 +137,7 @@ stow
 stress
 swaybg
 swayimg
+swaylock
 taplo-cli
 tealdeer
 tenacity
@@ -146,6 +147,7 @@ tmux
 traceroute
 trash-cli
 tree
+tree-sitter-cli
 ttf-nerd-fonts-symbols
 typescript-language-server
 udisks2
@@ -154,6 +156,7 @@ unzip
 uwsm
 veracrypt
 vnstat
+vulkan-tools
 watchexec
 wayland-protocols
 wayland-utils

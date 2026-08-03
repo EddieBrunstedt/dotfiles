@@ -2,5 +2,5 @@
 # package_install cannot install them; they must be built by hand with makepkg.
 # Listed here so package_report counts them as tracked rather than untracked.
 
-ffmpeg-sofa          # custom ffmpeg build, ~/code/ffmpeg-sofa
-mangowm-focusmaster  # MangoWC helper, ~/code/mangowm-focusmaster-pkg
+ffmpeg-sofa
+mangowm-local
