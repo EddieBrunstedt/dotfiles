@@ -52,6 +52,16 @@ local function filename(path)
 	return tostring(path or ""):match("[^/\\]+$") or tostring(path or "")
 end
 
+local function bookmark_target_exists(path)
+	-- Let mpv handle URLs and other protocol-based sources itself. file_info is
+	-- only meaningful for local paths.
+	if tostring(path or ""):match("^%a[%w+.-]*://") then
+		return true
+	end
+
+	return utils.file_info(path) ~= nil
+end
+
 local function clean_field(value)
 	return trim(value):gsub("[\r\n]", " "):gsub('"', "")
 end
@@ -217,6 +227,11 @@ end
 local function open_selected()
 	local entry = entries[cursor]
 	if not entry then
+		return
+	end
+
+	if not bookmark_target_exists(entry.path) then
+		mp.osd_message("Bookmark file does not exist:\n" .. entry.path, 3)
 		return
 	end
 
