@@ -1,8 +1,6 @@
 // -*- mode: jsonc -*-
-// Right side mirrors ~/.config/dwmblocksrs/dwmblocksrs.yaml:
-//   cpubusy → memory → routebps → protonmail → mullvad → volume → date
-// Each custom/* module = one dwmblocks segment (exec/interval/signal).
-// Scripts already print their own icons, so format is just "{}".
+// The custom/* status modules are backed by scripts that already print their
+// own icons, so format is just "{}". Module order is modules-right below.
 {
     "position": "bottom",
     "height": 30,
@@ -41,26 +39,22 @@
         "icon": false
     },
 
-    // ── status scripts (from dwmblocksrs) ───────────────────────────
-    // dwmblocksrs: cpubusy, interval 1
+    // ── status scripts ──────────────────────────────────────────────
     "custom/cpubusy": {
         "exec": "cpubusy",
         "interval": 1,
         "tooltip": false
     },
-    // dwmblocksrs: memory, interval 5
     "custom/memory": {
         "exec": "memory",
         "interval": 5,
         "tooltip": false
     },
-    // dwmblocksrs: routebps, interval 1
     "custom/routebps": {
         "exec": "routebps",
         "interval": 1,
         "tooltip": false
     },
-    // dwmblocksrs: protonmail-status, was interval 5
     // Absolute path on purpose: this is a shim in ~/.local/bin that wraps the
     // real binary in ~/.cargo/bin and supplies PROTON_BRIDGE_IMAP_{USER,PASS}
     // from the sops vault. Waybar's PATH puts ~/.local/bin first but an
@@ -75,7 +69,6 @@
         "on-click": "xdg-open https://mail.proton.me/",
         "tooltip": false
     },
-    // dwmblocksrs: mullvad-status, interval 30, signals: [2]
     // refresh manually with: pkill -RTMIN+2 waybar
     "custom/mullvad": {
         "exec": "mullvad-status",
@@ -84,7 +77,6 @@
         "on-click": "mullvad-menu",
         "tooltip": false
     },
-    // dwmblocksrs: volume, interval 10, signals: [1]
     // refresh manually with: pkill -RTMIN+1 waybar
     "custom/volume": {
         "exec": "volume",
@@ -125,7 +117,6 @@
         "on-click": "dunst-toggle",
         "tooltip": false
     },
-    // dwmblocksrs: date, args: ["+⏰ %m-%d %a %H:%M"], interval 1
     "clock": {
         "interval": 1,
         "format": "⏰ {:%m-%d %a %H:%M}",
