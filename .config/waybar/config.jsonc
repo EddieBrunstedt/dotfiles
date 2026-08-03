@@ -1,6 +1,4 @@
 // -*- mode: jsonc -*-
-// The custom/* status modules are backed by scripts that already print their
-// own icons, so format is just "{}". Module order is modules-right below.
 {
     "position": "bottom",
     "height": 30,
@@ -24,7 +22,6 @@
         "tray"
     ],
 
-    // ── compositor integration (mango) ──────────────────────────────
     "mango/workspaces": {
         "format": "{icon}",
         "hide-empty": true,
@@ -39,7 +36,6 @@
         "icon": false
     },
 
-    // ── status scripts ──────────────────────────────────────────────
     "custom/cpubusy": {
         "exec": "cpubusy",
         "interval": 1,
@@ -55,13 +51,8 @@
         "interval": 1,
         "tooltip": false
     },
-    // Absolute path on purpose: this is a shim in ~/.local/bin that wraps the
-    // real binary in ~/.cargo/bin and supplies PROTON_BRIDGE_IMAP_{USER,PASS}
-    // from the sops vault. Waybar's PATH puts ~/.local/bin first but an
-    // interactive shell puts ~/.cargo/bin first, so a bare name would resolve
-    // to a different program in the two contexts. See ~/.secret/README.md.
-    // Each tick costs two sops decryptions, hence interval 60 rather than 5.
-    // signal 4 → refresh instantly with: pkill -RTMIN+4 waybar
+    // Absolute path: ~/.cargo/bin/protonmail-status shadows this shim on an
+    // interactive shell's PATH. Each tick costs two sops decryptions.
     "custom/protonmail": {
         "exec": "/home/nilo/.local/bin/shims/protonmail-status",
         "interval": 60,
@@ -69,7 +60,6 @@
         "on-click": "xdg-open https://mail.proton.me/",
         "tooltip": false
     },
-    // refresh manually with: pkill -RTMIN+2 waybar
     "custom/mullvad": {
         "exec": "mullvad-status",
         "interval": 30,
@@ -77,22 +67,15 @@
         "on-click": "mullvad-menu",
         "tooltip": false
     },
-    // refresh manually with: pkill -RTMIN+1 waybar
     "custom/volume": {
         "exec": "volume",
         "interval": 10,
         "signal": 1,
-        // wiremix is a TUI, so it needs a terminal — same invocation as the
-        // Super+Shift+A mango bind. (Was pavucontrol, a PulseAudio-API client.)
         "on-click": "ghostty -e wiremix -s compat -v output",
-        // wpctl, matching the exec script above and the mango media-key binds
-        // (which step by 5). -l 1.0 caps at 100%, as pamixer did without --allow-boost.
         "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 2%+ && pkill -RTMIN+1 waybar",
         "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 2%- && pkill -RTMIN+1 waybar",
         "tooltip": false
     },
-    // Voxtype's native status stream: stopped / idle / recording / transcribing.
-    // Left click starts the service; right click stops it; middle click restarts it.
     "custom/voxtype": {
         "exec": "voxtype status --follow --format json --extended",
         "return-type": "json",
@@ -108,8 +91,6 @@
         "on-click-middle": "systemctl --user restart voxtype.service",
         "on-click-right": "systemctl --user stop voxtype.service"
     },
-    // notification state (dunst): 🔔 active / 🔕 paused.
-    // signal 3 → refresh instantly with: pkill -RTMIN+3 waybar (dunst-toggle does this)
     "custom/dunst": {
         "exec": "dunst-status",
         "interval": 5,
@@ -124,7 +105,6 @@
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
     },
 
-    // system tray — app indicator icons (Discord, nm-applet, …)
     "tray": {
         "spacing": 10
     }

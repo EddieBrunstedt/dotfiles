@@ -1,19 +1,9 @@
-/*
- * Waybar style — flat, minimal, modeled on dwm (Catppuccin Mocha).
- * Palette mirrors ~/projects/dwm/repos/dwm/config.h:
- *   base #1e1e2e  surface0 #313244  surface1 #45475a
- *   text #cdd6f4  lavender #b4befe (accent / SchemeSel)
- * Design goals: no rounded corners, no per-module colors, uniform status
- * text like a dwm bar. Color is used only to signal state (muted/critical).
- */
-
 * {
     font-family: monospace, "Symbols Nerd Font";
-    font-size: 12pt;   /* matches dwm's "monospace:size=12" (points, not px) */
+    font-size: 12pt;
     min-height: 0;
     border: none;
     border-radius: 0;
-    /* kill the stock example's hover box-shadow underline */
     box-shadow: none;
     text-shadow: none;
 }
@@ -33,7 +23,7 @@ tooltip label {
     color: #cdd6f4;
 }
 
-/* ── workspaces (mango ext/workspaces) ───────────────────────────── */
+/* ── workspaces ──────────────────────────────────────────────────── */
 #workspaces {
     margin: 0;
     padding: 0;
@@ -46,21 +36,21 @@ tooltip label {
 }
 
 #workspaces button:hover {
-    background-color: #313244;   /* surface0 */
+    background-color: #313244;
     color: #cdd6f4;
 }
 
 #workspaces button.active {
-    background-color: #b4befe;   /* lavender — dwm SchemeSel accent */
+    background-color: #b4befe;
     color: #1e1e2e;
 }
 
 #workspaces button.urgent {
-    background-color: #f38ba8;   /* red */
+    background-color: #f38ba8;
     color: #1e1e2e;
 }
 
-/* ── Mango layout and focused-window title ──────────────────────── */
+/* ── layout and window title ─────────────────────────────────────── */
 #layout {
     padding-left: 8px;
     color: #bac2de;
@@ -68,14 +58,14 @@ tooltip label {
 
 #window {
     padding: 0 8px;
-    color: #bac2de;              /* slightly dimmer than primary text */
+    color: #bac2de;
 }
 
 window#waybar.empty #window {
     background: transparent;
 }
 
-/* ── right-side status modules: uniform, flat, dwm-like ──────────── */
+/* ── status modules ──────────────────────────────────────────────── */
 #custom-cpubusy,
 #custom-memory,
 #custom-routebps,
@@ -94,7 +84,7 @@ window#waybar.empty #window {
     -gtk-icon-effect: highlight;
 }
 
-/* ── Voxtype: ready / recording / transcribing / stopped ─────────── */
+/* ── voxtype states ──────────────────────────────────────────────── */
 #custom-voxtype.idle {
     color: #a6e3a1;
 }
