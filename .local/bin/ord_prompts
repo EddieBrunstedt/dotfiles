@@ -1,28 +1,44 @@
-#!/bin/bash
+#!/bin/sh
+#Run an ord LLM template against the clipboard, chosen from rofi (Wayland)
 
-# Define arrays for display names and their corresponding commands
-display_names=("Fix grammar" "Get definition" "Shorten" "Summarize" "ELI5" "Explain code" "Commit message" "Summarize logs" "Checklist" "Improve prompt")
-commands=("ord_grammar" "ord_definition" "ord_shorten" "ord_summarize" "ord_eli5" "ord_explain_code" "ord_commit_message" "ord_summarize_logs" "ord_checklist" "ord_improve_prompt")
+# Templates live in ~/.config/ord/templates. `ord run <template> -f=text -b`
+# fills the template's `text` placeholder from the clipboard and opens the
+# result in the browser as rendered Markdown.
+#
+# This used to dispatch to ten one-line ord_* wrapper scripts, which existed
+# only so this menu had something to name. The template name was the only
+# thing that ever varied between them, so it is held here directly instead.
+#
+# Adding a prompt: drop a template in that directory, add a line to the list
+# and a matching case arm, and keep -l in sync with the number of lines.
 
-# Convert display names array to a newline-separated string for rofi
-options=$(printf "%s\n" "${display_names[@]}")
+list='Fix grammar
+Get definition
+Shorten
+Summarize
+ELI5
+Explain code
+Commit message
+Summarize logs
+Checklist
+Improve prompt'
 
-# Show the rofi prompt to the user and get the chosen option
-chosen=$(echo "$options" | rofi -dmenu -i -l "${#display_names[@]}" -p "Ord prompt")
+chosen=$(printf '%s\n' "$list" | rofi -dmenu -i -l 10 -p "Ord prompt")
 
-# Exit if nothing was chosen
 [ "$chosen" != "" ] || exit
 
-# Find the index of the chosen option
-for i in "${!display_names[@]}"; do
-   if [[ "${display_names[$i]}" == "$chosen" ]]; then
-      index=$i
-      break
-   fi
-done
+case "$chosen" in
+    "Fix grammar")    template=grammar ;;
+    "Get definition") template=definition ;;
+    "Shorten")        template=shorten ;;
+    "Summarize")      template=summarize ;;
+    "ELI5")           template=eli5 ;;
+    "Explain code")   template=explain_code ;;
+    "Commit message") template=commit_message ;;
+    "Summarize logs") template=summarize_logs ;;
+    "Checklist")      template=checklist ;;
+    "Improve prompt") template=improve_prompt ;;
+    *) exit 1 ;;
+esac
 
-# Extract the command associated with the chosen option using the index
-command=${commands[$index]}
-
-# Execute the command
-$command
+exec ord run "$template" -f=text -b

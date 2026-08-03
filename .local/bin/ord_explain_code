@@ -1,3 +1,0 @@
-#!/bin/sh
-
-ord run explain_code -f=text -b
