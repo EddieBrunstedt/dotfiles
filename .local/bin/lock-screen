@@ -28,4 +28,8 @@ fi
 # 1000 in dunstrc) and are readable later with `dunstctl history-pop`.
 dunstctl close-all >/dev/null 2>&1 || printf 'lock-screen: could not clear pending notifications\n' >&2
 
-exec /usr/bin/swaylock "$@"
+# --image before "$@" so an explicit --image on the command line still wins.
+# It is set here rather than in swaylock's config because that parser does not
+# expand `~`. Wallpapers should already be sized for the display; `color=` in
+# the config covers the symlink being absent or unreadable.
+exec /usr/bin/swaylock --image "$HOME/.local/share/wallpapers/current" "$@"

@@ -1,6 +1,6 @@
-# Read the exact same `current` image as swaybg. Wallpapers intended for use
-# should already be sized appropriately for the display.
-image=/home/nilo/.local/share/wallpapers/current
+# `image=` is passed by ~/.local/bin/lock-screen, which points it at the same
+# `current` symlink swaybg reads. swaylock's config parser does not expand `~`,
+# so the path cannot be written here.
 scaling=fill
 # Safe background if no wallpaper has been selected or the image cannot load.
 color=020202
