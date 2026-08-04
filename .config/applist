@@ -62,7 +62,6 @@ htmlq
 htop
 hyperfine
 imagemagick
-inter-font
 jq
 jujutsu
 just
@@ -145,6 +144,7 @@ tmux
 trash-cli
 tree
 tree-sitter-cli
+ttf-fira-sans
 ttf-nerd-fonts-symbols
 typescript-language-server
 udisks2

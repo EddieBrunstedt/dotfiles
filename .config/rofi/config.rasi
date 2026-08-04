@@ -1,5 +1,5 @@
 configuration {
-	font: "Mono Lisa Medium 12";
+	font: "sans-serif 13";
 }
 
 @theme "/usr/share/rofi/themes/Arc-Dark.rasi"

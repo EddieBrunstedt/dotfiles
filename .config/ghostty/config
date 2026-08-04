@@ -1,7 +1,14 @@
 confirm-close-surface = false
 
 font-family = "monospace"
-font-size = 12
+font-size = 13
+
+# Maple Mono's italic is a cursive with connecting entry/exit strokes, which
+# runs letters together in italicised code (HTML attributes, comments, types).
+# ss06 breaks those joins and keeps the slant; cv35 drops the looping tail on
+# the italic l, which otherwise reads as a different letter entirely.
+font-feature = ss06
+font-feature = cv35
 
 keybind = ctrl+enter=unbind
 
