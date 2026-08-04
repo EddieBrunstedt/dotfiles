@@ -1,14 +1,23 @@
 confirm-close-surface = false
 
 font-family = "monospace"
-font-size = 13
+font-size = 12.5
 
-# Maple Mono's italic is a cursive with connecting entry/exit strokes, which
-# runs letters together in italicised code (HTML attributes, comments, types).
-# ss06 breaks those joins and keeps the slant; cv35 drops the looping tail on
-# the italic l, which otherwise reads as a different letter entirely.
+# Maple Mono's italic runs letters together; ss06 breaks the connecting
+# strokes and the cv rules straighten the letters that stay ambiguous.
 font-feature = ss06
+font-feature = cv33
+font-feature = cv34
 font-feature = cv35
+font-feature = cv36
+
+# Upright legibility: heavier escape backslash, plainer symbols, distinct a,
+# comma and semicolon, open question mark.
+font-feature = ss05
+font-feature = cv01
+font-feature = cv02
+font-feature = cv61
+font-feature = cv62
 
 keybind = ctrl+enter=unbind
 
@@ -26,12 +35,8 @@ resize-overlay = never
 
 scrollback-limit = 50000000
 
-# WCAG AAA throughout, and black stays black, so the black-on-colour pairs TUIs
-# use for status bars stay readable. Drop "Tinted" for a #000000 background.
+# AAA contrast throughout, and black stays black for TUI status bars.
 theme = Modus Vivendi Tinted
-
-# brblack is deliberately left dark. Fish uses it as both the autosuggestion
-# foreground and the selection background; the former is set in config.fish.
 
 window-decoration = none
 window-padding-balance = true
