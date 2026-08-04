@@ -22,9 +22,15 @@
         "tray"
     ],
 
+    // {index} rather than {icon}: with no format-icons map, {icon} silently
+    // falls back to the index anyway. Digits are kept because they name the
+    // SUPER+1..9 binding that reaches each tag; state is expressed in CSS.
+    // ◫ for the overview button because MonoLisa covers it natively, so the
+    // bar does not switch fonts mid-row (the default label is "OVERVIEW").
     "mango/workspaces": {
-        "format": "{icon}",
+        "format": "{index}",
         "hide-empty": true,
+        "overview-label": "◫",
         "on-click": "activate",
         "on-click-right": "toggle"
     },

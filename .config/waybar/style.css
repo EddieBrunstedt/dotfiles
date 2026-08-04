@@ -29,10 +29,14 @@ tooltip label {
     padding: 0;
 }
 
+/* The transparent bottom border reserves the underline's 2px on every button,
+   so tags do not shift vertically as the active one changes. It has to be set
+   here because the `*` rule above clears borders bar-wide. */
 #workspaces button {
     padding: 0 8px;
     background-color: transparent;
     color: #cdd6f4;
+    border-bottom: 2px solid transparent;
 }
 
 #workspaces button:hover {
@@ -41,14 +45,30 @@ tooltip label {
 }
 
 #workspaces button.active {
-    background-color: #b4befe;
-    color: #1e1e2e;
+    color: #cdd6f4;
+    border-bottom-color: #b4befe;
 }
 
 #workspaces button.urgent {
-    background-color: #f38ba8;
-    color: #1e1e2e;
+    color: #f38ba8;
+    border-bottom-color: #f38ba8;
 }
+
+/* hide-empty keeps empty tags off the bar unless they are the active one, so
+   this only ever dims a tag you have switched to and not yet filled. :not
+   keeps it from fighting the active underline. */
+#workspaces button.empty:not(.active) {
+    opacity: 0.45;
+}
+
+/* Shown in place of the tag buttons while the overview is open (SUPER+grave). */
+#workspaces button.overview {
+    color: #b4befe;
+}
+
+/* button.current_output is deliberately not styled: this is a single-output
+   setup, so every tag carries the class and differentiating it would be noise.
+   Give it a rule here if a second monitor ever appears. */
 
 /* ── layout and window title ─────────────────────────────────────── */
 #layout {
