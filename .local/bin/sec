@@ -12,7 +12,7 @@ set -eu
 
 name=$1
 dir=${SECRETS_DIR:-$HOME/.secret}
-host=${HOSTNAME:-$(uname -n)}
+host=$(uname -n)
 
 for f in "$dir/env.$host.sops.yaml" "$dir/env.shared.sops.yaml"; do
     [ -f "$f" ] || continue

@@ -1,4 +1,14 @@
 #!/bin/sh
+# Reclaim disk space from package, build and browser caches. Run by hand when
+# caches have grown; there is no timer.
+#
+# Journal size is not handled here: SystemMaxUse=500M in
+# /etc/systemd/journald.conf.d/00-size.conf lets journald enforce it
+# continuously. That file is root-owned and so lives outside these dotfiles.
+#
+# -e is deliberately NOT set: every step below is independent, and a missing
+# tool or an empty docker must not stop the rest from running.
+set -u
 
 available_kb() {
     df -Pk / "$HOME" /var/cache/pacman/pkg /var/lib/docker /var/log 2>/dev/null |
@@ -31,8 +41,9 @@ pnpm store prune
 npm cache verify
 go clean -cache -testcache
 tldr --clear-cache
-sudo journalctl --vacuum-size=500M
 
+# Everything under ~/.cache is regenerable by design. Emptied wholesale rather
+# than by age: the point of running this is to reclaim space now.
 cache=${XDG_CACHE_HOME:-"$HOME/.cache"}
 if [ -d "$cache" ]; then
     find "$cache" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +

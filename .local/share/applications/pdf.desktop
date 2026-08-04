@@ -1,4 +1,6 @@
 [Desktop Entry]
 Type=Application
 Name=PDF reader
-Exec=uwsm app -- /usr/bin/zathura %f
+NoDisplay=true
+MimeType=application/pdf;application/postscript;
+Exec=uwsm app -- zathura %f

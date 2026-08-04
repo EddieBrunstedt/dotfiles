@@ -73,6 +73,7 @@ window#waybar.empty #window {
 #custom-mullvad,
 #custom-volume,
 #custom-voxtype,
+#custom-dunst,
 #clock,
 #tray {
     padding: 0 8px;

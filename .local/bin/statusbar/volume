@@ -1,11 +1,12 @@
-#! /bin/bash
+#!/bin/sh
+# Waybar segment: default sink volume, or "muted". Polled every 10s and
+# refreshed instantly via `pkill -RTMIN+1 waybar` on volume keys and scroll.
+# Fixed width so the bar does not shift as the value changes.
+out=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null) || { printf '%4s' "—"; exit 0; }
 
-out="$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)" || { printf "%4s" "—"; exit; }
+case $out in
+    *"[MUTED]"*) vol=muted ;;
+    *)           vol=$(printf '%s' "$out" | awk '{printf "%d%%", $2 * 100}') ;;
+esac
 
-if grep -q '\[MUTED\]' <<< "$out"; then
-    vol="muted"
-else
-    vol="$(awk '{printf "%d%%", $2 * 100}' <<< "$out")"
-fi
-
-printf "%4s" "${vol:-—}"
+printf '%4s' "${vol:-—}"

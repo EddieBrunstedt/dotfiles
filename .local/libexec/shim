@@ -31,7 +31,7 @@ entry=$(awk -v n="$name" '$1 == n { print; exit }' "$manifest")
 
 real=$(printf '%s\n' "$entry" | awk '{ print $2 }')
 case $real in
-    "~/"*) real="$HOME/${real#\~/}" ;;
+    \~/*) real="$HOME/${real#\~/}" ;;
 esac
 [ -x "$real" ] || { echo "shim: '$name' target not executable: $real" >&2; exit 1; }
 

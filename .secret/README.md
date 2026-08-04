@@ -58,7 +58,9 @@ The keyring item holding the age identity is filed under two lookup attributes:
 secret-tool lookup xdg:schema dev.dotfiles.age name sops
 ```
 
-These are an arbitrary label, not a credential. The exact strings must match between store and lookup, and appear in three places: `.config/environment.d/10-defaults.conf`, `.config/fish/conf.d/sops.fish`, and this file.
+These are an arbitrary label, not a credential. The exact strings must match between store and lookup, and appear in three places: `.config/environment.d/10-defaults.conf`, `.config/fish/conf.d/env.fish`, and this file.
+
+The fish copy is a conditional fallback (`set -q …; or set -gx …`) for a TTY login where nothing has read `environment.d`; under a graphical session the value inherited from `systemd --user` wins.
 
 ## Daily use
 

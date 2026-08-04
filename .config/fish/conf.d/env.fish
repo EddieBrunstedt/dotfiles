@@ -34,6 +34,9 @@ set -g fish_greeting ""
 set -g fzf_fd_opts --hidden --follow --exclude=.git
 set -g fzf_preview_dir_cmd eza --tree --color=always --icons=auto --group-directories-first
 
-# SSH_AUTH_SOCK comes from ~/.config/environment.d/10-defaults.conf. Repeated
-# here only for a TTY login without uwsm, where nothing has read environment.d.
+# These two come from ~/.config/environment.d/10-defaults.conf, which only
+# `systemd --user` reads. Repeated here for a TTY login without uwsm, where
+# nothing has read environment.d -- conditionally, so the session's value wins
+# whenever there is one.
 set -q SSH_AUTH_SOCK; or set -gx SSH_AUTH_SOCK "$XDG_RUNTIME_DIR/ssh-agent.socket"
+set -q SOPS_AGE_KEY_CMD; or set -gx SOPS_AGE_KEY_CMD "secret-tool lookup xdg:schema dev.dotfiles.age name sops"

@@ -1,4 +1,6 @@
 [Desktop Entry]
 Type=Application
 Name=Text editor
+NoDisplay=true
+MimeType=text/plain;text/x-shellscript;application/json;
 Exec=uwsm app -- ghostty -e nvim %f

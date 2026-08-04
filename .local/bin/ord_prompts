@@ -6,7 +6,7 @@
 # result in the browser as rendered Markdown.
 #
 # Adding a prompt: drop a template in that directory, add a line to the list
-# and a matching case arm, and keep -l in sync with the number of lines.
+# and a matching case arm. The rofi height follows the list automatically.
 
 list='Fix grammar
 Get definition
@@ -19,9 +19,9 @@ Summarize logs
 Checklist
 Improve prompt'
 
-chosen=$(printf '%s\n' "$list" | rofi -dmenu -i -l 10 -p "Ord prompt")
-
-[ "$chosen" != "" ] || exit
+chosen=$(printf '%s\n' "$list" | rofi -dmenu -i -no-custom \
+    -l "$(printf '%s\n' "$list" | wc -l)" -p "Ord prompt") || exit 0
+[ -n "$chosen" ] || exit 0
 
 case "$chosen" in
     "Fix grammar")    template=grammar ;;

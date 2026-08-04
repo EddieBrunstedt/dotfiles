@@ -1,4 +1,6 @@
 [Desktop Entry]
 Type=Application
 Name=Image viewer
-Exec=uwsm app -- /usr/bin/swayimg %f
+NoDisplay=true
+MimeType=image/gif;image/jpeg;image/png;image/x-tga;
+Exec=uwsm app -- swayimg %f
