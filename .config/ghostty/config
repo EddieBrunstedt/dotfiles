@@ -29,11 +29,17 @@ keybind = alt+d=scroll_page_fractional:0.5
 keybind = alt+b=scroll_page_up
 keybind = alt+f=scroll_page_down
 
+# Never let a colour pair render as invisible text.
+minimum-contrast = 1.1
+
 quit-after-last-window-closed = false
 
 resize-overlay = never
 
 scrollback-limit = 50000000
+
+# Defaults plus sudo and ssh-terminfo, so terminfo survives both.
+shell-integration-features = cursor,sudo,title,ssh-terminfo,path
 
 # AAA contrast throughout, and black stays black for TUI status bars.
 theme = Modus Vivendi Tinted
