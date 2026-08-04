@@ -31,10 +31,25 @@ clean-orphans-apply:
 enable-services:
     systemctl --user daemon-reload
     systemctl --user enable \
-        forgejo-runner.service \
         protonmail-bridge.service \
         vault-cleanup.service \
+        wallpaper.service \
         waybar.service
     # soteria's packaged unit installs to default.target; wire it to the
     # graphical session instead
     systemctl --user add-wants graphical-session.target soteria.service
+    # vault-cleanup and the forgejo runner are wanted by default.target, which
+    # only runs at boot with lingering on
+    loginctl enable-linger $USER
+
+# Enable the Forgejo Actions runner (this machine only; needs a runner token)
+enable-forgejo:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    token=~/.config/forgejo-runner/runner-token
+    if [[ ! -s $token ]]; then
+        echo "No runner token at $token." >&2
+        echo "Register the runner first: forgejo-runner register --instance https://codeberg.org/" >&2
+        exit 1
+    fi
+    systemctl --user enable --now forgejo-runner.service

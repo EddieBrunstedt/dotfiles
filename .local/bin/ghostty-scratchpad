@@ -7,12 +7,15 @@
 # double-press during ghostty's startup gap, when two presses both see
 # "no window yet" and would each spawn a terminal.
 #
-# We hold an flock just long enough to bridge that gap, then release it.
-# Crucially ghostty is launched with the lock fd CLOSED (9>&-), so the lock
-# is never tied to the terminal's lifetime. A closed or force-killed terminal
-# therefore always leaves the lock free and can be relaunched.
-LOCK="${XDG_RUNTIME_DIR:-/tmp}/ghostty-scratchpad.lock"
-exec 9>"$LOCK"
-flock -n 9 || exit 0            # another launch is mid-startup -> do nothing
-ghostty --class=com.ghostty.scratchpad 9>&- &
-sleep 1.5                       # keep lock ~1.5s to cover the startup gap
+# The unit name is the interlock: systemd-run refuses to start a second
+# ghostty-scratchpad.service while one is loaded. `gtk-single-instance = false`
+# means each ghostty process lives as long as its window, so the unit stays
+# active for the window's whole lifetime rather than a guessed interval.
+#
+# --collect reaps the unit if the terminal is force-killed, so a crashed
+# scratchpad never blocks the next launch. A refused second press exits
+# non-zero, which is the intended no-op.
+exec systemd-run --user --quiet --collect \
+    --unit=ghostty-scratchpad \
+    --slice=app-graphical.slice \
+    ghostty --class=com.ghostty.scratchpad 2>/dev/null

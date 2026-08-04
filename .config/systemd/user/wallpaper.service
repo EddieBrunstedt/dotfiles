@@ -1,0 +1,14 @@
+[Unit]
+Description=Desktop wallpaper (swaybg)
+Documentation=man:swaybg(1)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=exec
+ExecStart=%h/.config/mango/scripts/wallpaper
+Slice=app-graphical.slice
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target

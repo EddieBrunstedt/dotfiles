@@ -1,5 +1,6 @@
 #!/bin/sh
-#Set white temperature with gammastep and rofi (Wayland)
+# Set the screen white point with gammastep, chosen from rofi.
+# Bound to SUPER+SHIFT+b and offered by mango-menu.
 
 list='6500 K (default day)
 4500 K (default night)
@@ -8,13 +9,25 @@ list='6500 K (default day)
 3000 K
 2500 K'
 
-chosen=$(printf '%s\n' "$list" | rofi -dmenu -i -l 6 -p "White temp")
-
-[ "$chosen" != "" ] || exit
+chosen=$(printf '%s\n' "$list" | rofi -dmenu -i -no-custom \
+    -l "$(printf '%s\n' "$list" | wc -l)" -p "White temp") || exit 0
+[ -n "$chosen" ] || exit 0
 
 center=${chosen%% *}
 
-# On Wayland the gamma resets when the client exits, so gammastep must keep
-# running to hold the temperature. Replace any running instance and detach.
-pkill -x gammastep
-setsid -f gammastep -P -O "$center" >/dev/null 2>&1
+# On Wayland the gamma resets when the client exits, so gammastep has to keep
+# running to hold the temperature.
+#
+# A named transient unit rather than `setsid -f`: a detached process escapes the
+# session cgroup and survives logout, leaving pkill as the only handle on it.
+# app-graphical.slice is PartOf=graphical-session.target, so the unit stops with
+# the session. --collect reaps it on failure so the name is free next time.
+#
+# Named whitetemp, not gammastep: the gammastep package ships its own
+# gammastep.service (geoclue-driven, no fixed temperature) and systemd-run
+# refuses a transient unit whose name already has a fragment file.
+systemctl --user stop whitetemp.service 2>/dev/null
+exec systemd-run --user --quiet --collect \
+    --unit=whitetemp \
+    --slice=app-graphical.slice \
+    gammastep -P -O "$center"
