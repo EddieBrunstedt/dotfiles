@@ -48,6 +48,7 @@ git-delta
 github-cli
 glab
 glow
+gnome-keyring
 gnome-themes-extra
 godot
 gopls
@@ -70,6 +71,7 @@ krita
 lazygit
 lib32-gamemode
 lib32-mangohud
+libsecret
 linux
 linux-firmware
 lostfiles
@@ -108,6 +110,8 @@ pipewire-pulse
 pnpm
 prettier
 protonmail-bridge-core
+python-dbus
+python-gobject
 qbittorrent
 qt5-wayland
 qt6-wayland
