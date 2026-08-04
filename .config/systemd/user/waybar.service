@@ -2,16 +2,15 @@
 Description=Waybar status bar
 Documentation=man:waybar(5)
 After=graphical-session.target
-# Stop with the session. Redundant today — Slice=app-graphical.slice below is
-# itself PartOf=graphical-session.target, so the slice already takes waybar
-# down with it. Stated here so that stays true if the Slice= line ever changes.
+# Redundant while Slice=app-graphical.slice below is itself PartOf this target;
+# stated so waybar still stops with the session if that Slice= ever changes.
 PartOf=graphical-session.target
 
 [Service]
 Type=exec
 # SOPS_AGE_KEY_CMD, needed by the custom/protonmail shim, is inherited from
 # ~/.config/environment.d/10-defaults.conf.
-# Only run in a wlroots/mango graphical session (matches XDG_CURRENT_DESKTOP)
+# Matches XDG_CURRENT_DESKTOP, so waybar only runs in a wlroots/mango session.
 ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""
 ExecStart=/usr/bin/waybar
 ExecReload=kill -SIGUSR2 $MAINPID

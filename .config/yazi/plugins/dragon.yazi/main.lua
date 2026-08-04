@@ -1,13 +1,9 @@
 -- Drag the selected (or hovered) files out of yazi via dragon-drop.
 --
--- Replaces the plain `shell 'dragon-drop -a -x "$@"'` binding: this resolves
--- the selection in-process, so it also works on a bare hovered file, and it
--- surfaces spawn/exit failures as notifications instead of swallowing them.
---
--- dragon-drop is used rather than yazi's native OSC 72 drag-and-drop because
--- ghostty implements that protocol as a drop *target* only -- it cannot act as
--- a drag source, so dragging out of a ghostty-hosted yazi needs an external
--- GTK window. dragon-drop is a native Wayland client (GTK3 wayland backend).
+-- dragon-drop rather than yazi's native OSC 72 drag-and-drop because ghostty
+-- implements that protocol as a drop *target* only -- it cannot act as a drag
+-- source, so dragging out of a ghostty-hosted yazi needs an external GTK
+-- window. dragon-drop is a native Wayland client (GTK3 wayland backend).
 
 local function fail(s, ...)
 	ya.notify { title = "Dragon", content = string.format(s, ...), timeout = 5, level = "error" }

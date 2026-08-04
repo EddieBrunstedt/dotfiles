@@ -13,7 +13,6 @@ fi
 # is not necessarily whoever locked it, so notifications must not pop up on
 # return. Deliberately one-way — unpausing is a manual decision (SUPER+SHIFT+n,
 # or the Waybar segment) taken once it is safe to read them.
-# Failure must never prevent the screen from locking.
 if dunstctl set-paused true >/dev/null 2>&1; then
   # Refresh the Waybar segment immediately, as dunst-toggle does
   # (RTMIN+3 matches "signal": 3 in waybar config.jsonc).

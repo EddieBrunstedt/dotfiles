@@ -1,8 +1,7 @@
 #!/bin/sh
-# mango-menu — master rofi menu of occasional Mango / session actions.
-# Bound to SUPER+SHIFT+m. Frequently used actions stay on their own keys;
-# this collects the things that are nicer to pick from a list than to
-# memorize. Some entries just hand off to existing dedicated scripts.
+# mango-menu — rofi menu of occasional Mango / session actions, bound to
+# SUPER+SHIFT+m. Frequent actions stay on their own keys; this collects the
+# ones nicer to pick from a list than to memorize.
 
 menu() { rofi -dmenu -i -p "$1"; }
 confirm() { [ "$(printf '%s\n' 'No' 'Yes' | menu "$1")" = "Yes" ]; }
@@ -93,10 +92,8 @@ case "$chosen" in
     mmsg dispatch reload_config >/dev/null ;;
 
   "Restart Waybar")
-    # waybar is waybar.service (Slice=app-graphical.slice, Restart=on-failure).
-    # pkill + `setsid -f waybar` fought that: the kill looked like a failure and
-    # systemd restarted the unit, while the bare respawn added a second,
-    # unmanaged instance alongside it.
+    # Must go through systemd: waybar.service has Restart=on-failure, so pkill
+    # alone would trigger a restart and a bare respawn would leave two instances.
     systemctl --user restart waybar ;;
 
   "White temperature…")
@@ -136,8 +133,7 @@ case "$chosen" in
       "Reboot")    confirm "Reboot?"    && systemctl reboot ;;
       "Power off") confirm "Power off?" && systemctl poweroff ;;
       # uwsm stop walks wayland-session@mango.desktop.target down in dependency
-      # order. The old `killall mango` yanked the compositor's main process and
-      # left systemd to tear the tree down reactively instead.
+      # order; killing the compositor directly does not.
       "Stop Mango session")
         confirm "Stop Mango session?" && uwsm stop ;;
     esac ;;

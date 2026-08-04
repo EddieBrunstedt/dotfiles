@@ -12,8 +12,7 @@
 WALL="$HOME/.local/share/wallpapers/current"
 FALLBACK_COLOR="#1a1b26"   # shown until you set an image
 
-# kill the previous instance only once the new one is ready would flicker
-# less, but swaybg has no handoff — a brief blank on swap is normal.
+# swaybg has no handoff between instances, so a brief blank on swap is normal.
 pkill -x swaybg 2>/dev/null
 
 if [[ -e $WALL ]]; then

@@ -6,8 +6,7 @@
 #Allows you to cd into directory merely by typing the directory name.
 shopt -s autocd
 
-# Secrets are not loaded into the environment. Use `sec NAME` on demand:
-#   curl -H "Authorization: Bearer $(sec OPENAI_API_KEY)" ...
+# Secrets are not in the environment; fetch on demand with `sec NAME`.
 # See ~/.secret/README.md
 
 #Infinite history

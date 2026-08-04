@@ -1,26 +1,25 @@
-# POSIX login-shell environment.
+# POSIX login-shell environment. uwsm sources this file and exports the delta
+# into the systemd and D-Bus activation environments, so anything set here
+# reaches every process in the graphical session.
 #
-# Only two kinds of thing belong here: values that need a shell to compute, and
-# $PATH. Everything else lives one layer down:
+# ── The environment layers ──
+# Canonical description of the split; the other layers refer back here.
 #
+#   ~/.profile                       $PATH, plus values that need a shell to
+#                                    compute (command substitution, raw escapes)
 #   ~/.config/environment.d/*.conf   static session-wide vars, read natively by
 #                                    `systemd --user` — reaches GUI apps and
 #                                    user units, which never source a profile
-#   ~/.config/uwsm/env               Wayland/GPU vars for the graphical session
+#   ~/.config/uwsm/env               POSIX shell sourced before the compositor
+#                                    starts: Wayland/GPU vars for the session
 #   ~/.config/fish/config.fish       interactive-shell-only settings
-#
-# uwsm sources this file and exports the delta into the systemd and D-Bus
-# activation environments, so anything set here reaches every process in the
-# graphical session.
 
 # ── PATH ──
-# Assembled here because it cannot be assembled anywhere else. In
-# environment.d, ${PATH} expands against the generator's own environment
-# (/usr/local/bin:/usr/bin), so prepending there would discard what
-# /etc/profile.d/*.sh contributes — cuda, jvm, rustup, perl. A login shell has
-# already run those, so prepending here is correct. Per-user systemd
-# environment generators, which could compute this, do not exist: all the
-# supported generator directories are system-level.
+# Must be assembled here. In environment.d, ${PATH} expands against the
+# generator's own environment (/usr/local/bin:/usr/bin), so prepending there
+# would discard what /etc/profile.d/*.sh contributes — cuda, jvm, rustup, perl.
+# A login shell has already run those. Per-user systemd environment generators,
+# which could also compute this, do not exist.
 #
 # This is the only copy of the list. fish never reads this file, so for a TTY
 # login ~/.config/fish/conf.d/env.fish recovers the result by running `sh -lc`

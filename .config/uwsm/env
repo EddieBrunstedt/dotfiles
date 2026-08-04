@@ -1,20 +1,11 @@
 # Graphical-session environment, sourced by uwsm's environment preloader
-# (/usr/lib/uwsm/prepare-env.sh) before the compositor starts. The resulting
-# delta is exported into the systemd *and* D-Bus activation environments.
+# (/usr/lib/uwsm/prepare-env.sh) before the compositor starts. The delta is
+# exported into the systemd *and* D-Bus activation environments, so it reaches
+# user units and D-Bus-activated services that mango's `env=` would miss.
+# See ~/.profile for how the environment layers divide up.
 #
-# WHY NOT mango's `env=` lines: those only populate the environment of clients
-# mango itself spawns. Anything started as a user unit or by D-Bus activation —
-# app-com.mitchellh.ghostty.service, protonmail-bridge, dunst, xdg-desktop-
-# portal, anything launched via `uwsm app` — never sees them. Setting the
-# variables here covers both, so a Wayland-native app behaves the same whether
-# you launch it from a keybind or systemd starts it.
-#
-# This IS a POSIX shell file (unlike ~/.config/environment.d/*.conf), so
-# quoting and conditionals are available. Keep it to environment only.
-#
-# Sourced for every compositor. Per-compositor overrides would go in
-# ~/.config/uwsm/env-mango, but nothing here is mango-specific — it is all
-# "this machine has an NVIDIA GPU and runs Wayland".
+# A POSIX shell file, so quoting and conditionals are available. Sourced for
+# every compositor; per-compositor overrides go in ~/.config/uwsm/env-mango.
 
 # ── NVIDIA ──
 # GBM/GLX vendor selection so OpenGL/GLX clients (games, Xwayland) use NVIDIA.
