@@ -2,17 +2,7 @@
 # into the systemd and D-Bus activation environments, so anything set here
 # reaches every process in the graphical session.
 #
-# ── The environment layers ──
-# Canonical description of the split; the other layers refer back here.
-#
-#   ~/.profile                       $PATH, plus values that need a shell to
-#                                    compute (command substitution, raw escapes)
-#   ~/.config/environment.d/*.conf   static session-wide vars, read natively by
-#                                    `systemd --user` — reaches GUI apps and
-#                                    user units, which never source a profile
-#   ~/.config/uwsm/env               POSIX shell sourced before the compositor
-#                                    starts: Wayland/GPU vars for the session
-#   ~/.config/fish/config.fish       interactive-shell-only settings
+# How this file relates to environment.d, uwsm/env and fish: see README.md.
 
 # ── PATH ──
 # Must be assembled here. In environment.d, ${PATH} expands against the
