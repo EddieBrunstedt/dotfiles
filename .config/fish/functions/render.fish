@@ -16,9 +16,18 @@ function render --description 'Render a file as nicely as possible in a new wind
 
     switch $ext
         case .md .markdown
+            # $XDG_RUNTIME_DIR is a tmpfs wiped at logout, so output never
+            # reaches disk. One stable filename per source file rather than an
+            # mktemp: re-rendering the same document overwrites its own output
+            # instead of leaving another copy behind for the rest of the session.
+            # The hash disambiguates same-named files in different directories.
             set -l tmpdir $XDG_RUNTIME_DIR
             test -n "$tmpdir"; or set tmpdir /tmp
-            set -l out (mktemp -p $tmpdir --suffix=.html render-XXXXXX)
+            set -l outdir $tmpdir/render
+            mkdir -p $outdir; or return
+            set -l stem (path change-extension '' (path basename $abs) | string replace -ra '[^A-Za-z0-9._-]' '_')
+            set -l hash (printf '%s' $abs | sha256sum | string sub -l 8)
+            set -l out $outdir/$stem-$hash.html
             pandoc --from gfm --to html --standalone --embed-resources \
                 --css ~/.config/render/style.css \
                 --metadata pagetitle=(path basename $file) \
