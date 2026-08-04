@@ -26,9 +26,15 @@ resize-overlay = never
 
 scrollback-limit = 50000000
 
-theme = Flexoki Dark
+# WCAG AAA throughout, and black stays black, so the black-on-colour pairs TUIs
+# use for status bars stay readable. Drop "Tinted" for a #000000 background.
+theme = Modus Vivendi Tinted
+
+# brblack is deliberately left dark. Fish uses it as both the autosuggestion
+# foreground and the selection background; the former is set in config.fish.
 
 window-decoration = none
 window-padding-balance = true
 window-padding-x = 3
 window-padding-y = 3
+window-padding-color = extend
