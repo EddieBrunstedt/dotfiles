@@ -101,6 +101,7 @@ Because `$0` is the symlink the shell resolved off `$PATH`, the dispatcher locat
 claude              /usr/bin/claude                  ANTHROPIC_API_KEY
 codex               /usr/bin/codex                   OPENAI_API_KEY
 opencode            /usr/bin/opencode                OPENROUTER_API_KEY
+ord                 /usr/bin/ord                     OPENROUTER_API_KEY
 protonmail-status   ~/.cargo/bin/protonmail-status   PROTON_BRIDGE_IMAP_USER PROTON_BRIDGE_IMAP_PASS
 ```
 
