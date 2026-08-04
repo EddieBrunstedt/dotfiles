@@ -1,0 +1,16 @@
+[Unit]
+Description=org.freedesktop.FileManager1 provider (yazi in ghostty)
+Documentation=https://freedesktop.org/wiki/Specifications/file-manager-interface
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+# Type=dbus: systemd holds the unit starting until the name is on the bus, so a
+# caller's ShowFolders blocks rather than racing the process.
+Type=dbus
+BusName=org.freedesktop.FileManager1
+ExecStart=%h/.local/bin/filemanager-yazi
+Slice=app-graphical.slice
+# The service exits on its own after an idle period and is re-activated by the
+# next D-Bus call, so an exit is a normal outcome, not a failure to restart.
+Restart=no
