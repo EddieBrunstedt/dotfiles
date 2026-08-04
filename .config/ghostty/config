@@ -1,5 +1,3 @@
-# command = direct:/usr/bin/tmux new-session -A -s main
-
 confirm-close-surface = false
 
 font-family = "monospace"
@@ -10,8 +8,6 @@ keybind = ctrl+enter=unbind
 # Scrollback navigation
 keybind = alt+y=scroll_page_lines:-1
 keybind = alt+e=scroll_page_lines:1
-# keybind = alt+k=scroll_page_lines:-3
-# keybind = alt+j=scroll_page_lines:3
 keybind = alt+u=scroll_page_fractional:-0.5
 keybind = alt+d=scroll_page_fractional:0.5
 keybind = alt+b=scroll_page_up

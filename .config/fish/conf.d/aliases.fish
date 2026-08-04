@@ -3,8 +3,6 @@
 abbr -a vim nvim
 abbr -a lg lazygit
 alias bc="bc -l"
-# alias pi="~/code/pi/packages/coding-agent/binaries/linux-x64/pi"
-# alias claude="claude --dangerously-skip-permissions"
 
 abbr -a ka 'killall'
 abbr -a tkill 'tmux kill-server'
