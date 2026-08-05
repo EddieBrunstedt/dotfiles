@@ -1,7 +1,11 @@
 [Unit]
 Description=Forgejo Actions runner (Codeberg)
-After=network-online.target docker.service
-Wants=network-online.target
+# No After=/Wants= on docker.service or network-online.target: those are SYSTEM
+# units and this is a USER unit, so systemd silently ignores the dependency
+# (`systemctl --user show` still echoes it back, which makes it look effective).
+# User units cannot order against system units at all. At boot this daemon may
+# start before DNS resolves; Restart=on-failure below recovers it in ~5s.
+# The system-side docker.service must be enabled separately -- see README.
 
 [Service]
 Type=simple
