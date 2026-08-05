@@ -125,7 +125,10 @@ install_from_list() {
 }
 
 install_official_packages() { install_from_list official "$OFFICIAL_LIST" sudo pacman; }
-install_aur_packages() { install_from_list AUR "$AUR_LIST" paru; }
+install_aur_packages() {
+	ensure_paru
+	install_from_list AUR "$AUR_LIST" paru
+}
 
 report_local_packages() {
 	local -a packages=()
@@ -167,7 +170,6 @@ case $1 in
 esac
 
 check_prerequisites
-ensure_paru
 
 case $1 in
 -o | --official)

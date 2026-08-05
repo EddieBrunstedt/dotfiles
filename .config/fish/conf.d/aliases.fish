@@ -27,5 +27,5 @@ alias lsla="eza $eza_global -lgha --smart-group --git $eza_time_format"
 
 # Disk usage
 alias lsize="eza $eza_global -lgh --total-size --color-scale=size --sort=size --reverse $eza_time_format"
-# Git status (run in a folder contining one or many repos)
+# Git status (run in a folder containing one or many repos)
 alias lrepo="eza $eza_global -lg --git-repos --smart-group $eza_time_format"

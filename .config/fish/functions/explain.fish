@@ -17,12 +17,14 @@ function explain --description 'Explain a shell command via pi'
     else
         set cmd (commandline)
         set src commandline
-        if test -z "$cmd"
+        if not string match -qr -- '\S' "$cmd"
             set cmd $history[1]
             set src 'history[1]'
         end
     end
-    if test -z "$cmd"
+    # Whitespace-only input must fall back or bail, not resolve: `string split
+    # -n` below drops every field, leaving no words to explain.
+    if not string match -qr -- '\S' "$cmd"
         commandline -f repaint
         return 1
     end

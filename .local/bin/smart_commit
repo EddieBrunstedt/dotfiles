@@ -13,7 +13,7 @@ echo "------------------------"
 echo "$msg"
 echo "------------------------"
 
-read -p "Commit (y), edit (e), or cancel (n)? " c
+read -r -p "Commit (y), edit (e), or cancel (n)? " c
 
 case "$c" in
 [Yy]) git commit -m "$msg" ;;

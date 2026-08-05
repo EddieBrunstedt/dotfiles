@@ -80,12 +80,14 @@ D-Bus activated.
 | `vault-cleanup.service` | clears a dangling `~/vault` symlink at login |
 | `forgejo-runner.service` | `background.slice`, outlives the session — see below |
 
-Session-bound processes live in `app-graphical.slice`, which is
-`PartOf=graphical-session.target`, so they stop at logout. Drop-ins catch the
-two cases that would otherwise escape it: the packaged ghostty daemon, and
-Chromium/Electron apps that move themselves into an `app-*.scope` over D-Bus.
-`app.slice` itself must never be bound to the session — it also holds the D-Bus,
-PipeWire and keyring sockets.
+Most session-bound processes live in `app-graphical.slice`, which is
+`PartOf=graphical-session.target`, so they stop at logout. Slice placement and
+lifecycle dependencies are separate: Proton Bridge (the default `app.slice`)
+and packaged Dunst (`session.slice`) instead stop through a direct `PartOf=`.
+Drop-ins catch the two cases that would otherwise escape the session: the
+packaged ghostty daemon, and Chromium/Electron apps that move themselves into
+an `app-*.scope` over D-Bus. `app.slice` itself must never be bound to the
+session — it also holds the D-Bus, PipeWire and keyring sockets.
 
 ## Packages
 
@@ -142,3 +144,7 @@ Things a fresh machine needs that these files cannot provide:
 - **`/etc/systemd/journald.conf.d/00-size.conf`** — `SystemMaxUse=500M`, so
   `system-cleanup` does not have to vacuum the journal by hand. Root-owned.
 - **The age identity** in the login keyring, without which no secret decrypts.
+- **The OpenPGP secret key used for Git commit signing.** `.gitconfig` tracks
+  the public identity, key fingerprint and mandatory-signing policy, but never
+  the private key. Import it from a secure backup before committing. Commits
+  deliberately fail rather than fall back to unsigned when the key is absent.
