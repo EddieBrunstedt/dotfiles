@@ -17,7 +17,7 @@
 
     ### Text ###
 
-    font = sans-serif 11
+    font = sans-serif 12.5
     # Default is `no`, which also drops body-markup from the advertised D-Bus
     # capabilities. Required for the default `format`, which wraps %s in <b>.
     markup = full
