@@ -6,6 +6,15 @@ default:
 install:
     stow .
 
+# Install the root-owned uwsm session entry (once per machine)
+install-session:
+    # Root-owned, so stow cannot place it. Without this the greeter offers only
+    # the packaged `Mango` session, which runs the compositor bare: no uwsm, so
+    # no environment preload, no graphical-session target, no slice layout.
+    sudo install -Dm644 \
+        system/usr/share/wayland-sessions/mango-uwsm.desktop \
+        /usr/share/wayland-sessions/mango-uwsm.desktop
+
 # Re-symlink, cleaning up stale links
 restow:
     stow --restow .

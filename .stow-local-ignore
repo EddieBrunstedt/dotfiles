@@ -17,5 +17,9 @@
 ^/\.stowrc$
 ^/\.stow-local-ignore$
 
+# Root-owned files. These do not belong in $HOME and are not symlinked;
+# `just install-session` copies them into place.
+^/system$
+
 # Template only — the real applist-machine is what gets symlinked
 ^/\.config/applist-machine\.example$

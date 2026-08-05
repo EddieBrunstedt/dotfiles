@@ -30,9 +30,10 @@ package databases or contact the AUR.
 Entries in applist-local are packages built by hand that exist in no
 repository, so --audit does not try to resolve them.
 
-applist-machine holds hardware-, boot- and firmware-specific packages. Its
-contents differ per machine, so it is gitignored and optional; only
-applist-machine.example is committed. Entries count as tracked.
+applist-machine holds hardware-, boot-, firmware- and greeter-specific
+packages. Its contents differ per machine, so it is gitignored and optional;
+only applist-machine.example is committed. Nothing installs from it — like
+applist-local it exists so its entries count as tracked.
 
 Options:
   --audit          Also check whether listed packages moved between

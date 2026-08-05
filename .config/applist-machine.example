@@ -1,13 +1,19 @@
-# Machine-specific packages: bootloader, firmware, GPU, network hardware.
+# Machine-specific packages: bootloader, firmware, GPU, network hardware and
+# the greeter.
 #
 # Unlike the other applists, this file's CONTENTS are gitignored — they differ
 # per machine and are not portable. Only this .example template is committed,
 # so the concept is versioned even though the package names are not.
 #
+# Nothing installs from this file. By the time these dotfiles are cloned the
+# machine has already booted, so its bootloader, microcode and drivers are
+# necessarily present; and being gitignored, the file does not exist on a fresh
+# clone anyway. Its only job is to tell package_report that these packages are
+# tracked, so they stop showing up as untracked noise. Same arrangement as
+# applist-local.
+#
 # On a new machine: copy this to applist-machine and fill it in with whatever
-# that box needs. package_report counts entries here as tracked, so they stop
-# showing up as untracked noise, but they are deliberately never part of the
-# portable install manifest.
+# that box needs.
 #
 # cp applist-machine.example applist-machine
 #
@@ -19,3 +25,5 @@
 # nvidia-open
 # nvidia-settings
 # iwd
+# greetd
+# greetd-tuigreet

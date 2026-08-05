@@ -27,7 +27,6 @@ dprint
 duf
 dunst
 dust
-efibootmgr
 electrum
 element-desktop
 eslint
@@ -53,8 +52,6 @@ gnome-themes-extra
 godot
 gopls
 gparted
-greetd
-greetd-tuigreet
 grim
 highlight
 hledger
