@@ -1,0 +1,37 @@
+# app.toml — spotify_player, replacing the Spotify desktop app.
+#
+# Deviations from upstream defaults only. `spotify_player` writes a full config
+# of every option on first run; that copy is regenerable noise and freezes
+# whatever the defaults happened to be at install time, so it is not kept here.
+# Run `spotify_player -c <empty-dir>` to dump a current default file to diff
+# against, or see docs/config.md for the option list.
+#
+# client_id is deliberately absent. The bundled default (ncspot's) has an
+# elevated API quota; a self-registered one starts in Spotify's restricted tier
+# and yields 429/403s and missing browse data. Upstream has already rotated the
+# bundled id once, so pinning a copy here would silently rot.
+
+# Default 32. That is a 31fps redraw for a mostly-static TUI that session-startup
+# leaves running all day; 100ms still reads as smooth and idles cheaper.
+app_refresh_duration_in_ms = 100
+
+# Default false, which reconnects to the account and resumes the previous
+# session — so booting the machine started playing music unprompted.
+pause_on_startup = true
+
+# Default false. Marks the track-change popup transient, so dunst shows it but
+# keeps it out of history; dunstrc runs history_length = 1000 for `history-pop`
+# and per-track notifications would otherwise flush anything worth recalling.
+notify_transient = true
+
+# Default 70. enable_streaming defaults to "Always", making spotify_player the
+# audio sink, so this multiplies with the PipeWire volume. Full scale here,
+# volume controlled at the system mixer. Dotted key rather than a [device]
+# table so the theme line below can stay last — a bare key after a table header
+# would be parsed into that table.
+device.volume = 100
+
+# ── theme ───────────────────────────────────────────────────────────────────
+# Matches ghostty and nvim. Defined in theme.toml alongside this file.
+# To revert to the built-in dracula, delete this line.
+theme = "modus_vivendi_tinted"

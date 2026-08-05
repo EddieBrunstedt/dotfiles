@@ -1,0 +1,56 @@
+# theme.toml — Modus Vivendi Tinted for spotify_player.
+#
+# Matches ghostty (theme = Modus Vivendi Tinted) and nvim
+# (miikanissi/modus-themes.nvim with modus_vivendi = 'tinted').
+#
+# The palette is copied verbatim from ghostty's own theme file at
+# /usr/share/ghostty/themes/Modus Vivendi Tinted, so the two stay in step.
+# Modus is designed around WCAG AAA contrast; the component_style choices below
+# stick to palette entries rather than inventing shades, to preserve that.
+#
+# Not referenced unless app.toml sets `theme`. Deleting that one line reverts
+# to the built-in dracula and leaves this file inert.
+
+[[themes]]
+name = "modus_vivendi_tinted"
+
+[themes.palette]
+background = "#0d0e1c"
+foreground = "#ffffff"
+black = "#0d0e1c"
+red = "#ff5f59"
+green = "#44bc44"
+yellow = "#d0bc00"
+blue = "#2fafff"
+magenta = "#feacd0"
+cyan = "#00d3d0"
+white = "#a6a6a6"
+bright_black = "#595959"
+bright_red = "#ff6b55"
+bright_green = "#00c06f"
+bright_yellow = "#fec43f"
+bright_blue = "#79a8ff"
+bright_magenta = "#b6a0ff"
+bright_cyan = "#6ae4b9"
+bright_white = "#ffffff"
+
+[themes.component_style]
+block_title = { fg = "Blue", modifiers = ["Bold"] }
+border = { fg = "BrightBlack" }
+playback_status = { fg = "BrightGreen", modifiers = ["Bold"] }
+playback_track = { fg = "BrightBlue", modifiers = ["Bold"] }
+playback_artists = { fg = "Cyan" }
+playback_album = { fg = "BrightMagenta" }
+playback_genres = { fg = "BrightBlack", modifiers = ["Italic"] }
+playback_metadata = { fg = "BrightBlack" }
+playback_progress_bar = { fg = "BrightBlue", bg = "BrightBlack" }
+playback_progress_bar_unfilled = { bg = "BrightBlack" }
+current_playing = { fg = "BrightGreen", modifiers = ["Bold"] }
+page_desc = { fg = "Blue", modifiers = ["Bold"] }
+playlist_desc = { fg = "BrightBlack", modifiers = ["Dim"] }
+table_header = { fg = "BrightYellow" }
+selection = { modifiers = ["Reversed", "Bold"] }
+secondary_row = {}
+like = { fg = "BrightRed" }
+lyrics_played = { fg = "BrightBlack" }
+lyrics_playing = { fg = "BrightGreen", modifiers = ["Bold"] }

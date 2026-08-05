@@ -56,8 +56,18 @@ launch_place() {
 # appid regex is matched against the window's appid (see: mmsg get all-clients).
 # ^…$ anchors it so e.g. a ghostty rule would not also grab the scratchpad.
 #            appid regex   tag   command to launch
-launch_place '^steam$'      4    steam                    &
-launch_place '^Spotify$'    2    spotify                  &
 launch_place '^vesktop$'    3    mullvad-exclude vesktop  &
+
+# spotify_player is a TUI, so it needs a terminal of its own. The custom --class
+# gives that window a distinct appid, so the anchored regex doesn't also grab
+# every other ghostty window. Must be a valid GTK application id (reverse-DNS,
+# at least one period) or ghostty rejects it.
+launch_place '^com\.mitchellh\.ghostty\.spotify$'  2  \
+  ghostty --class=com.mitchellh.ghostty.spotify -e spotify_player  &
+
+# Steam runs with -silent: it starts to the tray and opens no window at boot, so
+# launch_place would have nothing to catch and would just poll until TIMEOUT.
+# Launched directly instead — windows opened later land on the current tag.
+uwsm app -t service -- steam -silent
 
 wait
