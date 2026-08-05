@@ -39,6 +39,7 @@ fisher
 forgejo-runner
 fzf
 gamemode
+gamescope
 gammastep
 ghostty
 gimp
@@ -125,6 +126,7 @@ shellcheck
 shfmt
 signal-desktop
 sops
+spotify-player
 sqlitebrowser
 starship
 steam
