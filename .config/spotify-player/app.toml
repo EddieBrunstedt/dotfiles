@@ -11,12 +11,12 @@
 # and yields 429/403s and missing browse data. Upstream has already rotated the
 # bundled id once, so pinning a copy here would silently rot.
 
-# Default 32. That is a 31fps redraw for a mostly-static TUI that session-startup
-# leaves running all day; 100ms still reads as smooth and idles cheaper.
+# Default 32. That is a 31fps redraw for a mostly-static TUI; 100ms still reads
+# as smooth and idles cheaper.
 app_refresh_duration_in_ms = 100
 
 # Default false, which reconnects to the account and resumes the previous
-# session — so booting the machine started playing music unprompted.
+# session — so starting the player put music on without being asked.
 pause_on_startup = true
 
 # Default true. Off because the popups fire on a paused, untouched player:
