@@ -1,9 +1,9 @@
 #!/bin/sh
 #Run an ord LLM template against the clipboard, chosen from rofi (Wayland)
 
-# Templates live in ~/.config/ord/templates. `ord run <template> -f=text -b`
-# fills the template's `text` placeholder from the clipboard and opens the
-# result in the browser as rendered Markdown.
+# Templates live in ~/.config/ord/templates. `ord run <template> -f=text -c -n`
+# fills the template's `text` placeholder from the clipboard, copies the
+# result back to the clipboard, and sends a completion notification.
 #
 # Adding a prompt: drop a template in that directory, add a line to the list
 # and a matching case arm. The rofi height follows the list automatically.
@@ -37,4 +37,4 @@ case "$chosen" in
     *) exit 1 ;;
 esac
 
-exec ord run "$template" -f=text -b
+exec ord run "$template" -f=text -c -n

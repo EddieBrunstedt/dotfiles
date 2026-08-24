@@ -60,6 +60,7 @@ htmlq
 htop
 hyperfine
 imagemagick
+inotify-tools
 jq
 jujutsu
 just
@@ -68,6 +69,7 @@ krita
 lazygit
 lib32-gamemode
 lib32-mangohud
+librewolf
 libsecret
 linux
 linux-firmware
@@ -83,7 +85,9 @@ musl
 neovim
 networkmanager
 nmap
+nodejs-lts-krypton
 noto-fonts
+noto-fonts-cjk
 noto-fonts-emoji
 npm
 nushell

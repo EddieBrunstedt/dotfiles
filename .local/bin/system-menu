@@ -1,0 +1,89 @@
+#!/bin/sh
+# system-menu — rofi palette of occasional system actions, bound to SUPER+SHIFT+m.
+#
+# Flat on purpose: rofi filters rather than navigates, so a submenu would only
+# ever cost a keypress.
+#
+# Every row is "Domain: Verb object". The verb is the part that matters — a row
+# labelled with a bare noun ("Audio: SSL 2+ Mk II 0") reads as an inventory entry
+# rather than as something that will happen when you press Enter. Given the verb,
+# the domain prefix costs nothing and buys alignment plus adjacency: related rows
+# sort together instead of scattering across the list by whichever verb they
+# happen to start with.
+#
+# Anything with its own keybind stays out, or this list fills up with rows that
+# are never picked: layouts (SUPER+t/m/u/w/d), reload (SUPER+r), white point
+# (SUPER+SHIFT+g), keyboard layout (SUPER+SHIFT+k), do-not-disturb
+# (SUPER+SHIFT+n), mixer (SUPER+SHIFT+a) and power (SUPER+q).
+#
+# The prefixes are as close to headings as this can get: rofi has no
+# non-selectable rows, and a heading row would vanish the moment you typed
+# anyway, since filtering is the point.
+
+# Change only this value if the dictation backend is replaced.
+dictation_service=voxtype
+
+# Ghostty closes the window the moment the command exits, and all three of these
+# print output worth reading, so hold it open from the shell. Not ghostty's
+# wait-after-command: the app runs as a single-instance service, where CLI
+# config overrides are not reliably applied to a newly opened window.
+term() { exec ghostty -e sh -c "$1"'; printf "\n[finished] press Enter to close "; read -r _'; }
+
+# Audio rows are built from wpctl each run, so they list the sinks that exist
+# right now. sink_map is "id<TAB>description"; the menu shows only the
+# description and the id is looked up again after the pick, so the numbers
+# never reach the UI. ● marks the current default.
+sinks=$(wpctl status | sed -n '/Audio/,/Video/p' | sed -n '/Sinks:/,/Sources:/p')
+cur=$(printf '%s\n' "$sinks" | sed -n 's/^[^0-9*]*\*\s*\([0-9]\+\)\..*/\1/p')
+sink_map=$(printf '%s\n' "$sinks" \
+  | sed -n 's/^[^0-9]*\([0-9]\+\)\.\s*\(.*\S\)\s*\[vol.*/\1\t\2/p')
+
+rows=$(printf '%s\n' "$sink_map" \
+  | awk -F'\t' -v cur="$cur" \
+      '{printf "Audio: Set output to %s%s\n", $2, ($1 == cur ? " ●" : "")}'
+  # Dictation labels name the systemctl verb they run, not the capability it
+  # grants. ~ rather than $HOME: an unexpanded-looking variable in a menu reads
+  # as a bug.
+  printf '%s\n' \
+    "Dictation: Start service" \
+    "Dictation: Stop service" \
+    "Disk: Show usage by filesystem" \
+    "Disk: Show usage under ~" \
+    "Disk: Reclaim space")
+
+chosen=$(printf '%s\n' "$rows" \
+  | rofi -dmenu -i -no-custom -l "$(printf '%s\n' "$rows" | wc -l)" -p "Run") || exit 0
+[ -n "$chosen" ] || exit 0
+
+case "$chosen" in
+  "Audio: Set output to "*)
+    name=${chosen#Audio: Set output to }
+    name=${name% ●}
+    # awk exact-match rather than a sed pattern: descriptions contain +, ( and
+    # . which would otherwise be read as regex.
+    id=$(printf '%s\n' "$sink_map" | awk -F'\t' -v n="$name" '$2 == n { print $1; exit }')
+    if [ -n "$id" ] && wpctl set-default "$id"; then
+      notify-send "Audio output" "Default sink: $name"
+    else
+      notify-send -u critical "Audio output" "Could not switch to $name"
+    fi ;;
+
+  "Dictation: Start service")
+    if systemctl --user start "$dictation_service"; then
+      notify-send "Dictation" "$dictation_service started — hold Super+V to dictate"
+    else
+      notify-send -u critical "Dictation" "Could not start $dictation_service"
+    fi ;;
+  "Dictation: Stop service")
+    if systemctl --user stop "$dictation_service"; then
+      notify-send "Dictation" "$dictation_service stopped"
+    else
+      notify-send -u critical "Dictation" "Could not stop $dictation_service"
+    fi ;;
+
+  # duf answers "do I have a problem", dust answers "where is it", and
+  # system-cleanup fixes it. disk_usage is a fish alias, so duf is called direct.
+  "Disk: Show usage by filesystem") term 'duf' ;;
+  "Disk: Show usage under ~")       term 'dust "$HOME"' ;;
+  "Disk: Reclaim space")            term '"$HOME"/.local/bin/system-cleanup' ;;
+esac

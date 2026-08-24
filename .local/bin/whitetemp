@@ -1,19 +1,44 @@
 #!/bin/sh
 # Set the screen white point with gammastep, chosen from rofi.
-# Bound to SUPER+SHIFT+b and offered by mango-menu.
+# Bound to SUPER+SHIFT+g (g for gamma; SUPER+SHIFT+w belongs to vertical_fair).
+#
+# "Reset to default" stops the unit instead of running gammastep at 6500 K. The
+# two look the same — 6500 K is an identity ramp, and on Wayland the gamma
+# resets when the client exits — but stopping leaves no process behind and makes
+# the unit state honest: active now means something really is overridden. That
+# is what the ● below reads, so "not running" and "6500 K" are the same state.
 
-list='6500 K (default day)
-4500 K (default night)
-4000 K
-3500 K
-3000 K
-2500 K'
+list='6500|Reset to default (6500 K)
+4500|4500 K
+4000|4000 K
+3500|3500 K
+3000|3000 K
+2500|2500 K'
 
-chosen=$(printf '%s\n' "$list" | rofi -dmenu -i -no-custom \
-    -l "$(printf '%s\n' "$list" | wc -l)" -p "White temp") || exit 0
+# Nothing running == neutral == 6500, so one comparison marks either case.
+cur=6500
+if systemctl --user is-active --quiet whitetemp.service; then
+    active=$(systemctl --user show whitetemp.service -p ExecStart --value 2>/dev/null \
+             | grep -oE '\-O[[:space:]]*[0-9]+' | grep -oE '[0-9]+')
+    [ -n "$active" ] && cur=$active
+fi
+
+# -F'[|]' rather than -F'|': awk reads the separator as a regex, and a bare
+# alternation is not a valid one.
+rows=$(printf '%s\n' "$list" \
+    | awk -F'[|]' -v cur="$cur" '{printf "%s%s\n", $2, ($1 == cur ? " ●" : "")}')
+
+chosen=$(printf '%s\n' "$rows" | rofi -dmenu -i -no-custom \
+    -l "$(printf '%s\n' "$rows" | wc -l)" -p "White point") || exit 0
 [ -n "$chosen" ] || exit 0
 
-center=${chosen%% *}
+label=${chosen% ●}
+temp=$(printf '%s\n' "$list" | awk -F'[|]' -v lbl="$label" '$2 == lbl { print $1; exit }')
+[ -n "$temp" ] || exit 1
+
+# Stop first either way: the unit is transient, so a stale one would block
+# systemd-run from reusing the name.
+systemctl --user stop whitetemp.service 2>/dev/null
 
 # On Wayland the gamma resets when the client exits, so gammastep has to keep
 # running to hold the temperature.
@@ -26,8 +51,15 @@ center=${chosen%% *}
 # Named whitetemp, not gammastep: the gammastep package ships its own
 # gammastep.service (geoclue-driven, no fixed temperature) and systemd-run
 # refuses a transient unit whose name already has a fragment file.
-systemctl --user stop whitetemp.service 2>/dev/null
-exec systemd-run --user --quiet --collect \
-    --unit=whitetemp \
-    --slice=app-graphical.slice \
-    gammastep -P -O "$center"
+# 6500 K is the reset: the stop above is the whole action, nothing to start.
+if [ "$temp" != 6500 ]; then
+    systemd-run --user --quiet --collect \
+        --unit=whitetemp \
+        --slice=app-graphical.slice \
+        gammastep -P -O "$temp"
+fi
+
+# Refresh the waybar segment immediately ("signal": 5 in waybar config.jsonc).
+# Not exec'd above, so this still runs; systemd-run returns as soon as the
+# transient unit is started.
+pkill -RTMIN+5 waybar

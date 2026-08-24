@@ -93,6 +93,8 @@ window#waybar.empty #window {
 #custom-mullvad,
 #custom-volume,
 #custom-voxtype,
+#custom-desktop,
+#custom-whitetemp,
 #custom-dunst,
 #clock,
 #tray {
@@ -103,6 +105,19 @@ window#waybar.empty #window {
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
+}
+
+/* ── desktop drawer ──────────────────────────────────────────────── */
+/* Clean recedes to the same grey as a stopped service; dirty borrows the
+   attention yellow so the folder icon reads as an open todo from across the
+   room. The glyphs differ too (closed vs open folder), so the state survives
+   a glance that does not register colour. */
+#custom-desktop.clean {
+    color: #6c7086;
+}
+
+#custom-desktop.dirty {
+    color: #f9e2af;
 }
 
 /* ── voxtype states ──────────────────────────────────────────────── */

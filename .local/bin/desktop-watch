@@ -1,0 +1,58 @@
+#!/bin/sh
+# Pokes waybar's custom/desktop segment whenever ~/desktop gains or loses an
+# entry, so the folder icon flips the moment the drawer changes rather than up
+# to an interval later.
+#
+# This script never reads the folder's state -- it only decides *when*
+# desktop-status runs. waybar keeps a long interval as a safety net for this
+# unit dying behind its back, the same arrangement whitetemp uses.
+#
+# Started by desktop-watch.service.
+set -u
+
+dir="$HOME/desktop"
+fifo="${XDG_RUNTIME_DIR:-/tmp}/desktop-watch.fifo"
+
+refresh() {
+    # Nonzero when waybar is not up yet; the next event tries again.
+    pkill -RTMIN+6 waybar || true
+}
+
+# One instance per session, so a fixed name is fine -- a stale node can only be
+# the wreckage of a crashed run.
+rm -f "$fifo"
+mkfifo "$fifo" || exit 1
+trap 'rm -f "$fifo"' EXIT INT TERM
+
+while :; do
+    # Recreated every pass because `rm -rf ~/desktop` takes the watched inode
+    # with it, and the folder existing is the normal state anyway.
+    mkdir -p "$dir"
+
+    # The state can have moved while no watch was armed -- on first start, and
+    # in the gap after the folder was deleted out from under the old one.
+    refresh
+
+    # Kept in the background with its pid in hand rather than piped: on
+    # DELETE_SELF inotifywait keeps running against a watch the kernel has
+    # already dropped, so it has to be killed by hand before the loop can
+    # re-arm on whatever inode replaces the folder.
+    inotifywait -m -q -e create,delete,move,delete_self,move_self \
+        --format '%e' "$dir" > "$fifo" 2>/dev/null &
+    watcher=$!
+
+    while read -r events; do
+        # Collapse bursts: an unpacked tarball is one refresh, not a thousand.
+        while read -r -t 0.3 more; do events="$events $more"; done
+        refresh
+        case "$events" in
+            *DELETE_SELF*|*MOVE_SELF*) break ;;
+        esac
+    done < "$fifo"
+
+    kill "$watcher" 2>/dev/null
+    wait "$watcher" 2>/dev/null
+
+    # A folder that keeps vanishing must not turn this into a spin.
+    sleep 1
+done

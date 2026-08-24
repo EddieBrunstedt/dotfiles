@@ -1,0 +1,16 @@
+[Unit]
+Description=Refresh waybar's ~/desktop segment on change
+Documentation=man:inotifywait(1)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=exec
+# Matches waybar's own condition: without a bar there is nothing to signal.
+ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""
+ExecStart=%h/.local/bin/desktop-watch
+Restart=on-failure
+Slice=app-graphical.slice
+
+[Install]
+WantedBy=graphical-session.target

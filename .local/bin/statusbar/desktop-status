@@ -1,0 +1,50 @@
+#!/bin/sh
+# Waybar segment: whether ~/desktop is empty. Prints its own icon.
+#
+# ~/desktop is the scratch drawer, so anything sitting in it is unfinished
+# work. Unlike whitetemp-status this segment never hides: an absent module
+# reads as a dead module, not as "nothing to do". Both glyphs are one cell
+# wide so the modules to the right hold still when the state flips, which is
+# also why the item count is in the tooltip rather than in the bar.
+#
+# Hidden entries count. The folder is clean only when there is nothing left
+# for `rm -rf ~/desktop/{*,.*}` to take -- a stray .claude/ is still clutter.
+#
+# Refreshed every interval and instantly via `pkill -RTMIN+6 waybar`;
+# "signal": 6 in waybar config.jsonc.
+set -u
+
+dir="$HOME/desktop"
+
+# U+F07B nf-fa-folder and U+F07C nf-fa-folder_open, one cell each in Symbols
+# Nerd Font. Written as octal escapes so this file stays 7-bit and greppable.
+icon_clean=$(printf '\357\201\273')
+icon_dirty=$(printf '\357\201\274')
+
+# Filenames reach the tooltip as a JSON string that waybar hands to pango, so
+# both layers need escaping. Order matters: & before < , or &lt; gets mangled.
+json_escape() {
+    sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/&/\&amp;/g' -e 's/</\&lt;/g' \
+        | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g'
+}
+
+# A missing folder is not a state worth a colour -- print nothing and hide.
+[ -d "$dir" ] || { printf '{"text":""}\n'; exit 0; }
+
+names=$(find "$dir" -mindepth 1 -maxdepth 1 -printf '%f\n' 2>/dev/null | LC_ALL=C sort)
+count=$(printf '%s' "$names" | grep -c '^')
+
+if [ "$count" -eq 0 ]; then
+    printf '{"text":"%s","class":"clean","tooltip":"~/desktop is clean"}\n' "$icon_clean"
+    exit 0
+fi
+
+listing=$(printf '%s' "$names" | head -n 12)
+if [ "$count" -gt 12 ]; then
+    listing=$(printf '%s\n... and %s more' "$listing" "$((count - 12))")
+fi
+
+tooltip=$(printf '%s item%s in ~/desktop\n%s' \
+    "$count" "$([ "$count" -eq 1 ] || echo s)" "$listing" | json_escape)
+
+printf '{"text":"%s","class":"dirty","tooltip":"%s"}\n' "$icon_dirty" "$tooltip"

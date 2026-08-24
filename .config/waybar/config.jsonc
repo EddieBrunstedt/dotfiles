@@ -17,7 +17,9 @@
         "custom/mullvad",
         "custom/volume",
         "custom/voxtype",
+        "custom/desktop",
         "clock",
+        "custom/whitetemp",
         "custom/dunst",
         "tray"
     ],
@@ -96,6 +98,34 @@
         "on-click": "systemctl --user start voxtype.service",
         "on-click-middle": "systemctl --user restart voxtype.service",
         "on-click-right": "systemctl --user stop voxtype.service"
+    },
+
+    // ~/desktop is the scratch drawer and is meant to be empty between
+    // projects; this segment is the standing reminder that it is not. It never
+    // hides, unlike whitetemp: a missing segment reads as a dead module rather
+    // than as "nothing to do". Both states are one cell wide so the clock does
+    // not shift when it flips, which is why the count lives in the tooltip.
+    // desktop-watch signals RTMIN+6 on every change, so the interval is only a
+    // safety net for that unit dying behind waybar's back.
+    "custom/desktop": {
+        "exec": "desktop-status",
+        "return-type": "json",
+        "interval": 30,
+        "signal": 6,
+        "on-click": "xdg-open ~/desktop",
+        "tooltip": true
+    },
+
+    // Prints nothing while the screen is neutral, so the segment is absent
+    // rather than idle. The interval is only a safety net for the unit dying
+    // behind waybar's back; whitetemp signals RTMIN+5 on every change.
+    "custom/whitetemp": {
+        "exec": "whitetemp-status",
+        "interval": 30,
+        "signal": 5,
+        "on-click": "whitetemp",
+        "on-click-right": "systemctl --user stop whitetemp.service; pkill -RTMIN+5 waybar",
+        "tooltip": false
     },
     "custom/dunst": {
         "exec": "dunst-status",

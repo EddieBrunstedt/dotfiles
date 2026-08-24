@@ -40,6 +40,7 @@ clean-orphans-apply:
 enable-services:
     systemctl --user daemon-reload
     systemctl --user enable \
+        desktop-watch.service \
         protonmail-bridge.service \
         vault-cleanup.service \
         wallpaper.service \
