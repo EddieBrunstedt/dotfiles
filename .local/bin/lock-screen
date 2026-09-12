@@ -1,11 +1,33 @@
 #!/usr/bin/env bash
 # Session-lock entry point. Keep pre-lock policy here so manual keybindings and
-# future idle/suspend hooks all behave identically.
+# idle/suspend hooks all behave identically. Returns after readiness, not unlock.
 set -u
+
+# Serialize requests for this Wayland display, including manual and idle locks.
+# The startup mutex is NOT inherited by swaylock. The lifetime mutex IS, so a
+# ready marker is only trusted while the corresponding locker still holds it.
+# Never unlink mutex files: existing descriptors must keep naming the same lock.
+: "${XDG_RUNTIME_DIR:?lock-screen requires XDG_RUNTIME_DIR}"
+: "${WAYLAND_DISPLAY:?lock-screen requires WAYLAND_DISPLAY}"
+umask 077
+display_key=$(printf '%s' "$WAYLAND_DISPLAY" | sha256sum) || exit 1
+state="$XDG_RUNTIME_DIR/lock-screen.${display_key%% *}"
+mkdir -p "$state" || exit 1
+exec 8>"$state/startup" 9>"$state/lifetime" || exit 1
+flock -x 8 || exit 1
+if ! flock -xn 9; then
+  if [[ -f "$state/ready" ]]; then
+    exit 0
+  fi
+  printf 'lock-screen: another lock request has not confirmed readiness\n' >&2
+  exit 1
+fi
+rm -f "$state/ready" || exit 1
 
 # Mango numbers layouts from 1 here; xkb_rules_layout starts with `us`.
 # A layout-switch failure must never prevent the screen from locking.
-if ! mmsg dispatch switch_keyboard_layout,1 >/dev/null; then
+# Bound policy IPC so it cannot consume logind's entire sleep-inhibitor delay.
+if ! timeout -k 0.1s 0.5s mmsg dispatch switch_keyboard_layout,1 >/dev/null; then
   printf 'lock-screen: could not switch Mango keyboard layout to us\n' >&2
 fi
 
@@ -13,7 +35,7 @@ fi
 # is not necessarily whoever locked it, so notifications must not pop up on
 # return. Deliberately one-way — unpausing is a manual decision (SUPER+SHIFT+n,
 # or the Waybar segment) taken once it is safe to read them.
-if dunstctl set-paused true >/dev/null 2>&1; then
+if timeout -k 0.1s 0.5s dunstctl set-paused true >/dev/null 2>&1; then
   # Refresh the Waybar segment immediately, as dunst-toggle does
   # (RTMIN+3 matches "signal": 3 in waybar config.jsonc).
   pkill -RTMIN+3 waybar || :
@@ -26,10 +48,17 @@ fi
 # order nothing can slip through in between, and nothing survives to be replayed
 # when notifications are unpaused. Closed popups go to history (history_length =
 # 1000 in dunstrc) and are readable later with `dunstctl history-pop`.
-dunstctl close-all >/dev/null 2>&1 || printf 'lock-screen: could not clear pending notifications\n' >&2
+timeout -k 0.1s 0.5s dunstctl close-all >/dev/null 2>&1 || printf 'lock-screen: could not clear pending notifications\n' >&2
 
 # --image before "$@" so an explicit --image on the command line still wins.
 # It is set here rather than in swaylock's config because that parser does not
 # expand `~`. Wallpapers should already be sized for the display; `color=` in
 # the config covers the symlink being absent or unreadable.
-exec /usr/bin/swaylock --image "$HOME/.local/share/wallpapers/current" "$@"
+# -f exits its parent successfully only after the compositor confirms locking.
+# Always use it, including manual callers, to publish readiness consistently.
+if /usr/bin/swaylock --image "$HOME/.local/share/wallpapers/current" "$@" -f 8>&-; then
+  touch "$state/ready" || exit 1
+else
+  printf 'lock-screen: swaylock failed to establish the lock\n' >&2
+  exit 1
+fi

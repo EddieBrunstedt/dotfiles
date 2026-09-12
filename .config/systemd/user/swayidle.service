@@ -18,10 +18,14 @@ ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" "
 #
 # The lock handler is for logind's LockSession signal (loginctl lock-session),
 # so anything asking the session to lock lands on the same wrapper as SUPER+q.
+# before-sleep also covers suspend requested outside power-menu. With -w and
+# lock-screen -f, both handlers wait for readiness but return before unlock.
+# logind still imposes its InhibitDelayMaxSec deadline on before-sleep.
 ExecStart=/usr/bin/swayidle -w \
   timeout 600 '%h/.local/bin/idle-action' \
   resume '/usr/bin/wlopm --on "*"' \
-  lock '%h/.local/bin/lock-screen'
+  lock '%h/.local/bin/lock-screen -f' \
+  before-sleep '%h/.local/bin/lock-screen -f'
 Restart=on-failure
 Slice=app-graphical.slice
 

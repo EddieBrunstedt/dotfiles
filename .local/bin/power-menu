@@ -30,7 +30,9 @@ case "$action" in
   # leaves behind the one-shot listener that wakes the panel on the next
   # keypress, which swayidle.service cannot do until its own timeout has fired.
   "Lock and blank screen") exec "$HOME/.local/bin/lock-blank" ;;
-  "Suspend")     systemctl suspend ;;
+  # Also gate the menu directly: do not request suspend if locking fails, even
+  # when swayidle is stopped. Its before-sleep hook reuses the established lock.
+  "Suspend")     "$HOME/.local/bin/lock-screen" -f && systemctl suspend ;;
   "Reboot")      confirm "Reboot?"    && systemctl reboot ;;
   "Power off")   confirm "Power off?" && systemctl poweroff ;;
 
