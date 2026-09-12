@@ -22,7 +22,15 @@ refresh() {
 # the wreckage of a crashed run.
 rm -f "$fifo"
 mkfifo "$fifo" || exit 1
-trap 'rm -f "$fifo"' EXIT INT TERM
+# A handler that only cleans up would let the shell *resume* the loop, leaving
+# the script immune to SIGTERM -- systemd then waits out TimeoutStopSec on every
+# shutdown before SIGKILLing it. The signal traps must exit.
+cleanup() {
+    [ -n "${watcher:-}" ] && kill "$watcher" 2>/dev/null
+    rm -f "$fifo"
+}
+trap cleanup EXIT
+trap 'exit 0' INT TERM
 
 while :; do
     # Recreated every pass because `rm -rf ~/desktop` takes the watched inode
