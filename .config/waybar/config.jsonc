@@ -103,10 +103,13 @@
     // ~/desktop is the scratch drawer and is meant to be empty between
     // projects; this segment is the standing reminder that it is not. It never
     // hides, unlike whitetemp: a missing segment reads as a dead module rather
-    // than as "nothing to do". Both states are one cell wide so the clock does
-    // not shift when it flips, which is why the count lives in the tooltip.
-    // desktop-watch signals RTMIN+6 on every change, so the interval is only a
-    // safety net for that unit dying behind waybar's back.
+    // than as "nothing to do". Three classes come back on stdout -- clean,
+    // fresh, and stale for a mess that outlived a reboot -- and style.css
+    // colours them; see desktop-status for how the boot is detected. Both
+    // tray glyphs are the same width so the clock does not shift when the
+    // state flips, which is why the count lives in the tooltip. desktop-watch
+    // signals RTMIN+6 on every change, so the interval is only a safety net
+    // for that unit dying behind waybar's back.
     "custom/desktop": {
         "exec": "desktop-status",
         "return-type": "json",

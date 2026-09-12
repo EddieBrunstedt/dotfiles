@@ -108,16 +108,23 @@ window#waybar.empty #window {
 }
 
 /* ── desktop drawer ──────────────────────────────────────────────── */
-/* Clean recedes to the same grey as a stopped service; dirty borrows the
-   attention yellow so the folder icon reads as an open todo from across the
-   room. The glyphs differ too (closed vs open folder), so the state survives
-   a glance that does not register colour. */
+/* Clean recedes to the same grey as a stopped service. The two dirty states
+   climb a severity ramp: peach for a mess this boot made, red -- the same red
+   voxtype uses while recording -- for one that outlived a reboot and is
+   therefore overdue. The glyph changes between clean and dirty as well (an
+   empty desk tray vs one with paper piled in it), so the distinction that
+   means "act" survives a glance that does not register colour; peach vs red
+   only ranks two alarms that are both already showing. */
 #custom-desktop.clean {
     color: #6c7086;
 }
 
-#custom-desktop.dirty {
-    color: #f9e2af;
+#custom-desktop.fresh {
+    color: #fab387;
+}
+
+#custom-desktop.stale {
+    color: #f38ba8;
 }
 
 /* ── voxtype states ──────────────────────────────────────────────── */
