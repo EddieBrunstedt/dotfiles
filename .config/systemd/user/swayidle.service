@@ -1,0 +1,29 @@
+[Unit]
+Description=Idle monitor blanking and session lock (swayidle)
+Documentation=man:swayidle(1)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=exec
+# Matches waybar's own condition: mango is the only session these commands
+# (mmsg in lock-screen, wlr-output-power-management in idle-action) work under.
+ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""
+# -w: finish one handler before acting on the next event, so a mouse jiggle
+# during the lock-then-blank sequence cannot interleave with it.
+#
+# resume fires on any input, locked or not — swaylock takes no idle inhibitor
+# and mango reports activity to the idle notifier while the session is locked,
+# which is what makes the panel sleep and wake normally behind the lock screen.
+#
+# The lock handler is for logind's LockSession signal (loginctl lock-session),
+# so anything asking the session to lock lands on the same wrapper as SUPER+q.
+ExecStart=/usr/bin/swayidle -w \
+  timeout 600 '%h/.local/bin/idle-action' \
+  resume '/usr/bin/wlopm --on "*"' \
+  lock '%h/.local/bin/lock-screen'
+Restart=on-failure
+Slice=app-graphical.slice
+
+[Install]
+WantedBy=graphical-session.target

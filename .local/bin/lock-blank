@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# lock-blank — lock and put the panel to sleep now, rather than waiting out
+# swayidle's ten-minute timeout. Bound to a system-menu row; the idle path
+# reaches the same place on its own.
+#
+# The locking and blanking are idle-action verbatim, so a menu lock and an idle
+# lock go dark by exactly the same route, with the same lock-readiness wait and
+# the same warning if the lock fails to take.
+#
+# Waking up is the part that needs its own machinery. swayidle.service runs its
+# `resume` handler only after ITS OWN timeout has fired, so blanking behind its
+# back leaves nothing anywhere listening for the keystroke that should bring the
+# panel back: the screen would sit dark until the full ten minutes had elapsed.
+# The one-shot swayidle below is that missing listener.
+set -u
+
+"$HOME"/.local/bin/idle-action
+
+# $$ survives exec, so the pid written here is the swayidle that replaces this
+# shell -- no launch race, and no window in which the file names the wrong
+# process. Each run gets its own file and only ever reads that one, so a stale
+# file from a killed watcher is never acted on; XDG_RUNTIME_DIR clears at logout.
+pidfile=$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/lock-blank.XXXXXX") || exit 1
+printf '%s\n' "$$" >"$pidfile"
+
+# timeout 1 with a no-op command: the point is not what runs at the timeout but
+# that reaching it is what makes swayidle report the NEXT input as a resume.
+# Then restore the panel and retire -- leaving it running would re-arm on every
+# idle cycle for the rest of the session.
+exec swayidle -w \
+  timeout 1 'true' \
+  resume "/usr/bin/wlopm --on '*'; rm -f '$pidfile'; kill $$"

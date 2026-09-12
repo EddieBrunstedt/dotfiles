@@ -137,6 +137,7 @@ steam
 stow
 stress
 swaybg
+swayidle
 swayimg
 swaylock
 taplo-cli
@@ -165,6 +166,7 @@ wireguard-tools
 wiremix
 wireplumber
 wl-clipboard
+wlopm
 wlr-randr
 wtype
 xdg-desktop-portal

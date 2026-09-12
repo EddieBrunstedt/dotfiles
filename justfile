@@ -42,6 +42,7 @@ enable-services:
     systemctl --user enable \
         desktop-watch.service \
         protonmail-bridge.service \
+        swayidle.service \
         vault-cleanup.service \
         wallpaper.service \
         waybar.service
