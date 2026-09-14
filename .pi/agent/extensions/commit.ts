@@ -5,17 +5,27 @@
  * respects staged hunks exactly as the user staged them.
  *
  * `/commit all` is the convenience mode: it stages everything temporarily,
- * generates the commit plan from that staged snapshot, and restores the
- * original index if the flow is cancelled before execution.
+ * generates the commit plan in a private index, and leaves the real index
+ * untouched if the flow is cancelled or the first commit fails.
+ * Recovery indexes and binary patches live beside the real index in a private
+ * pi-commit-* directory; failures retain it with manual recovery instructions.
  *
  * Usage:
  *   /commit      — commit only the currently staged changes
  *   /commit all  — stage everything, then commit
  */
 
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+	copyFile,
+	mkdtemp,
+	open,
+	readFile,
+	rename,
+	rm,
+	writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { complete } from "@mariozechner/pi-ai";
 import type {
 	ExtensionAPI,
@@ -91,14 +101,6 @@ Respond with ONLY a valid JSON object matching this schema, no markdown fencing:
   ]
 }`;
 
-async function getGitStatus(pi: ExtensionAPI, cwd: string): Promise<string> {
-	const { stdout, code } = await pi.exec("git", ["status", "--porcelain"], {
-		cwd,
-	});
-	if (code !== 0) throw new Error("Not a git repository or git error");
-	return stdout.trim();
-}
-
 async function getStagedStatus(pi: ExtensionAPI, cwd: string): Promise<string> {
 	const { stdout, code } = await pi.exec(
 		"git",
@@ -124,7 +126,7 @@ async function getStagedPatchForPaths(
 ): Promise<string> {
 	const { stdout, code } = await pi.exec(
 		"git",
-		["diff", "--cached", "--binary", "--full-index", "--", ...paths],
+		["diff", "--cached", "--binary", "--full-index", "--no-ext-diff", "--no-textconv", "--", ...paths],
 		{ cwd },
 	);
 	if (code !== 0) {
@@ -135,17 +137,230 @@ async function getStagedPatchForPaths(
 	return stdout;
 }
 
-async function createIndexSnapshot(
+/** Git commands inherit a private index without changing Pi's environment. */
+function withIndex(pi: ExtensionAPI, indexPath: string): ExtensionAPI {
+	return {
+		exec: (command, args, options) =>
+			command === "git"
+				? pi.exec(
+						"env",
+						[
+							`GIT_INDEX_FILE=${indexPath}`,
+							"GIT_OPTIONAL_LOCKS=0",
+							"git",
+							"-c",
+							"core.splitIndex=false",
+							...args,
+						],
+						options,
+					)
+				: pi.exec(command, args, options),
+	} as ExtensionAPI;
+}
+
+async function git(
 	pi: ExtensionAPI,
 	cwd: string,
+	args: string[],
 ): Promise<string> {
-	const { stdout, code } = await pi.exec(
-		"git",
-		["diff", "--cached", "--binary", "--full-index"],
-		{ cwd },
+	const result = await pi.exec("git", args, { cwd });
+	if (result.code !== 0)
+		throw new Error(result.stderr.trim() || `git ${args[0]} failed`);
+	return result.stdout.trim();
+}
+
+async function readIndex(path: string): Promise<Buffer | null> {
+	try {
+		return await readFile(path);
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+		throw error;
+	}
+}
+
+async function headState(pi: ExtensionAPI, cwd: string) {
+	const ref = await pi.exec("git", ["symbolic-ref", "-q", "HEAD"], { cwd });
+	if (ref.code !== 0 && ref.code !== 1)
+		throw new Error("Cannot read HEAD reference");
+	const head = await pi.exec("git", ["rev-parse", "--verify", "HEAD"], { cwd });
+	if (head.code !== 0) {
+		// Only a genuinely unborn branch is safe to treat as an empty base.
+		if (ref.code !== 0) throw new Error("Cannot read HEAD");
+		const exists = await pi.exec(
+			"git",
+			["show-ref", "--verify", "--quiet", ref.stdout.trim()],
+			{ cwd },
+		);
+		if (exists.code !== 1) throw new Error("Cannot read branch tip");
+	}
+	return {
+		ref: ref.stdout.trim(),
+		head: head.code === 0 ? head.stdout.trim() : null,
+	};
+}
+
+type HeadState = Awaited<ReturnType<typeof headState>>;
+interface IndexSession {
+	pi: ExtensionAPI;
+	cwd: string;
+	dir: string;
+	indexPath: string;
+	original: Buffer | null;
+	base: HeadState;
+	expected: HeadState;
+	stageAll: boolean;
+	attempted: boolean;
+	completed: number;
+}
+
+async function assertUnchanged(
+	pi: ExtensionAPI,
+	session: IndexSession,
+): Promise<void> {
+	const current = await readIndex(session.indexPath);
+	const sameIndex =
+		current === null
+			? session.original === null
+			: session.original !== null && current.equals(session.original);
+	const head = await headState(pi, session.cwd);
+	if (
+		!sameIndex ||
+		head.head !== session.expected.head ||
+		head.ref !== session.expected.ref
+	) {
+		throw new Error(
+			"HEAD or the index changed concurrently; stopped without restoring or overwriting it",
+		);
+	}
+}
+
+async function saveSession(session: IndexSession): Promise<void> {
+	await writeFile(
+		join(session.dir, "state.json.tmp"),
+		JSON.stringify(
+			{
+				pid: process.pid,
+				cwd: session.cwd,
+				indexPath: session.indexPath,
+				base: session.base,
+				expected: session.expected,
+				stageAll: session.stageAll,
+				completed: session.completed,
+			},
+			null,
+			2,
+		) + "\n",
+		{ mode: 0o600 },
 	);
-	if (code !== 0) throw new Error("Failed to snapshot staged changes");
-	return stdout;
+	await rename(
+		join(session.dir, "state.json.tmp"),
+		join(session.dir, "state.json"),
+	);
+}
+
+/** Snapshot under Git's index lock, then release it during interactive planning. */
+async function createIndexSession(
+	pi: ExtensionAPI,
+	cwd: string,
+	stageAll: boolean,
+): Promise<IndexSession> {
+	const indexPath = await git(pi, cwd, [
+		"rev-parse",
+		"--path-format=absolute",
+		"--git-path",
+		"index",
+	]);
+	const lockPath = `${indexPath}.lock`;
+	const lock = await open(lockPath, "wx", 0o600);
+	let dir: string | undefined;
+	try {
+		for (const state of [
+			"MERGE_HEAD",
+			"CHERRY_PICK_HEAD",
+			"REVERT_HEAD",
+			"rebase-merge",
+			"rebase-apply",
+			"sequencer",
+		]) {
+			const path = await git(pi, cwd, [
+				"rev-parse",
+				"--path-format=absolute",
+				"--git-path",
+				state,
+			]);
+			try {
+				const handle = await open(path, "r");
+				await handle.close();
+			} catch (error) {
+				if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
+				throw error;
+			}
+			throw new Error(
+				"Finish the merge, rebase, cherry-pick or revert before using /commit",
+			);
+		}
+		const base = await headState(pi, cwd);
+		const original = await readIndex(indexPath);
+		dir = await mkdtemp(join(dirname(indexPath), "pi-commit-"));
+		const planIndex = join(dir, "planned.index");
+		if (original) {
+			await writeFile(join(dir, "original.index"), original, { mode: 0o600 });
+			await writeFile(planIndex, original, { mode: 0o600 });
+		}
+		const snapshotPi = withIndex(pi, planIndex);
+		if (!original) await git(snapshotPi, cwd, ["read-tree", "--empty"]);
+		// Make recovery independent of split-index shared files.
+		await git(snapshotPi, cwd, ["update-index", "--no-split-index"]);
+		await git(snapshotPi, cwd, ["write-tree"]); // Reject unresolved entries.
+		await copyFile(planIndex, join(dir, "original-standalone.index"));
+		await writeFile(
+			join(dir, "original.patch"),
+			await getStagedPatchForPaths(snapshotPi, cwd, []),
+		);
+		const session: IndexSession = {
+			pi: snapshotPi,
+			cwd,
+			dir,
+			indexPath,
+			original,
+			base,
+			expected: base,
+			stageAll,
+			attempted: false,
+			completed: 0,
+		};
+		await assertUnchanged(pi, session);
+		await saveSession(session);
+		await writeFile(
+			join(dir, "README.txt"),
+			`Pi commit recovery (private directory; may contain source contents)
+
+The real index is never reset. original.index is its exact pre-command copy
+(absent if there was no index); original-standalone.index is a portable copy.
+planned.index and planned.patch contain the requested staging, including /all.
+commit.index contains the most recent commit attempt, including hook edits.
+state.json records the starting branch/tip and last verified successful commit.
+A crash can leave state.json behind HEAD: inspect git log and reflog first.
+
+Inspect from the recorded working directory, for example:
+  GIT_INDEX_FILE='<this directory>/planned.index' git diff --cached <base commit>
+The binary patches are relative to the base commit (empty tree for unborn HEAD)
+and retain contents even if unreachable Git objects are later pruned.
+Do not blindly copy an index or reset HEAD after other work. Compare the saved
+versions to current HEAD/index and recover only the intended remaining changes.
+A process killed during execution may leave <indexPath>.lock. Remove that lock
+only after verifying this Pi process AND its child Git/hooks have exited.
+Delete this recovery directory after resolving the failure.
+`,
+		);
+		return session;
+	} catch (error) {
+		if (dir) await rm(dir, { recursive: true, force: true });
+		throw error;
+	} finally {
+		await lock.close();
+		await rm(lockPath, { force: true });
+	}
 }
 
 /**
@@ -182,30 +397,6 @@ async function applyCachedPatch(
 	}
 }
 
-async function restoreIndexSnapshot(
-	pi: ExtensionAPI,
-	cwd: string,
-	patch: string,
-): Promise<void> {
-	const { code: resetCode, stderr: resetStderr } = await pi.exec(
-		"git",
-		["reset"],
-		{ cwd },
-	);
-	if (resetCode !== 0) {
-		throw new Error(
-			`Failed to restore staged changes: ${resetStderr.trim() || "git reset failed"}`,
-		);
-	}
-
-	try {
-		await applyCachedPatch(pi, cwd, patch);
-	} catch (error) {
-		const message = error instanceof Error ? error.message : "git apply failed";
-		throw new Error(`Failed to restore staged changes: ${message}`);
-	}
-}
-
 async function getNewFileContent(
 	pi: ExtensionAPI,
 	cwd: string,
@@ -230,40 +421,6 @@ async function getNewFileContent(
 	}
 
 	return parts.join("\n\n");
-}
-
-function parseStatus(status: string): {
-	staged: string[];
-	unstaged: string[];
-	untracked: string[];
-} {
-	const staged: string[] = [];
-	const unstaged: string[] = [];
-	const untracked: string[] = [];
-
-	for (const line of status.split("\n")) {
-		if (!line.trim()) continue;
-		const indexStatus = line[0];
-		const workTreeStatus = line[1];
-		const filePath = line.slice(3).trim();
-
-		const actualPath = filePath.includes(" -> ")
-			? filePath.split(" -> ")[1]
-			: filePath;
-
-		if (indexStatus === "?") {
-			untracked.push(actualPath);
-		} else {
-			if (indexStatus !== " " && indexStatus !== "?") {
-				staged.push(actualPath);
-			}
-			if (workTreeStatus !== " " && workTreeStatus !== "?") {
-				unstaged.push(actualPath);
-			}
-		}
-	}
-
-	return { staged, unstaged, untracked };
 }
 
 /**
@@ -578,11 +735,10 @@ async function showPlanAndConfirm(
 }
 
 /**
- * Execute the validated plan by replaying each commit's staged patch back into
- * the index and committing from there.
- *
- * This keeps `/commit` faithful to the user's staged hunks while still
- * allowing the model to split the staged snapshot into multiple commits.
+ * Never reset the real index. It already contains every pending staged version.
+ * Each commit uses a separate index; after /all makes progress, publish its full
+ * planned index under the real index lock. Relative to the new HEAD, this leaves
+ * precisely the pending changes staged. Failures retain on-disk recovery data.
  */
 async function executeCommits(
 	pi: ExtensionAPI,
@@ -590,72 +746,108 @@ async function executeCommits(
 	cwd: string,
 	ctx: ExtensionCommandContext,
 	stagedEntryMap: Map<string, StagedEntry>,
+	session: IndexSession,
 ): Promise<{ success: number; failed: number }> {
-	let success = 0;
-	const patches = await Promise.all(
-		plan.commits.map((commit) => {
-			const patchPaths = [
-				...new Set(
-					commit.items.flatMap(
-						(item) => stagedEntryMap.get(item)?.patchPaths ?? [],
+	const lockPath = `${session.indexPath}.lock`;
+	const lock = await open(lockPath, "wx", 0o600);
+	let published = false;
+	let safeToPublish = true;
+	let failed = 0;
+	try {
+		await assertUnchanged(pi, session);
+		const patches = await Promise.all(
+			plan.commits.map((commit) => {
+				const paths = [
+					...new Set(
+						commit.items.flatMap(
+							(item) => stagedEntryMap.get(item)?.patchPaths ?? [],
+						),
 					),
-				),
-			];
-			return getStagedPatchForPaths(pi, cwd, patchPaths);
-		}),
-	);
-
-	for (const [index, commit] of plan.commits.entries()) {
-		const { code: resetCode, stderr: resetStderr } = await pi.exec(
-			"git",
-			["reset"],
-			{ cwd },
+				];
+				return getStagedPatchForPaths(session.pi, cwd, paths);
+			}),
 		);
-		if (resetCode !== 0) {
+		const commitPi = withIndex(pi, join(session.dir, "commit.index"));
+		for (const [index, commit] of plan.commits.entries()) {
+			await assertUnchanged(pi, session);
+			await git(
+				commitPi,
+				cwd,
+				session.expected.head
+					? ["read-tree", session.expected.head]
+					: ["read-tree", "--empty"],
+			);
+			await applyCachedPatch(commitPi, cwd, patches[index]);
+			const expectedTree = await git(commitPi, cwd, ["write-tree"]);
+			const commitArgs = ["commit", "-m", commit.message];
+			const body = wrapCommitBody(commit.description.trim());
+			if (body) commitArgs.push("-m", body);
+			session.attempted = true;
+			await saveSession(session);
+			await assertUnchanged(pi, session);
+			const result = await commitPi.exec("git", commitArgs, { cwd });
+			const after = await headState(pi, cwd);
+			if (after.ref !== session.expected.ref) {
+				safeToPublish = false;
+				throw new Error(
+					"HEAD changed branches during commit; inspect recovery data",
+				);
+			}
+			if (result.code !== 0) {
+				if (after.head !== session.expected.head) safeToPublish = false;
+				throw new Error(`Failed: ${commit.message} — ${result.stderr.trim()}`);
+			}
+			const parents = await git(pi, cwd, ["show", "-s", "--format=%P", "HEAD"]);
+			const tree = await git(pi, cwd, ["rev-parse", "HEAD^{tree}"]);
+			const indexTree = await git(commitPi, cwd, ["write-tree"]);
+			if (
+				after.head === session.expected.head ||
+				parents !== (session.expected.head ?? "") ||
+				tree !== expectedTree ||
+				indexTree !== expectedTree
+			) {
+				safeToPublish = false;
+				throw new Error(
+					"A hook or another process changed the commit or private index; stopped. Original staging and hook index are retained for review",
+				);
+			}
+			session.expected = after;
+			session.completed++;
+			await saveSession(session);
+		}
+	} catch (error) {
+		failed = 1;
+		ctx.ui.notify(
+			error instanceof Error ? error.message : "Commit failed",
+			"error",
+		);
+	} finally {
+		try {
+			// A failed first commit/cancellation never publishes /all staging.
+			// Never recover over a concurrent HEAD/index change or unexpected hook tree.
+			await assertUnchanged(pi, session);
+			if (session.stageAll && session.completed > 0 && safeToPublish) {
+				await lock.writeFile(
+					await readFile(join(session.dir, "planned.index")),
+				);
+				await lock.sync();
+				await rename(lockPath, session.indexPath);
+				published = true;
+			}
+		} catch (error) {
+			failed = 1;
 			ctx.ui.notify(
-				`Failed to prepare commit: ${resetStderr.trim() || commit.message}`,
+				error instanceof Error
+					? error.message
+					: "Cannot publish pending staging",
 				"error",
 			);
-			return { success, failed: 1 };
+		} finally {
+			await lock.close();
+			if (!published) await rm(lockPath, { force: true });
 		}
-
-		try {
-			await applyCachedPatch(pi, cwd, patches[index] ?? "");
-		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "git apply failed";
-			ctx.ui.notify(`Failed to stage ${commit.message} — ${message}`, "error");
-			return { success, failed: 1 };
-		}
-
-		const { stdout: staged } = await pi.exec(
-			"git",
-			["diff", "--cached", "--name-only"],
-			{ cwd },
-		);
-		if (!staged.trim()) {
-			ctx.ui.notify(`Skipped empty commit: ${commit.message}`, "warning");
-			continue;
-		}
-
-		const commitArgs = ["commit", "-m", commit.message];
-		const body = wrapCommitBody(commit.description.trim());
-		if (body) {
-			commitArgs.push("-m", body);
-		}
-
-		const { code: commitCode, stderr } = await pi.exec("git", commitArgs, {
-			cwd,
-		});
-		if (commitCode !== 0) {
-			ctx.ui.notify(`Failed: ${commit.message} — ${stderr.trim()}`, "error");
-			return { success, failed: 1 };
-		}
-
-		success++;
 	}
-
-	return { success, failed: 0 };
+	return { success: session.completed, failed };
 }
 
 export default function (pi: ExtensionAPI) {
@@ -676,40 +868,20 @@ export default function (pi: ExtensionAPI) {
 			const stageAll = normalizedArgs === "all";
 			const cwd = ctx.cwd;
 
-			let restoreIndexOnExit = false;
-			let originalIndexSnapshot = "";
+			let session: IndexSession | undefined;
+			let finished = false;
 
 			try {
-				const initialStatusText = await getGitStatus(pi, cwd);
-				if (!initialStatusText) {
-					ctx.ui.notify("Working tree clean — nothing to commit", "info");
-					return;
-				}
+				session = await createIndexSession(pi, cwd, stageAll);
+				const snapshotPi = session.pi;
+				if (stageAll) await git(snapshotPi, cwd, ["add", "-A"]);
+				await writeFile(
+					join(session.dir, "planned.patch"),
+					await getStagedPatchForPaths(snapshotPi, cwd, []),
+				);
+				await assertUnchanged(pi, session);
 
-				const initialParsed = parseStatus(initialStatusText);
-
-				if (!stageAll) {
-					if (initialParsed.staged.length === 0) {
-						ctx.ui.notify(
-							"Nothing staged — stage changes first or use /commit all",
-							"warning",
-						);
-						return;
-					}
-				} else {
-					originalIndexSnapshot = await createIndexSnapshot(pi, cwd);
-					restoreIndexOnExit = true;
-					await pi.exec("git", ["add", "-A"], { cwd });
-				}
-
-				const statusText = await getGitStatus(pi, cwd);
-				const parsed = parseStatus(statusText);
-				if (parsed.staged.length === 0) {
-					ctx.ui.notify("Nothing staged — nothing to commit", "info");
-					return;
-				}
-
-				const stagedStatusText = await getStagedStatus(pi, cwd);
+				const stagedStatusText = await getStagedStatus(snapshotPi, cwd);
 				const stagedEntries = parseStagedEntries(stagedStatusText);
 				if (stagedEntries.length === 0) {
 					ctx.ui.notify("Nothing staged — nothing to commit", "info");
@@ -730,9 +902,9 @@ export default function (pi: ExtensionAPI) {
 					"info",
 				);
 
-				const stagedDiff = await getStagedDiff(pi, cwd);
+				const stagedDiff = await getStagedDiff(snapshotPi, cwd);
 				const newFileContent = await getNewFileContent(
-					pi,
+					snapshotPi,
 					cwd,
 					stagedEntries
 						.filter((entry) => entry.isNew)
@@ -797,14 +969,15 @@ export default function (pi: ExtensionAPI) {
 					return;
 				}
 
-				restoreIndexOnExit = false;
 				const { success, failed } = await executeCommits(
 					pi,
 					plan,
 					cwd,
 					ctx,
 					stagedEntryMap,
+					session,
 				);
+				finished = failed === 0;
 
 				if (failed > 0) {
 					ctx.ui.notify(
@@ -819,15 +992,14 @@ export default function (pi: ExtensionAPI) {
 					error instanceof Error ? error.message : "Unknown commit error";
 				ctx.ui.notify(message, "error");
 			} finally {
-				if (restoreIndexOnExit) {
-					try {
-						await restoreIndexSnapshot(pi, cwd, originalIndexSnapshot);
-					} catch (restoreError) {
-						const message =
-							restoreError instanceof Error
-								? restoreError.message
-								: "Failed to restore staged changes";
-						ctx.ui.notify(message, "error");
+				if (session) {
+					if (finished || !session.attempted) {
+						await rm(session.dir, { recursive: true, force: true });
+					} else {
+						ctx.ui.notify(
+							`Recovery snapshots retained at ${session.dir}. See README.txt before recovering staging.`,
+							"warning",
+						);
 					}
 				}
 			}
