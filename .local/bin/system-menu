@@ -23,7 +23,7 @@
 # Change only this value if the dictation backend is replaced.
 dictation_service=voxtype
 
-# Ghostty closes the window the moment the command exits, and all three of these
+# Ghostty closes the window the moment the command exits, and these actions
 # print output worth reading, so hold it open from the shell. Not ghostty's
 # wait-after-command: the app runs as a single-instance service, where CLI
 # config overrides are not reliably applied to a newly opened window.
@@ -49,12 +49,15 @@ rows=$(printf '%s\n' "$sink_map" \
     "Dictation: Stop service" \
     "Disk: Show usage by filesystem" \
     "Disk: Show usage under ~" \
-    "Disk: Reclaim space")
+    "Disk: Clean package and build caches" \
+    "Docker: Delete stopped containers and unused images")
 
 chosen=$(printf '%s\n' "$rows" \
   | rofi -dmenu -i -no-custom -l "$(printf '%s\n' "$rows" | wc -l)" -p "Run") || exit 0
 [ -n "$chosen" ] || exit 0
 
+# HOME in terminal commands intentionally expands in the terminal's shell.
+# shellcheck disable=SC2016
 case "$chosen" in
   "Audio: Set output to "*)
     name=${chosen#Audio: Set output to }
@@ -85,5 +88,6 @@ case "$chosen" in
   # system-cleanup fixes it. disk_usage is a fish alias, so duf is called direct.
   "Disk: Show usage by filesystem") term 'duf' ;;
   "Disk: Show usage under ~")       term 'dust "$HOME"' ;;
-  "Disk: Reclaim space")            term '"$HOME"/.local/bin/system-cleanup' ;;
+  "Disk: Clean package and build caches") term '"$HOME"/.local/bin/system-cleanup caches' ;;
+  "Docker: Delete stopped containers and unused images") term '"$HOME"/.local/bin/system-cleanup docker-data' ;;
 esac

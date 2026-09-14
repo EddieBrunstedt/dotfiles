@@ -112,6 +112,30 @@ already have to have booted at all — and being gitignored, it does not exist o
 a fresh clone. Both exist so `package_report` counts those packages as tracked
 rather than reporting them as untracked noise.
 
+## Disk cleanup
+
+The system menu's **Disk: Clean package and build caches** runs
+`system-cleanup caches` (also the default with no argument). It retains the
+newest three versions of each cached Pacman package using `sudo paccache`,
+cleans unused Docker build cache, prunes the pnpm store, verifies/garbage-collects
+the npm cache, and clears Go build/test and tldr caches. It leaves application
+caches and Paru build trees alone. Tools may need to download or rebuild cache
+contents afterwards; `pacman-contrib` supplies `paccache`.
+
+**Docker: Delete stopped containers and unused images** runs
+`system-cleanup docker-data`. It requires typing `delete` before removing all
+stopped containers (including their writable layers), unused images/networks,
+and unused build cache in the current Docker context. This can erase work in
+stopped containers, including containers used by background jobs. It does not
+prune volumes. Review needed containers/images before choosing it.
+See [Docker's prune documentation](https://docs.docker.com/reference/cli/docker/system/prune/).
+
+Each action reports failed steps at the end and exits nonzero on partial failure;
+the terminal stays open for review. Reported free-space changes also include
+other activity on the measured filesystems. Run the isolated regression checks
+with `python3 tests/system-cleanup.test.py`; they use command doubles and never
+prune real data.
+
 ## Secrets
 
 Encrypted with sops/age, committed, decrypted per process. Nothing is loaded

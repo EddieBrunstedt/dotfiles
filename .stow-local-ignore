@@ -16,6 +16,7 @@
 ^/justfile$
 ^/\.stowrc$
 ^/\.stow-local-ignore$
+^/tests$
 
 # Root-owned files. These do not belong in $HOME and are not symlinked;
 # `just install-session` copies them into place.

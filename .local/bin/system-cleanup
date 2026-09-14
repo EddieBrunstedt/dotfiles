@@ -1,14 +1,57 @@
 #!/bin/sh
-# Reclaim disk space from package, build and browser caches. Run by hand when
-# caches have grown; there is no timer.
+# Reclaim disk space from selected package/build caches. Run by hand when
+# caches have grown; there is no timer. Docker data deletion is a separate mode.
 #
 # Journal size is not handled here: SystemMaxUse=500M in
 # /etc/systemd/journald.conf.d/00-size.conf lets journald enforce it
 # continuously. That file is root-owned and so lives outside these dotfiles.
 #
 # -e is deliberately NOT set: every step below is independent, and a missing
-# tool or an empty docker must not stop the rest from running.
+# tool or unavailable Docker daemon must not stop the rest from running.
 set -u
+
+usage() {
+    printf 'Usage: system-cleanup [caches|docker-data]\n'
+    printf '  caches       Clean selected caches; retain three package versions (default).\n'
+    printf '  docker-data  Confirm deletion of stopped containers and unused Docker data.\n'
+}
+
+[ "$#" -le 1 ] || { usage >&2; exit 2; }
+mode=${1:-caches}
+case "$mode" in
+    caches) ;;
+    docker-data)
+        printf '%s\n' \
+            'This deletes ALL stopped containers, including work in their writable layers,' \
+            'all unused images and networks, and unused build cache in the current Docker context.' \
+            'Volumes are not pruned. Containers used by background jobs may also be affected.' \
+            'Type delete to proceed; anything else cancels.'
+        printf '> '
+        if ! IFS= read -r answer || [ "$answer" != delete ]; then
+            printf 'Cancelled; no cleanup performed.\n'
+            exit 0
+        fi
+        ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage >&2; exit 2 ;;
+esac
+
+failed=0
+failures=
+run_step() {
+    label=$1
+    shift
+    printf '\n== %s ==\n' "$label"
+    if "$@"; then
+        printf 'OK: %s\n' "$label"
+    else
+        status=$?
+        printf 'FAILED: %s (exit %s)\n' "$label" "$status" >&2
+        failures="${failures}
+  - $label (exit $status)"
+        failed=$((failed + 1))
+    fi
+}
 
 available_kb() {
     df -Pk / "$HOME" /var/cache/pacman/pkg /var/lib/docker /var/log 2>/dev/null |
@@ -35,19 +78,22 @@ human_kb() {
 before_kb=$(available_kb)
 printf 'Available disk space before cleanup: %s\n\n' "$(human_kb "$before_kb")"
 
-paru -Scc -d --noconfirm
-docker system prune --all --force
-pnpm store prune
-npm cache verify
-go clean -cache -testcache
-tldr --clear-cache
-
-# Everything under ~/.cache is regenerable by design. Emptied wholesale rather
-# than by age: the point of running this is to reclaim space now.
-cache=${XDG_CACHE_HOME:-"$HOME/.cache"}
-if [ -d "$cache" ]; then
-    find "$cache" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-fi
+case "$mode" in
+    caches)
+        run_step 'Pacman archives (keep three versions)' sudo paccache --remove --keep 3
+        run_step 'Unused Docker build cache' docker builder prune --all --force
+        run_step 'Unreferenced pnpm store packages' pnpm store prune
+        run_step 'npm cache verification and garbage collection' npm cache verify
+        run_step 'Go build and test caches' go clean -cache -testcache
+        run_step 'tldr cache' tldr --clear-cache
+        # Leave application caches and Paru build trees alone: they can contain
+        # active state or local work and should be reviewed with their owners.
+        ;;
+    docker-data)
+        run_step 'Stopped containers and unused Docker images, networks and build cache' \
+            docker system prune --all --force
+        ;;
+esac
 
 after_kb=$(available_kb)
 difference_kb=$((after_kb - before_kb))
@@ -60,3 +106,10 @@ elif [ "$difference_kb" -lt 0 ]; then
 else
     printf 'No net change in available disk space.\n'
 fi
+
+# Free space fluctuates with other activity; it does not establish success.
+if [ "$failed" -ne 0 ]; then
+    printf '\nCleanup incomplete: %s step(s) failed:%s\n' "$failed" "$failures" >&2
+    exit 1
+fi
+printf '\nCleanup completed: all requested steps succeeded.\n'
