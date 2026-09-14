@@ -1,0 +1,158 @@
+#!/bin/sh
+# dir-menu — pick one or more directories, open each in its own file-explorer
+# window, as defined by file.desktop.
+# Bound to SUPER+y.
+#
+#   Enter        take the highlighted directory, then ask for another
+#   Ctrl+Enter   take it and open everything immediately
+#   Esc          cancel; nothing opens, however many were already picked
+#
+# Once something is picked the first row becomes "open the N selected", so the
+# two-directory case is: type, Enter, type, Enter, Enter. Picking the same
+# directory twice is supported on purpose -- that is why this loops instead of
+# using rofi's -multi-select, which can only ever mark an entry once.
+#
+# The goal is two explorer windows side by side in the tiling layout, so files
+# can be moved between folders without navigating to each one by hand.
+
+# Directories that exist only because some tool created them. Without this the
+# candidate list is ~64k entries, ~55k of which are .local/share, .cache, .npm,
+# .cargo and .rustup, and real matches get buried. fd matches a pattern with no
+# slash against any path component, and one with a slash against the path
+# relative to the search root ($HOME).
+prune='.git node_modules .cache .npm .npm-global .cargo .rustup .bun
+.local/share target .venv venv __pycache__ .codex .pi'
+
+# Leading marker, not a plain word: it must never look like a path, and the
+# glyph keeps it from fuzzy-matching the directory names being typed.
+sentinel='▶ open the '
+
+notify() { notify-send -u critical "Directory menu" "$1"; }
+
+# -kb-accept-custom is unbound first because it owns Control+Return by default;
+# rofi refuses to start on a duplicate binding, so the chord has to be freed
+# before kb-custom-1 (which reports exit code 10) can claim it.
+# -threads 0 = one matcher thread per core. Sorting stays off, rofi's default,
+# so an empty filter leaves the list in the order fed in: sentinel, then zoxide.
+menu() {
+    rofi -dmenu -i \
+        -matching fuzzy -threads 0 \
+        -kb-accept-custom '' \
+        -kb-custom-1 'Control+Return' \
+        -p "$1"
+}
+
+expand_tilde() {
+    case $1 in
+        '~') printf '%s\n' "$HOME" ;;
+        # shellcheck disable=SC2088  # the quotes are the point: a literal "~/"
+        # prefix is being stripped off, not a path being expanded.
+        '~/'*) printf '%s\n' "$HOME/${1#'~/'}" ;;
+        *) printf '%s\n' "$1" ;;
+    esac
+}
+
+# Build the fd arguments in the positional parameters rather than a string, so
+# the prune patterns stay one word each no matter what they contain.
+set -- --type d --hidden
+for p in $prune; do
+    set -- "$@" --exclude "$p"
+done
+
+# zoxide comes first so the directories actually lived in are at the top before
+# any typing narrows things down; fd then supplies everything else. Built once,
+# outside the loop, so the second and later prompts open instantly.
+candidates=$(
+    {
+        zoxide query -l 2>/dev/null
+        printf '%s\n' "$HOME"
+        fd "$@" . "$HOME" 2>/dev/null
+    } | awk -v home="$HOME" '
+        # fd prints a trailing slash on directories and zoxide does not, so
+        # strip it before deduplicating or the same path survives twice.
+        { sub(/\/+$/, "") }
+        $0 == "" { next }
+        !seen[$0]++ {
+            p = $0
+            if ($0 == home || index($0, home "/") == 1)
+                p = "~" substr($0, length(home) + 1)
+            print p
+        }'
+)
+
+if [ -z "$candidates" ]; then
+    notify "No directories found"
+    exit 1
+fi
+
+# The positional parameters now hold the picked directories.
+set --
+
+while :; do
+    prompt="Directory $(($# + 1))"
+    list=$candidates
+    if [ $# -gt 0 ]; then
+        prompt="$prompt  (Ctrl+Enter opens now, Esc cancels)"
+        list="$sentinel$# selected
+$candidates"
+    fi
+
+    chosen=$(printf '%s\n' "$list" | menu "$prompt")
+    status=$?
+
+    # Anything other than Enter (0) or Ctrl+Enter (10) is a cancel, and a cancel
+    # discards the whole selection rather than opening a partial one: Esc keeps
+    # meaning Esc, so a reflexive press never spawns terminals.
+    case $status in
+        0 | 10) ;;
+        *) exit 0 ;;
+    esac
+
+    # An empty result means Enter on an empty list; only Ctrl+Enter ends it.
+    if [ -z "$chosen" ]; then
+        [ "$status" -eq 10 ] && break
+        continue
+    fi
+
+    # The "open the N selected" row finishes with what is already collected.
+    case $chosen in
+        "$sentinel"*) break ;;
+    esac
+
+    dir=$(expand_tilde "$chosen")
+    if [ ! -d "$dir" ]; then
+        # Reachable two ways: a typed path that does not exist (rofi accepts
+        # custom input on purpose, so absolute paths can be entered directly),
+        # or a stale zoxide entry for a directory since deleted.
+        notify "Not a directory: $dir"
+        continue
+    fi
+
+    set -- "$@" "$dir"
+    [ "$status" -eq 10 ] && break
+done
+
+[ $# -gt 0 ] || exit 0
+
+# Through the desktop entry rather than a hardcoded terminal command:
+# inode/directory in ~/.config/mimeapps.list points at file.desktop, whose Exec
+# line is the single place the file explorer is defined. Changing explorer is
+# then a one-line edit there, and this script follows along with every GUI app
+# that opens a folder.
+#
+# `gio open`, NOT `xdg-open`: with no recognised desktop environment xdg-open
+# falls back to its "generic" backend, which runs the Exec line in the
+# FOREGROUND and blocks for as long as the terminal lives -- the second
+# directory would open only after the first was closed. gio open resolves the
+# same mimeapps entry, hands off, and returns in ~15ms.
+#
+# No `uwsm app` wrapper here either: file.desktop's Exec already begins with
+# `uwsm app --`, so the terminal puts itself in app-graphical.slice. Wrapping
+# again just nests a scope inside a service.
+#
+# Sequentially rather than backgrounded: the compositor tiles windows in the
+# order it receives them, so launching in parallel would shuffle the panes
+# relative to the order the directories were picked.
+for dir do
+    gio open "$dir" || notify "Could not open $dir"
+done
