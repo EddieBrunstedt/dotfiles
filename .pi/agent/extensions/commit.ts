@@ -62,6 +62,7 @@ interface CommitPlanValidation {
  */
 interface StagedEntry {
 	key: string;
+	status: string;
 	patchPaths: string[];
 	contentPath?: string;
 	isNew: boolean;
@@ -81,7 +82,9 @@ Rules:
 - Every staged item must appear in exactly one commit.
 - Do not invent items, omit items, or duplicate items across commits.
 - This tool commits whole staged items, so never split one staged item across multiple commits.
-- Renames appear as "old/path -> new/path" and must be kept together in a single commit.
+- Items have opaque IDs (item-1, item-2, etc.), a status, and a JSON array of literal paths.
+- Return only those exact IDs in items, never filenames or display labels.
+- Renames have two paths (old, new) and must stay together in a single commit.
 - The commit type must match the items in that commit.
 - Use test only for test-only changes.
 - Use docs only for docs-only changes.
@@ -95,20 +98,44 @@ Respond with ONLY a valid JSON object matching this schema, no markdown fencing:
   "commits": [
     {
       "message": "type(scope): description",
-      "items": ["path/to/file1", "old/path -> new/path"],
+      "items": ["item-1", "item-2"],
       "description": "Commit body: 1-2 sentences explaining what this commit does and why."
     }
   ]
 }`;
 
-async function getStagedStatus(pi: ExtensionAPI, cwd: string): Promise<string> {
-	const { stdout, code } = await pi.exec(
+async function getStagedStatus(
+	pi: ExtensionAPI,
+	cwd: string,
+	outputPath: string,
+): Promise<string> {
+	const { code } = await pi.exec(
 		"git",
-		["diff", "--cached", "--name-status", "--find-renames"],
+		[
+			"diff",
+			"--cached",
+			"--name-status",
+			"-z",
+			"--find-renames",
+			`--output=${outputPath}`,
+		],
 		{ cwd },
 	);
 	if (code !== 0) throw new Error("Failed to read staged file status");
-	return stdout.trim();
+	// Read bytes directly: the exec adapter decodes stdout permissively, which
+	// could silently replace an invalid UTF-8 filename with a different path.
+	try {
+		return new TextDecoder("utf-8", { fatal: true }).decode(
+			await readFile(outputPath),
+		);
+	} catch (error) {
+		if (error instanceof TypeError) {
+			throw new Error(
+				"Staged filenames contain invalid UTF-8; cannot represent them losslessly. Commit these changes with Git directly.",
+			);
+		}
+		throw error;
+	}
 }
 
 async function getStagedDiff(pi: ExtensionAPI, cwd: string): Promise<string> {
@@ -126,12 +153,22 @@ async function getStagedPatchForPaths(
 ): Promise<string> {
 	const { stdout, code } = await pi.exec(
 		"git",
-		["diff", "--cached", "--binary", "--full-index", "--no-ext-diff", "--no-textconv", "--", ...paths],
+		[
+			"--literal-pathspecs",
+			"diff",
+			"--cached",
+			"--binary",
+			"--full-index",
+			"--no-ext-diff",
+			"--no-textconv",
+			"--",
+			...paths,
+		],
 		{ cwd },
 	);
 	if (code !== 0) {
 		throw new Error(
-			`Failed to read staged patch for paths: ${paths.join(", ")}`,
+			`Failed to read staged patch for paths: ${JSON.stringify(paths)}`,
 		);
 	}
 	return stdout;
@@ -409,14 +446,9 @@ async function getNewFileContent(
 			cwd,
 		});
 		if (code !== 0) {
-			const { stdout: content } = await pi.exec("head", ["-100", path], {
-				cwd,
-			});
-			if (content.trim()) {
-				parts.push(`=== New file: ${path} ===\n${content.trim()}`);
-			}
+			throw new Error(`Failed to read staged content: ${JSON.stringify(path)}`);
 		} else if (stdout.trim()) {
-			parts.push(`=== New file: ${path} ===\n${stdout.trim()}`);
+			parts.push(`=== New file: ${JSON.stringify(path)} ===\n${stdout.trim()}`);
 		}
 	}
 
@@ -424,44 +456,37 @@ async function getNewFileContent(
 }
 
 /**
- * Convert `git diff --cached --name-status --find-renames` output into the
+ * Convert `git diff --cached --name-status -z --find-renames` output into the
  * staged items the model is allowed to plan with.
  *
- * Important: renames/copies become one logical item (`old -> new`) even
- * though their patch needs both paths when replayed.
+ * Status and path fields each end in NUL; R/C records consume two paths.
+ * IDs are independent of filenames, including names resembling rename labels.
  */
 function parseStagedEntries(stagedStatusText: string): StagedEntry[] {
 	const entries: StagedEntry[] = [];
-
-	for (const line of stagedStatusText.split("\n")) {
-		if (!line.trim()) continue;
-
-		const parts = line.split("\t");
-		const statusCode = parts[0] ?? "";
-
-		if (
-			(statusCode.startsWith("R") || statusCode.startsWith("C")) &&
-			parts.length >= 3
-		) {
-			const oldPath = parts[1]?.trim();
-			const newPath = parts[2]?.trim();
-			if (!oldPath || !newPath) continue;
-			entries.push({
-				key: `${oldPath} -> ${newPath}`,
-				patchPaths: [oldPath, newPath],
-				contentPath: newPath,
-				isNew: false,
-			});
-			continue;
+	if (stagedStatusText === "") return entries;
+	const fields = stagedStatusText.split("\0");
+	if (fields.pop() !== "") throw new Error("Unterminated staged status record");
+	for (let i = 0; i < fields.length; ) {
+		const status = fields[i++];
+		if (!/^(?:[ADMT]|[RC][0-9]+|M[0-9]+)$/.test(status)) {
+			throw new Error(`Unsupported staged status: ${JSON.stringify(status)}`);
 		}
-
-		const path = parts[1]?.trim();
-		if (!path) continue;
+		const pair = status.startsWith("R") || status.startsWith("C");
+		const patchPaths = fields.slice(i, i + (pair ? 2 : 1));
+		if (
+			patchPaths.length !== (pair ? 2 : 1) ||
+			patchPaths.some((path) => path === "")
+		) {
+			throw new Error("Incomplete staged status record");
+		}
+		i += patchPaths.length;
 		entries.push({
-			key: path,
-			patchPaths: [path],
-			contentPath: statusCode.startsWith("D") ? undefined : path,
-			isNew: statusCode.startsWith("A"),
+			key: `item-${entries.length + 1}`,
+			status,
+			patchPaths,
+			contentPath: status === "D" ? undefined : patchPaths.at(-1),
+			isNew: status === "A",
 		});
 	}
 
@@ -477,15 +502,11 @@ function validateCommitPlan(
 	const emptyCommitIndices: number[] = [];
 
 	for (const [index, commit] of plan.commits.entries()) {
-		const normalizedItems = commit.items
-			.map((item) => item.trim())
-			.filter(Boolean);
-
-		if (normalizedItems.length === 0) {
+		if (commit.items.length === 0) {
 			emptyCommitIndices.push(index + 1);
 		}
 
-		for (const item of normalizedItems) {
+		for (const item of commit.items) {
 			seenCounts.set(item, (seenCounts.get(item) ?? 0) + 1);
 		}
 	}
@@ -555,7 +576,7 @@ function validateCommitPlanStructure(value: unknown): string | null {
 		if (
 			!Array.isArray(commit.items) ||
 			commit.items.length === 0 ||
-			!commit.items.every((item) => typeof item === "string" && item.trim())
+			!commit.items.every((item) => typeof item === "string" && item.length > 0)
 		) {
 			return `${label}.items is missing, empty, or contains non-string entries`;
 		}
@@ -593,10 +614,7 @@ function wrapCommitBody(text: string, maxWidth = 72): string {
 
 			for (const word of words) {
 				const projected = current + word;
-				if (
-					projected.length > maxWidth &&
-					current.trimEnd().length > 0
-				) {
+				if (projected.length > maxWidth && current.trimEnd().length > 0) {
 					wrapped.push(current.trimEnd());
 					current = hangingIndent + word.trimStart();
 				} else {
@@ -613,14 +631,13 @@ function wrapCommitBody(text: string, maxWidth = 72): string {
 /**
  * Ask the model for a commit plan.
  *
- * The model sees staged items, raw staged status, the staged diff, optional
+ * The model sees staged IDs with JSON-escaped paths, the staged diff, optional
  * user intent, and the contents of newly-added files. It never sees the full
  * working tree because commits are planned strictly from the index snapshot.
  */
 async function generateCommitPlan(
 	ctx: ExtensionCommandContext,
 	diff: string,
-	stagedStatusText: string,
 	stagedEntries: StagedEntry[],
 	newFileContent: string,
 	userIntent: string,
@@ -634,11 +651,11 @@ async function generateCommitPlan(
 		throw new Error(auth.ok ? `No API key for ${model.provider}` : auth.error);
 	}
 
-	let userContent = `## Staged Items\n\n${stagedEntries.map((entry) => `- ${entry.key}`).join("\n")}`;
+	let userContent = `## Staged Items\n\n${stagedEntries.map((entry) => `${entry.key}: ${entry.status} ${JSON.stringify(entry.patchPaths)}`).join("\n")}`;
 	if (userIntent.trim()) {
 		userContent += `\n\n## User Intent (optional)\n${userIntent.trim()}`;
 	}
-	userContent += `\n\n## Staged File Status\n\`\`\`\n${stagedStatusText}\n\`\`\`\n\n## Staged Diff\n\`\`\`diff\n${diff}\n\`\`\``;
+	userContent += `\n\n## Staged Diff\n\`\`\`diff\n${diff}\n\`\`\``;
 	if (newFileContent) {
 		userContent += `\n\n## New File Contents\n${newFileContent}`;
 	}
@@ -674,7 +691,9 @@ async function generateCommitPlan(
 	const openBrace = text.indexOf("{");
 	const closeBrace = text.lastIndexOf("}");
 	if (openBrace === -1 || closeBrace === -1 || closeBrace <= openBrace) {
-		throw new Error(`No JSON object found in model response: ${text.slice(0, 200)}`);
+		throw new Error(
+			`No JSON object found in model response: ${text.slice(0, 200)}`,
+		);
 	}
 	const jsonText = text.slice(openBrace, closeBrace + 1);
 
@@ -686,12 +705,16 @@ async function generateCommitPlan(
 		}
 		return parsed as CommitPlan;
 	} catch (error) {
-		const detail = error instanceof Error ? error.message : jsonText.slice(0, 200);
+		const detail =
+			error instanceof Error ? error.message : jsonText.slice(0, 200);
 		throw new Error(`Failed to parse commit plan: ${detail}`);
 	}
 }
 
-function renderPlanMarkdown(plan: CommitPlan): string {
+function renderPlanMarkdown(
+	plan: CommitPlan,
+	entries: Map<string, StagedEntry>,
+): string {
 	const lines: string[] = ["## Commit Plan\n"];
 	for (let i = 0; i < plan.commits.length; i++) {
 		const commit = plan.commits[i];
@@ -700,7 +723,13 @@ function renderPlanMarkdown(plan: CommitPlan): string {
 		lines.push("");
 		lines.push("Items:");
 		for (const item of commit.items) {
-			lines.push(`- \`${item}\``);
+			const entry = entries.get(item)!;
+			// Escape Markdown punctuation after JSON escapes control characters.
+			const label = JSON.stringify(entry.patchPaths).replace(
+				/[\\`*_{}\[\]()<>#+.!|~-]/g,
+				"\\$&",
+			);
+			lines.push(`- ${item}: ${entry.status} ${label}`);
 		}
 		lines.push("");
 	}
@@ -710,8 +739,9 @@ function renderPlanMarkdown(plan: CommitPlan): string {
 async function showPlanAndConfirm(
 	plan: CommitPlan,
 	ctx: ExtensionCommandContext,
+	entries: Map<string, StagedEntry>,
 ): Promise<boolean> {
-	const markdown = renderPlanMarkdown(plan);
+	const markdown = renderPlanMarkdown(plan, entries);
 
 	return ctx.ui.custom<boolean>((_tui, theme, _kb, done) => {
 		const container = new Container();
@@ -759,9 +789,12 @@ async function executeCommits(
 			plan.commits.map((commit) => {
 				const paths = [
 					...new Set(
-						commit.items.flatMap(
-							(item) => stagedEntryMap.get(item)?.patchPaths ?? [],
-						),
+						commit.items.flatMap((item) => {
+							const entry = stagedEntryMap.get(item);
+							if (!entry)
+								throw new Error(`Unknown staged item: ${JSON.stringify(item)}`);
+							return entry.patchPaths;
+						}),
 					),
 				];
 				return getStagedPatchForPaths(session.pi, cwd, paths);
@@ -881,7 +914,11 @@ export default function (pi: ExtensionAPI) {
 				);
 				await assertUnchanged(pi, session);
 
-				const stagedStatusText = await getStagedStatus(snapshotPi, cwd);
+				const stagedStatusText = await getStagedStatus(
+					snapshotPi,
+					cwd,
+					join(session.dir, "staged-status"),
+				);
 				const stagedEntries = parseStagedEntries(stagedStatusText);
 				if (stagedEntries.length === 0) {
 					ctx.ui.notify("Nothing staged — nothing to commit", "info");
@@ -924,7 +961,6 @@ export default function (pi: ExtensionAPI) {
 						generateCommitPlan(
 							ctx,
 							stagedDiff,
-							stagedStatusText,
 							stagedEntries,
 							newFileContent,
 							userIntent,
@@ -963,7 +999,7 @@ export default function (pi: ExtensionAPI) {
 					return;
 				}
 
-				const confirmed = await showPlanAndConfirm(plan, ctx);
+				const confirmed = await showPlanAndConfirm(plan, ctx, stagedEntryMap);
 				if (!confirmed) {
 					ctx.ui.notify("Cancelled", "info");
 					return;
