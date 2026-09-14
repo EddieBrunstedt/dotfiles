@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Minimal org.freedesktop.FileManager1 service that opens yazi in Ghostty."""
+"""Minimal org.freedesktop.FileManager1 service that opens the default file manager.
+
+The handler itself is not chosen here: it comes from inode/directory in
+mimeapps.list, which points at file.desktop. That entry is the single place the
+file explorer is defined, shared with dir-menu and every GUI app.
+"""
 
 import os
 import shlex
@@ -32,25 +37,35 @@ def uri_to_path(uri):
     if parsed.scheme == "":
         return os.path.expanduser(uri)
 
-    # yazi is a local file manager, so non-file schemes are not useful here.
+    # The handler is a local file manager, so non-file schemes are not useful here.
     return os.path.expanduser("~")
 
 
-def open_yazi(uris):
+def open_directory(uris):
     path = uri_to_path(uris[0] if uris else "")
 
     if path.startswith("~"):
         path = os.path.expanduser(path)
 
     # Allow a harmless command override for testing, e.g.
-    # FILEMANAGER1_YAZI_COMMAND=/bin/true filemanager1-yazi
-    override = os.environ.get("FILEMANAGER1_YAZI_COMMAND")
+    # FILEMANAGER1_OPEN_COMMAND=/bin/true filemanager-yazi
+    override = os.environ.get("FILEMANAGER1_OPEN_COMMAND")
     if override:
         command = shlex.split(override) + [path]
     else:
-        # Through `uwsm app` so the terminal lands in app-graphical.slice as its
-        # own unit, rather than inheriting this service's cgroup.
-        command = ["uwsm", "app", "--", "ghostty", "-e", "yazi", path]
+        # `gio open` rather than a hardcoded terminal command, so the explorer is
+        # defined in exactly one place (file.desktop) instead of here as well.
+        #
+        # It resolves inode/directory through mimeapps.list and runs that entry's
+        # Exec, which already starts with `uwsm app --`. The terminal therefore
+        # still ends up in app-graphical.slice as its own unit rather than in this
+        # service's cgroup -- which matters, because this service exits when idle
+        # and would otherwise take the open windows down with it.
+        #
+        # Not `xdg-open`: with no recognised desktop environment it falls back to
+        # a generic path that runs the Exec line in the foreground, so the call
+        # would not return until the file manager was closed.
+        command = ["gio", "open", path]
 
     subprocess.Popen(
         command,
@@ -79,7 +94,7 @@ class FileManager1(dbus.service.Object):
 
     def _handle(self, uris):
         self._reset_idle_timer()
-        open_yazi(list(uris))
+        open_directory(list(uris))
 
     @dbus.service.method(INTERFACE, in_signature="ass", out_signature="")
     def ShowFolders(self, uris, startup_id):

@@ -1,5 +1,5 @@
 [Unit]
-Description=org.freedesktop.FileManager1 provider (yazi in ghostty)
+Description=org.freedesktop.FileManager1 provider (opens the mimeapps default)
 Documentation=https://freedesktop.org/wiki/Specifications/file-manager-interface
 After=graphical-session.target
 PartOf=graphical-session.target
