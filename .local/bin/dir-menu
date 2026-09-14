@@ -146,6 +146,15 @@ done
 # directory would open only after the first was closed. gio open resolves the
 # same mimeapps entry, hands off, and returns in ~15ms.
 #
+# Despite the name gio is not a GNOME dependency: it ships in glib2, which rofi,
+# ghostty and libnotify already pull in, so nothing is dragged in for it here.
+# There is no leaner option either -- shared-mime-info, the freedesktop mime
+# database every launcher reads, itself depends on glib2, so handlr, gtk-launch
+# and mimeopen all land on it too. mimeopen is the one true drop-in (identical
+# argv, spaces included) but it is an order of magnitude slower and adds a
+# second mime implementation that can drift from the one the GUI apps resolve
+# against.
+#
 # No `uwsm app` wrapper here either: file.desktop's Exec already begins with
 # `uwsm app --`, so the terminal puts itself in app-graphical.slice. Wrapping
 # again just nests a scope inside a service.
