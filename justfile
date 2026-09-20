@@ -45,7 +45,12 @@ enable-services:
         swayidle.service \
         vault-cleanup.service \
         wallpaper.service \
-        waybar.service
+        waybar.service \
+        ydotool.service
+    # ydotool.service is voxtype's typing backend, not started on demand:
+    # voxtype shells out to the `ydotool` client, which needs ydotoold already
+    # listening on its socket. voxtype.service stays disabled by design and is
+    # started from the waybar module.
     # soteria's packaged unit installs to default.target; wire it to the
     # graphical session instead
     systemctl --user add-wants graphical-session.target soteria.service
