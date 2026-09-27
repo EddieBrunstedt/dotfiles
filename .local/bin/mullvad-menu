@@ -1,5 +1,5 @@
 #!/bin/sh
-# Mullvad VPN menu for rofi. Bound to SUPER+SHIFT+s and to the Waybar segment.
+# Mullvad VPN menu for rofi. Bound to SUPER+SHIFT+v and to the Waybar segment.
 # Signals Waybar (RTMIN+2) after any state change so the indicator keeps up.
 
 set -u
