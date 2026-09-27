@@ -95,6 +95,7 @@ window#waybar.empty #window {
 #custom-voxtype,
 #custom-desktop,
 #custom-whitetemp,
+#idle_inhibitor,
 #custom-dunst,
 #clock,
 #tray {
@@ -125,6 +126,17 @@ window#waybar.empty #window {
 
 #custom-desktop.stale {
     color: #f38ba8;
+}
+
+/* ── stay awake ──────────────────────────────────────────────────── */
+/* Off is the normal state, so it recedes to the stopped-service grey; on is
+   the exception worth noticing, in the same peach as an unfinished desktop. */
+#idle_inhibitor.deactivated {
+    color: #6c7086;
+}
+
+#idle_inhibitor.activated {
+    color: #fab387;
 }
 
 /* ── voxtype states ──────────────────────────────────────────────── */
