@@ -28,8 +28,9 @@
     // {index} rather than {icon}: with no format-icons map, {icon} silently
     // falls back to the index anyway. Digits are kept because they name the
     // SUPER+1..9 binding that reaches each tag; state is expressed in CSS.
-    // ◫ for the overview button because MonoLisa covers it natively, so the
-    // bar does not switch fonts mid-row (the default label is "OVERVIEW").
+    // ◫ for the overview button because Maple Mono (the monospace font
+    // style.css asks for) covers it natively, so the bar does not switch fonts
+    // mid-row (the default label is "OVERVIEW").
     "mango/workspaces": {
         "format": "{index}",
         "hide-empty": true,
@@ -60,8 +61,10 @@
         "interval": 1,
         "tooltip": false
     },
-    // Absolute path: ~/.cargo/bin/protonmail-status shadows this shim on an
-    // interactive shell's PATH. Each tick costs two sops decryptions.
+    // Absolute path, although the shims directory is currently first on the
+    // session PATH: the bare name would fall through to the real binary in
+    // ~/.cargo/bin, without its credentials, if that ordering ever changed.
+    // Each tick costs two sops decryptions.
     "custom/protonmail": {
         "exec": "~/.local/bin/shims/protonmail-status",
         "interval": 60,

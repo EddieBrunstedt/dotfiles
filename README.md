@@ -64,16 +64,17 @@ escapes. Anything needing those goes in `.profile` or `uwsm/env`.
 
 ## Session
 
-The compositor starts almost nothing itself. `exec-once` in
-`.config/mango/config.conf` runs `uwsm finalize` — which exports
-`WAYLAND_DISPLAY` and lets `graphical-session.target` start — and the one-shot
-script that places startup apps on their home tags. Steam is the exception
-(`-silent`, no window to place). Everything else is a systemd user unit or is
-D-Bus activated.
+The compositor starts nothing itself beyond `uwsm finalize`, its one
+`exec-once` in `.config/mango/config.conf`. That exports `WAYLAND_DISPLAY` and
+lets `graphical-session.target` start. Everything else is a systemd user unit,
+is D-Bus activated, or (MEGAsync) comes from `~/.config/autostart` via uwsm's
+`xdg-desktop-autostart.target`.
 
 | Unit | Notes |
 | --- | --- |
 | `waybar.service` | `ExecCondition` matches `XDG_CURRENT_DESKTOP`, so it only runs under mango |
+| `swayidle.service` | locks then blanks after 10 idle minutes; also handles `loginctl lock-session` and before-sleep |
+| `desktop-watch.service` | signals waybar's `~/desktop` segment whenever the folder changes |
 | `wallpaper.service` | swaybg; restart it after repointing the `current` symlink |
 | `filemanager-yazi.service` | `Type=dbus`, activated on demand, exits when idle |
 | `protonmail-bridge.service` | waits for VPN and API reachability first |
@@ -159,7 +160,9 @@ Things a fresh machine needs that these files cannot provide:
   unit cannot order itself against a system one, the forgejo runner cannot pull
   Docker up on its own.
 - **MonoLisa** — a commercial font, installed to `/usr/local/share/fonts`.
-  Referenced by dunst, rofi, and via `monospace` in fontconfig.
+  Only mpv's `SimpleBookmark.lua` still names it. The `monospace` alias in
+  fontconfig, which ghostty and waybar use, resolves to Maple Mono from
+  `applist-aur`.
 - **`~/.cargo/bin` binaries** — `cpubusy`, `routebps` and `protonmail-status`
   back three waybar segments. Self-maintained; not yet tracked by any applist.
 - **`~/.config/forgejo-runner/runner-token`** — a registration secret. Run

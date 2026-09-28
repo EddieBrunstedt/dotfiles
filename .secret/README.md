@@ -131,7 +131,7 @@ Systemd user units have no ambient secrets. If a unit needs one, shim the comman
 Worked example, waybar's `custom/protonmail`:
 
 - `~/.local/bin/shims/protonmail-status` wraps the real binary in `~/.cargo/bin`, supplying `PROTON_BRIDGE_IMAP_USER` and `PROTON_BRIDGE_IMAP_PASS`. Waybar's own environment holds neither.
-- The waybar config uses an **absolute path**. Waybar inherits its `PATH` from the systemd activation environment, which does not include the shims directory, so a bare name would resolve to the real cargo binary and silently lose its credentials.
+- The waybar config uses an **absolute path**. Waybar inherits its `PATH` from the systemd activation environment, which uwsm fills from `~/.profile`, so the shims directory is currently first there too. The absolute path does not depend on that: if the ordering ever changed, a bare name would resolve to the real cargo binary and silently lose its credentials.
 - `"interval": 60` with `"signal": 4` (`pkill -RTMIN+4 waybar`). Each tick costs two decryptions plus an IMAP round-trip, ~200ms. Signals 1–3 are taken by volume, mullvad and dunst.
 
 Units get `SOPS_AGE_KEY_CMD` from `~/.config/environment.d/10-defaults.conf`, which `systemd --user` reads natively — no unit-level `Environment=` needed. It is a command string, not a secret, and is the one variable here that may legitimately enter the systemd/D-Bus activation environment.
