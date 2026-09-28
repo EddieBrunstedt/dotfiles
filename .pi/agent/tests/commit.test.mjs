@@ -4,6 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+	mkdir,
 	mkdtemp,
 	readFile,
 	writeFile,
@@ -117,7 +118,7 @@ async function fixture(fn, { unborn = false } = {}) {
 		register(pi);
 		let uiCalls = 0;
 		await handler(opts.all ? "all" : "", {
-			cwd,
+			cwd: opts.cwd ?? cwd,
 			hasUI: true,
 			ui: {
 				notify: (message, level) => notes.push({ message, level }),
@@ -225,6 +226,25 @@ for (const stage of ["cancelInput", "cancelPlan", "cancelConfirm"]) {
 			await f.sameWorktree();
 			assert.equal(f.attempts(), 0);
 			assert.deepEqual(await f.backups(), []);
+		}));
+}
+for (const all of [false, true]) {
+	test(`running from a subdirectory commits root-relative paths, all=${all}`, () =>
+		fixture(async (f) => {
+			// A and B sit at the repository root, outside the directory Pi runs in.
+			await mkdir(join(f.cwd, "sub"));
+			await f.invoke({ all, cwd: join(f.cwd, "sub") });
+			assert.equal(await f.git("diff", "--cached", "--name-only"), "");
+			assert.equal(
+				await f.git("show", "HEAD:B"),
+				all ? "working B" : "staged B",
+			);
+			await f.sameWorktree();
+			assert.deepEqual(await f.backups(), []);
+			assert(
+				f.notes.some((n) => n.message === "Committed 2 commit(s)"),
+				JSON.stringify(f.notes),
+			);
 		}));
 }
 test("/all git add failure stops before planning", () =>

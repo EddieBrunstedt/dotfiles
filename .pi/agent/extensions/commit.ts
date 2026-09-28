@@ -899,12 +899,16 @@ export default function (pi: ExtensionAPI) {
 			}
 
 			const stageAll = normalizedArgs === "all";
-			const cwd = ctx.cwd;
 
 			let session: IndexSession | undefined;
 			let finished = false;
 
 			try {
+				// Git reports staged paths relative to the repository root, but reads
+				// pathspecs and `git apply` paths relative to the working directory.
+				// Run everything from the root so the two agree when Pi was started
+				// in a subdirectory.
+				const cwd = await git(pi, ctx.cwd, ["rev-parse", "--show-toplevel"]);
 				session = await createIndexSession(pi, cwd, stageAll);
 				const snapshotPi = session.pi;
 				if (stageAll) await git(snapshotPi, cwd, ["add", "-A"]);
