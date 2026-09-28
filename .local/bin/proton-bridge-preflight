@@ -6,6 +6,12 @@
 #
 # Always exits 0: this gates startup timing, it does not decide whether Bridge
 # is allowed to run. If the wait times out, Bridge starts anyway and retries.
+#
+# TIMEOUT is wall-clock seconds, not a count of passes: a pass can take several
+# seconds when the tunnel is up but traffic is black-holed. It must stay well
+# under the unit's TimeoutStartSec (90s by default), or systemd kills this
+# script and restarts the unit instead of letting Bridge start. The last pass
+# can overrun the deadline by at most one pass (~5s).
 set -u
 
 TIMEOUT=60
@@ -14,18 +20,17 @@ API=https://mail-api.proton.me/
 # Only wait on the VPN when the daemon is actually enabled on this machine.
 vpn_ready() {
     systemctl is-enabled --quiet mullvad-daemon.service 2>/dev/null || return 0
-    mullvad status --json 2>/dev/null | jq -e '.state == "connected"' >/dev/null 2>&1
+    timeout 2 mullvad status --json 2>/dev/null | jq -e '.state == "connected"' >/dev/null 2>&1
 }
 
 api_ready() { curl -sm 2 -o /dev/null "$API"; }
 
-i=0
-while [ "$i" -lt "$TIMEOUT" ]; do
+deadline=$(($(date +%s) + TIMEOUT))
+while [ "$(date +%s)" -lt "$deadline" ]; do
     if vpn_ready && api_ready; then
         exit 0
     fi
     sleep 1
-    i=$((i + 1))
 done
 
 echo "proton-bridge-preflight: timed out after ${TIMEOUT}s; starting anyway" >&2
