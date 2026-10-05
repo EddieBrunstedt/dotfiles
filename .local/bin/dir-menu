@@ -15,13 +15,12 @@
 # The goal is two explorer windows side by side in the tiling layout, so files
 # can be moved between folders without navigating to each one by hand.
 
-# Directories that exist only because some tool created them. Without this the
-# candidate list is ~64k entries, ~55k of which are .local/share, .cache, .npm,
-# .cargo and .rustup, and real matches get buried. fd matches a pattern with no
-# slash against any path component, and one with a slash against the path
-# relative to the search root ($HOME).
+# Explicitly unwanted subtrees: these are the ONLY discovery exclusions.
+# Ignore files and visit history must not hide otherwise useful directories.
+# Slashless fd patterns match any path component, pruning its descendants too.
+# .local/share and .pi are intentionally discoverable.
 prune='.git node_modules .cache .npm .npm-global .cargo .rustup .bun
-.local/share target .venv venv __pycache__ .codex .pi'
+target .venv venv __pycache__ .codex'
 
 # Leading marker, not a plain word: it must never look like a path, and the
 # glyph keeps it from fuzzy-matching the directory names being typed.
@@ -32,10 +31,11 @@ notify() { notify-send -u critical "Directory menu" "$1"; }
 # -kb-accept-custom is unbound first because it owns Control+Return by default;
 # rofi refuses to start on a duplicate binding, so the chord has to be freed
 # before kb-custom-1 (which reports exit code 10) can claim it.
-# -threads 0 = one matcher thread per core. Sorting stays off, rofi's default,
-# so an empty filter leaves the list in the order fed in: sentinel, then zoxide.
+# -threads 0 = one matcher thread per core. With an empty filter, preserve
+# sentinel, home, then alphabetical paths. While typing, rank matches so an
+# exact path wins over incidental fuzzy matches elsewhere in the tree.
 menu() {
-    rofi -dmenu -i \
+    rofi -dmenu -i -sort -mesg "$scan_warning" \
         -matching fuzzy -threads 0 \
         -kb-accept-custom '' \
         -kb-custom-1 'Control+Return' \
@@ -55,33 +55,85 @@ expand_tilde() {
     esac
 }
 
-# Build the fd arguments in the positional parameters rather than a string, so
-# the prune patterns stay one word each no matter what they contain.
-set -- --type d --hidden
+# Build the fd arguments without word-splitting paths. --no-ignore bypasses
+# local, parent, and global ignore rules; explicit exclusions still apply.
+set -- --hidden --no-ignore --no-follow --show-errors --absolute-path --color never
 for p in $prune; do
     set -- "$@" --exclude "$p"
 done
 
-# zoxide comes first so the directories actually lived in are at the top before
-# any typing narrows things down; fd then supplies everything else. Built once,
-# outside the loop, so the second and later prompts open instantly.
-candidates=$(
+if [ ! -d "$HOME" ]; then
+    notify "Home is not a directory: $HOME"
+    exit 1
+fi
+scan_tmp=$(mktemp -d "${TMPDIR:-/tmp}/dir-menu.XXXXXXXXXX") || {
+    notify "Could not create discovery workspace"
+    exit 1
+}
+trap 'rm -rf -- "$scan_tmp"' 0
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# NUL records preserve arbitrary filenames until unsafe menu rows are rejected.
+# Two scans avoid shell/stat work for ordinary directories. Only symlinks need
+# a directory test, batched into a few shell processes by fd (not one per path).
+# No symlink is traversed, even when its destination is outside home.
+printf '%s\0' "$HOME" > "$scan_tmp/paths"
+fd "$@" --type d --print0 '' "$HOME" >> "$scan_tmp/paths" 2>> "$scan_tmp/errors" ||
+    printf '%s\n' "Directory scan failed" >> "$scan_tmp/errors"
+# shellcheck disable=SC2016 # Variables expand in the batched child shell.
+fd "$@" --type l '' "$HOME" -X sh -c '
+    for dir do
+        if [ -d "$dir" ]; then
+            printf "%s\0" "$dir" || exit 1
+        fi
+    done
+' sh >> "$scan_tmp/paths" 2>> "$scan_tmp/errors" ||
+    printf '%s\n' "Symlink scan failed" >> "$scan_tmp/errors"
+
+# GNU awk's NUL record separator keeps embedded newlines from becoming fake
+# rows. The existing picker returns newline-delimited strings, so omit such
+# paths and warn rather than incorrectly opening part of a filename.
+# ENVIRON avoids awk -v interpreting backslashes in HOME or the workspace.
+DIR_MENU_SKIPPED="$scan_tmp/skipped" LC_ALL=C awk '
+    BEGIN {
+        RS = "\0"
+        home = ENVIRON["HOME"]
+        if (home != "/") sub(/\/+$/, "", home)
+    }
     {
-        zoxide query -l 2>/dev/null
-        printf '%s\n' "$HOME"
-        fd "$@" . "$HOME" 2>/dev/null
-    } | awk -v home="$HOME" '
-        # fd prints a trailing slash on directories and zoxide does not, so
-        # strip it before deduplicating or the same path survives twice.
-        { sub(/\/+$/, "") }
-        $0 == "" { next }
-        !seen[$0]++ {
-            p = $0
-            if ($0 == home || index($0, home "/") == 1)
-                p = "~" substr($0, length(home) + 1)
-            print p
-        }'
-)
+        if (index($0, "\n")) {
+            print "Skipped newline-containing path" > ENVIRON["DIR_MENU_SKIPPED"]
+            next
+        }
+        if ($0 != "/") sub(/\/+$/, "")
+        if ($0 == home) print "~"
+        else if (home == "/") print "~" $0
+        else if (index($0, home "/") == 1)
+            print "~" substr($0, length(home) + 1)
+    }
+' "$scan_tmp/paths" > "$scan_tmp/rows" || {
+    notify "Could not prepare directory list"
+    exit 1
+}
+# All rows begin with ~: bytewise sorting puts ~ itself first. Build once per
+# invocation, outside the selection loop; no persistent cache or visit history.
+candidates=$(LC_ALL=C sort -u "$scan_tmp/rows") || {
+    notify "Could not sort directory list"
+    exit 1
+}
+scan_warning=
+if [ -s "$scan_tmp/errors" ]; then
+    # fd can exit 0 despite unreadable subtrees, so diagnostics matter too.
+    scan_warning="Discovery incomplete: some directories could not be scanned."
+fi
+if [ -s "$scan_tmp/skipped" ]; then
+    scan_warning="${scan_warning:+$scan_warning }Paths containing newlines were omitted."
+fi
+[ -z "$scan_warning" ] || notify "$scan_warning"
+rm -rf -- "$scan_tmp"
+trap - 0 HUP INT TERM
 
 if [ -z "$candidates" ]; then
     notify "No directories found"
@@ -126,7 +178,7 @@ $candidates"
     if [ ! -d "$dir" ]; then
         # Reachable two ways: a typed path that does not exist (rofi accepts
         # custom input on purpose, so absolute paths can be entered directly),
-        # or a stale zoxide entry for a directory since deleted.
+        # or a directory deleted since this invocation's discovery snapshot.
         notify "Not a directory: $dir"
         continue
     fi
