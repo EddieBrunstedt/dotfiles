@@ -154,7 +154,7 @@ Things a fresh machine needs that these files cannot provide:
   [`.secret/README.md`](.secret/README.md) records the exact lines. Its own
   configuration — which greeter, themed how, on which VT — is the machine's
   business and is deliberately not tracked here.
-- **System services** — `greetd`, `NetworkManager` and `docker`, each
+- **System services** — `greetd`, `NetworkManager`, `docker` and `atd`, each
   `sudo systemctl enable --now`. `just enable-services` only touches _user_
   units. Docker also wants your user in the `docker` group; and because a user
   unit cannot order itself against a system one, the forgejo runner cannot pull
