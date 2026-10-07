@@ -65,7 +65,7 @@ escapes. Anything needing those goes in `.profile` or `uwsm/env`.
 ## Session
 
 The compositor starts nothing itself beyond `uwsm finalize`, its one
-`exec-once` in `.config/mango/config.conf`. That exports `WAYLAND_DISPLAY` and
+`exec_once` in `.config/mango/config.toml`. That exports `WAYLAND_DISPLAY` and
 lets `graphical-session.target` start. Everything else is a systemd user unit,
 is D-Bus activated, or (MEGAsync) comes from `~/.config/autostart` via uwsm's
 `xdg-desktop-autostart.target`.
