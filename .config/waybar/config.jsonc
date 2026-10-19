@@ -12,7 +12,7 @@
     "modules-right": [
         "custom/cpubusy",
         "custom/memory",
-        "custom/routebps",
+        "custom/net",
         "custom/protonmail",
         "custom/mullvad",
         "custom/volume",
@@ -56,10 +56,13 @@
         "interval": 5,
         "tooltip": false
     },
-    "custom/routebps": {
-        "exec": "routebps",
-        "interval": 1,
-        "tooltip": false
+    // telltale gauge (~/projects/telltale). No interval: it runs for as long
+    // as the bar does and prints a new line only when the reading changes.
+    // The class is the reading's level; style.css colours the levels.
+    "custom/net": {
+        "exec": "telltale-net --watch --format waybar",
+        "return-type": "json",
+        "tooltip": true
     },
     // Absolute path, although the shims directory is currently first on the
     // session PATH: the bare name would fall through to the real binary in

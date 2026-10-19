@@ -88,7 +88,7 @@ window#waybar.empty #window {
 /* ── status modules ──────────────────────────────────────────────── */
 #custom-cpubusy,
 #custom-memory,
-#custom-routebps,
+#custom-net,
 #custom-protonmail,
 #custom-mullvad,
 #custom-volume,
@@ -125,6 +125,24 @@ window#waybar.empty #window {
 }
 
 #custom-desktop.stale {
+    color: #f38ba8;
+}
+
+/* ── telltale gauges ─────────────────────────────────────────────── */
+/* Classes are telltale's levels. Quiet recedes to the stopped-service grey,
+   attention takes the peach and critical/unknown the red used elsewhere on
+   the bar, so a colour means the same thing whichever gauge shows it.
+   Normal keeps the bar's default text colour. */
+#custom-net.quiet {
+    color: #6c7086;
+}
+
+#custom-net.attention {
+    color: #fab387;
+}
+
+#custom-net.critical,
+#custom-net.unknown {
     color: #f38ba8;
 }
 
