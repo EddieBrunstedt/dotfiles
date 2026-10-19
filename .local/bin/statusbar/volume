@@ -1,12 +1,17 @@
 #!/bin/sh
-# Waybar segment: default sink volume, or "muted". Polled every 10s and
+# Waybar segment: default sink volume, or muted. Polled every 10s and
 # refreshed instantly via `pkill -RTMIN+1 waybar` on volume keys and scroll.
-# Fixed width so the bar does not shift as the value changes.
-out=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null) || { printf '%4s' "—"; exit 0; }
+# Prints its own icon. The value is four right-aligned cells ("100%" at most,
+# as scroll caps at 1.0), so the bar does not shift as it changes.
+#
+# U+F057E nf-md-volume_high and U+F0581 nf-md-volume_off, written as octal
+# escapes so this file stays 7-bit and greppable.
+icon_on=$(printf '\363\260\225\276')
+icon_off=$(printf '\363\260\226\201')
+
+out=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null) || { printf '%s %4s' "$icon_off" "?"; exit 0; }
 
 case $out in
-    *"[MUTED]"*) vol=muted ;;
-    *)           vol=$(printf '%s' "$out" | awk '{printf "%d%%", $2 * 100}') ;;
+    *"[MUTED]"*) printf '%s %4s' "$icon_off" "--" ;;
+    *)           printf '%s %4s' "$icon_on" "$(printf '%s' "$out" | awk '{printf "%d%%", $2 * 100 + 0.5}')" ;;
 esac
-
-printf '%4s' "${vol:-—}"

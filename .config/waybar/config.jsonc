@@ -19,10 +19,10 @@
         "custom/disk",
         "custom/voxtype",
         "custom/desktop",
-        "clock",
         "custom/whitetemp",
         "idle_inhibitor",
         "custom/dunst",
+        "clock",
         "tray"
     ],
 
@@ -90,12 +90,13 @@
         "on-click": "xdg-open https://mail.proton.me/",
         "tooltip": true
     },
+    // No interval: mullvad-status streams the daemon's state changes, so
+    // mullvad-menu has nothing to signal.
     "custom/mullvad": {
         "exec": "mullvad-status",
-        "interval": 30,
-        "signal": 2,
+        "return-type": "json",
         "on-click": "mullvad-menu",
-        "tooltip": false
+        "tooltip": true
     },
     "custom/volume": {
         "exec": "volume",
@@ -170,16 +171,19 @@
     },
     "custom/dunst": {
         "exec": "dunst-status",
+        "return-type": "json",
         "interval": 5,
         "signal": 3,
         "on-click": "dunst-toggle",
-        "tooltip": false
+        "tooltip": true
     },
+    // Fixed width: %a and %d are always three and two characters. Waybar
+    // aligns the interval to the minute, so 60 changes the text on time. The
+    // full date and ISO week are in the tooltip rather than a format-alt.
     "clock": {
-        "interval": 1,
-        "format": "⏰ {:%m-%d %a %H:%M}",
-        "format-alt": "⏰ {:%Y-%m-%d %H:%M:%S}",
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+        "interval": 60,
+        "format": "{:%a %d %H:%M}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>\n{:%F, week %V}"
     },
 
     "tray": {

@@ -1,18 +1,54 @@
 #!/bin/sh
-# Mullvad VPN status indicator for Waybar.
-# Polled every 30 seconds and refreshed on RTMIN+2 from mullvad-menu.
+# Waybar segment: Mullvad tunnel state and exit country. Prints its own icon.
+#
+# Runs for as long as the bar does. `mullvad status -j listen` writes the
+# current state and then one JSON line per change, so connects, drops and relay
+# switches show as they happen, with no polling and no signal from
+# mullvad-menu. If the daemon goes away the stream ends; the segment shows
+# unknown and listens again five seconds later.
+#
+# Classes are telltale's level names, so style.css colours this segment like
+# the gauges: connected is normal, a transition is attention, no tunnel is
+# critical, an unreachable daemon is unknown.
+#
+# The JSON names the country but has no code for it, so the code is the exit
+# relay's hostname prefix (se-sto-wg-201 -> SE). Every state is the icon and
+# three right-aligned cells, so the bar does not shift as the state changes.
+set -u
 
-out=$(mullvad status --json 2>/dev/null) || { printf '🔓 ?'; exit 0; }
+# U+F033E nf-md-lock and U+F033F nf-md-lock_open, written as octal escapes so
+# this file stays 7-bit and greppable.
+lock=$(printf '\363\260\214\276')
+open=$(printf '\363\260\214\277')
 
-state=$(printf '%s' "$out" | jq -r '.state')
-
-case "$state" in
-    connected)
-        country=$(printf '%s' "$out" | jq -r '.details.location.country')
-        printf '🔒 %s' "$country"
-        ;;
-    connecting)    printf '🔒 …' ;;
-    disconnecting) printf '🔓 …' ;;
-    disconnected)  printf '🔓' ;;
-    *)             printf '🔓 ?' ;;
-esac
+while :; do
+    mullvad status -j listen 2>/dev/null | jq --unbuffered -c \
+        --arg lock "$lock" --arg open "$open" '
+        def cells: ("   " + .)[-3:];
+        # The tooltip is Pango markup; & first, or &lt; gets mangled.
+        def esc: gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;");
+        ((.details | objects | .location | objects) // {}) as $l
+        | ($l.hostname // "" | (split("-")[0] // "") | ascii_upcase) as $code
+        | "\($l.city // "unknown city"), \($l.country // "unknown country") (\($l.hostname // "unknown relay"))" as $where
+        | if .state == "connected" then
+            {text: "\($lock) \($code | if . == "" then "?" end | cells)",
+             class: "normal", tooltip: "Connected via \($where)"}
+          elif .state == "connecting" then
+            {text: "\($open) \($code | if . == "" then "…" end | cells)",
+             class: "attention",
+             tooltip: (if $code == "" then "Connecting" else "Connecting to \($where)" end)}
+          elif .state == "disconnecting" then
+            {text: "\($open) \("…" | cells)",
+             class: "attention", tooltip: "Disconnecting"}
+          elif .state == "disconnected" then
+            {text: "\($open) \("off" | cells)",
+             class: "critical", tooltip: "Disconnected"}
+          else
+            {text: "\($open) \("err" | cells)", class: "critical",
+             tooltip: ((.details | objects | .cause) // .details // "Tunnel entered an error state"
+                       | if type == "string" then . else tostring end)}
+          end
+        | .tooltip |= esc'
+    printf '{"text":"%s   ?","class":"unknown","tooltip":"Mullvad daemon unreachable; retrying"}\n' "$open"
+    sleep 5
+done

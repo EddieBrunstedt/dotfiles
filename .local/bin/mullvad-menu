@@ -1,23 +1,20 @@
 #!/bin/sh
 # Mullvad VPN menu for rofi. Bound to SUPER+SHIFT+v and to the Waybar segment.
-# Signals Waybar (RTMIN+2) after any state change so the indicator keeps up.
+# The segment streams the daemon's state, so it needs no signal from here.
 
 set -u
 
-SIGNAL=2
 NOTIFY_ID=9001
 TIMEOUT=30      # seconds to wait for a state transition
 LEAVE_WAIT=5    # seconds to wait for a reconnect to drop the tunnel first
 POLL=0.25
 
-for dep in rofi mullvad jq notify-send pkill; do
+for dep in rofi mullvad jq notify-send; do
     command -v "$dep" >/dev/null 2>&1 || {
         printf 'mullvad-menu: required command not found: %s\n' "$dep" >&2
         exit 1
     }
 done
-
-refresh() { pkill -RTMIN+$SIGNAL -x waybar 2>/dev/null || :; }
 
 # $1 summary, $2 body, $3 urgency. A fixed id means each notification replaces
 # the last rather than stacking a transition's worth of popups.
@@ -74,7 +71,6 @@ await() {
         case "$(state_of "$json")" in
         error)
             notify "⚠ Mullvad" "$(error_of "$json")" critical
-            refresh
             return 1
             ;;
         "$target")
@@ -94,7 +90,6 @@ await() {
             connected) notify "🔒 Connected" "$(location_of "$json")" ;;
             disconnected) notify "🔓 Disconnected" ;;
             esac
-            refresh
             return 0
             ;;
         esac
@@ -107,7 +102,6 @@ await() {
     else
         notify "⚠ Mullvad" "Timed out waiting for $target" critical
     fi
-    refresh
     return 1
 }
 
@@ -119,7 +113,6 @@ transition() {
     notify "$summary" "$body"
     if ! err=$(mullvad "$@" 2>&1); then
         notify "⚠ Mullvad" "${err:-Command failed: mullvad $*}" critical
-        refresh
         return 1
     fi
     await "$target" "$require_transition" "$expected_country"

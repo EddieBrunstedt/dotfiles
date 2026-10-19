@@ -18,4 +18,6 @@ temp=$(systemctl --user show whitetemp.service -p ExecStart --value 2>/dev/null 
 # A unit left running at 6500 K from before the stop-on-reset change is neutral.
 [ "$temp" = 6500 ] && exit 0
 
-printf '🌙 %sK\n' "$temp"
+# U+F0594 nf-md-weather_night, written as an octal escape so this file stays
+# 7-bit and greppable.
+printf '%s %sK\n' "$(printf '\363\260\226\224')" "$temp"

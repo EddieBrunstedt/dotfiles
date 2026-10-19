@@ -105,7 +105,7 @@ window#waybar.empty #window {
 #custom-dunst,
 #clock,
 #tray {
-    padding: 0 8px;
+    padding: 0 6px;
     background-color: transparent;
     color: #cdd6f4;
 }
@@ -138,8 +138,10 @@ window#waybar.empty #window {
 /* Classes are telltale's levels. Quiet recedes to the stopped-service grey,
    attention takes the peach and critical/unknown the red used elsewhere on
    the bar, so a colour means the same thing whichever gauge shows it.
-   Normal keeps the bar's default text colour. */
+   Normal keeps the bar's default text colour. mullvad-status and
+   dunst-status are not telltale gauges but report in the same levels. */
 #custom-disk.quiet,
+#custom-dunst.quiet,
 #custom-inbox.quiet,
 #custom-mem.quiet,
 #custom-net.quiet {
@@ -147,8 +149,10 @@ window#waybar.empty #window {
 }
 
 #custom-disk.attention,
+#custom-dunst.attention,
 #custom-inbox.attention,
 #custom-mem.attention,
+#custom-mullvad.attention,
 #custom-net.attention {
     color: #fab387;
 }
@@ -159,6 +163,8 @@ window#waybar.empty #window {
 #custom-inbox.unknown,
 #custom-mem.critical,
 #custom-mem.unknown,
+#custom-mullvad.critical,
+#custom-mullvad.unknown,
 #custom-net.critical,
 #custom-net.unknown,
 #custom-units.critical,
