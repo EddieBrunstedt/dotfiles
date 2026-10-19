@@ -10,8 +10,7 @@
     ],
     "modules-center": [],
     "modules-right": [
-        "custom/cpubusy",
-        "custom/memory",
+        "custom/mem",
         "custom/net",
         "custom/protonmail",
         "custom/mullvad",
@@ -46,19 +45,14 @@
         "icon": false
     },
 
-    "custom/cpubusy": {
-        "exec": "cpubusy",
-        "interval": 1,
-        "tooltip": false
+    // telltale gauges (~/projects/telltale). No interval: each runs for as
+    // long as the bar does and prints a new line only when the reading
+    // changes. The class is the reading's level; style.css colours the levels.
+    "custom/mem": {
+        "exec": "telltale-mem --watch --format waybar",
+        "return-type": "json",
+        "tooltip": true
     },
-    "custom/memory": {
-        "exec": "memory",
-        "interval": 5,
-        "tooltip": false
-    },
-    // telltale gauge (~/projects/telltale). No interval: it runs for as long
-    // as the bar does and prints a new line only when the reading changes.
-    // The class is the reading's level; style.css colours the levels.
     "custom/net": {
         "exec": "telltale-net --watch --format waybar",
         "return-type": "json",

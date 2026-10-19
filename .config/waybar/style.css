@@ -1,5 +1,10 @@
+/* One font only. monospace resolves to Maple Mono NF, which carries every
+   icon glyph the bar uses at exactly one cell wide. With "Symbols Nerd Font"
+   as a fallback, Pango drew icons from it and kept the spaces after them in
+   it too, where a space is narrower than a digit: right-aligned values like
+   " 49K" came out narrower than "708B", and the bar shifted as they changed. */
 * {
-    font-family: monospace, "Symbols Nerd Font";
+    font-family: monospace;
     font-size: 16px;
     min-height: 0;
     border: none;
@@ -86,8 +91,7 @@ window#waybar.empty #window {
 }
 
 /* ── status modules ──────────────────────────────────────────────── */
-#custom-cpubusy,
-#custom-memory,
+#custom-mem,
 #custom-net,
 #custom-protonmail,
 #custom-mullvad,
@@ -133,14 +137,18 @@ window#waybar.empty #window {
    attention takes the peach and critical/unknown the red used elsewhere on
    the bar, so a colour means the same thing whichever gauge shows it.
    Normal keeps the bar's default text colour. */
+#custom-mem.quiet,
 #custom-net.quiet {
     color: #6c7086;
 }
 
+#custom-mem.attention,
 #custom-net.attention {
     color: #fab387;
 }
 
+#custom-mem.critical,
+#custom-mem.unknown,
 #custom-net.critical,
 #custom-net.unknown {
     color: #f38ba8;
