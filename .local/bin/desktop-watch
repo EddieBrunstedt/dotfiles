@@ -13,9 +13,20 @@ set -u
 dir="$HOME/desktop"
 fifo="${XDG_RUNTIME_DIR:-/tmp}/desktop-watch.fifo"
 
+# Signals only a waybar that already catches RTMIN+6. A real-time signal's
+# default action is to terminate, and waybar installs its handlers a few ms
+# after it starts; at login the first refresh below landed in that window and
+# killed it (62 times in the 30 days to 2026-10-19, once per login). Skipping
+# it is harmless: waybar runs desktop-status itself when it starts. RTMIN+6 is
+# signal 40, bit 39 of SigCgt: the top bit of the mask's last ten hex digits.
 refresh() {
-    # Nonzero when waybar is not up yet; the next event tries again.
-    pkill -RTMIN+6 waybar || true
+    for pid in $(pgrep -x waybar); do
+        mask=$(sed -n 's/^SigCgt:[[:space:]]*//p' "/proc/$pid/status" 2>/dev/null)
+        [ -n "$mask" ] || continue
+        [ $((0x${mask#??????} >> 39 & 1)) -eq 1 ] || continue
+        kill -s RTMIN+6 "$pid" 2>/dev/null
+    done
+    return 0
 }
 
 # One instance per session, so a fixed name is fine -- a stale node can only be
