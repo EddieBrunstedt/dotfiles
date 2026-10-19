@@ -12,7 +12,7 @@
     "modules-right": [
         "custom/mem",
         "custom/net",
-        "custom/protonmail",
+        "custom/inbox",
         "custom/mullvad",
         "custom/volume",
         "custom/units",
@@ -79,13 +79,16 @@
     // Absolute path, although the shims directory is currently first on the
     // session PATH: the bare name would fall through to the real binary in
     // ~/.cargo/bin, without its credentials, if that ordering ever changed.
-    // Each tick costs two sops decryptions.
-    "custom/protonmail": {
-        "exec": "~/.local/bin/shims/protonmail-status",
-        "interval": 60,
-        "signal": 4,
+    // The secrets are decrypted once per waybar start; Bridge then pushes
+    // changes over IMAP IDLE. --insecure because Bridge's certificate is
+    // self-signed; telltale refuses it for anything but a loopback address.
+    // No floor: the inbox is a todo list, and an empty one (grey 0) is worth
+    // seeing too.
+    "custom/inbox": {
+        "exec": "~/.local/bin/shims/telltale-inbox --watch --format waybar --server imap://127.0.0.1:1143 --insecure --user-env PROTON_BRIDGE_IMAP_USER --password-env PROTON_BRIDGE_IMAP_PASS",
+        "return-type": "json",
         "on-click": "xdg-open https://mail.proton.me/",
-        "tooltip": false
+        "tooltip": true
     },
     "custom/mullvad": {
         "exec": "mullvad-status",

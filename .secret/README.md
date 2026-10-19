@@ -103,6 +103,7 @@ codex               /usr/bin/codex                   OPENAI_API_KEY
 opencode            /usr/bin/opencode                OPENROUTER_API_KEY
 ord                 /usr/bin/ord                     OPENROUTER_API_KEY
 protonmail-status   ~/.cargo/bin/protonmail-status   PROTON_BRIDGE_IMAP_USER PROTON_BRIDGE_IMAP_PASS
+telltale-inbox      ~/.cargo/bin/telltale-inbox      PROTON_BRIDGE_IMAP_USER PROTON_BRIDGE_IMAP_PASS
 ```
 
 Columns: tool name, real binary (absolute, or `~/` for `$HOME`), then one or more secret names. Lines starting with `#` are ignored. A tool receives what is listed and nothing else — verified.
@@ -128,11 +129,11 @@ Creating a **new** vault file must be done in `~/.dotfiles/.secret/` followed by
 
 Systemd user units have no ambient secrets. If a unit needs one, shim the command it executes. Do not put values in `Environment=` or `EnvironmentFile=` — unit environments are readable via `systemctl --user show`.
 
-Worked example, waybar's `custom/protonmail`:
+Worked example, waybar's `custom/inbox`:
 
-- `~/.local/bin/shims/protonmail-status` wraps the real binary in `~/.cargo/bin`, supplying `PROTON_BRIDGE_IMAP_USER` and `PROTON_BRIDGE_IMAP_PASS`. Waybar's own environment holds neither.
+- `~/.local/bin/shims/telltale-inbox` wraps the real binary in `~/.cargo/bin`, supplying `PROTON_BRIDGE_IMAP_USER` and `PROTON_BRIDGE_IMAP_PASS`. Waybar's own environment holds neither. telltale-inbox is told which variables to read (`--user-env`, `--password-env`), so it contains no provider-specific names.
 - The waybar config uses an **absolute path**. Waybar inherits its `PATH` from the systemd activation environment, which uwsm fills from `~/.profile`, so the shims directory is currently first there too. The absolute path does not depend on that: if the ordering ever changed, a bare name would resolve to the real cargo binary and silently lose its credentials.
-- `"interval": 60` with `"signal": 4` (`pkill -RTMIN+4 waybar`). Each tick costs two decryptions plus an IMAP round-trip, ~200ms. Signals 1–3 are taken by volume, mullvad and dunst.
+- It runs for as long as waybar does (`--watch`, no `interval`), so the two decryptions happen once per waybar start, not once a minute. The secrets then stay in that process's environment for its lifetime, readable only by this user. Bridge pushes changes over IMAP IDLE, so no polling and no refresh signal. (The retired `protonmail-status` polled every 60 s on signal 4, at two decryptions plus an IMAP round-trip per tick.)
 
 Units get `SOPS_AGE_KEY_CMD` from `~/.config/environment.d/10-defaults.conf`, which `systemd --user` reads natively — no unit-level `Environment=` needed. It is a command string, not a secret, and is the one variable here that may legitimately enter the systemd/D-Bus activation environment.
 

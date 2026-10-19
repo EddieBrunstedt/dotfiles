@@ -95,7 +95,7 @@ window#waybar.empty #window {
 #custom-net,
 #custom-disk,
 #custom-units,
-#custom-protonmail,
+#custom-inbox,
 #custom-mullvad,
 #custom-volume,
 #custom-voxtype,
@@ -140,12 +140,14 @@ window#waybar.empty #window {
    the bar, so a colour means the same thing whichever gauge shows it.
    Normal keeps the bar's default text colour. */
 #custom-disk.quiet,
+#custom-inbox.quiet,
 #custom-mem.quiet,
 #custom-net.quiet {
     color: #6c7086;
 }
 
 #custom-disk.attention,
+#custom-inbox.attention,
 #custom-mem.attention,
 #custom-net.attention {
     color: #fab387;
@@ -153,6 +155,8 @@ window#waybar.empty #window {
 
 #custom-disk.critical,
 #custom-disk.unknown,
+#custom-inbox.critical,
+#custom-inbox.unknown,
 #custom-mem.critical,
 #custom-mem.unknown,
 #custom-net.critical,
