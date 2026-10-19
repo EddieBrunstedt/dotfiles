@@ -1,4 +1,0 @@
-#!/bin/sh
-# Waybar segment: memory in use. Polled every 5s (see waybar config.jsonc).
-# Fixed width so the bar does not shift as the value changes.
-printf '%6s' "$(free -h | awk '/^Mem:/ {print $3}')"

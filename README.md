@@ -163,8 +163,9 @@ Things a fresh machine needs that these files cannot provide:
   Only mpv's `SimpleBookmark.lua` still names it. The `monospace` alias in
   fontconfig, which ghostty and waybar use, resolves to Maple Mono from
   `applist-aur`.
-- **`~/.cargo/bin` binaries** — `cpubusy`, `routebps` and `protonmail-status`
-  back three waybar segments. Self-maintained; not yet tracked by any applist.
+- **Telltale** — the `telltale-*` gauges on waybar, installed to
+  `~/.cargo/bin` with `cargo install --path ~/projects/telltale`.
+  Self-maintained; not yet tracked by any applist.
 - **`~/.config/forgejo-runner/runner-token`** — a registration secret. Run
   `just enable-forgejo` rather than `enable-services`; it checks for the token
   and explains how to register if it is missing.
