@@ -15,6 +15,7 @@
         "custom/protonmail",
         "custom/mullvad",
         "custom/volume",
+        "custom/units",
         "custom/disk",
         "custom/voxtype",
         "custom/desktop",
@@ -58,6 +59,15 @@
         "exec": "telltale-net --watch --format waybar",
         "return-type": "json",
         "tooltip": true
+    },
+    // Off the bar while nothing has failed. telltale-units asks systemd every
+    // 30 s, so a reset-failed takes up to that long to clear the segment.
+    "custom/units": {
+        "exec": "telltale-units --watch --format waybar --floor attention",
+        "return-type": "json",
+        "tooltip": true,
+        "on-click": "ghostty -e sh -c 'systemctl --failed; systemctl --user --failed; read -r _'",
+        "on-click-right": "systemctl --user reset-failed"
     },
     // The floor keeps it off the bar until a filesystem is 90% full: below
     // that, the fullest disk is not something to act on.

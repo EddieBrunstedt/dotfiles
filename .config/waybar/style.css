@@ -94,6 +94,7 @@ window#waybar.empty #window {
 #custom-mem,
 #custom-net,
 #custom-disk,
+#custom-units,
 #custom-protonmail,
 #custom-mullvad,
 #custom-volume,
@@ -155,7 +156,9 @@ window#waybar.empty #window {
 #custom-mem.critical,
 #custom-mem.unknown,
 #custom-net.critical,
-#custom-net.unknown {
+#custom-net.unknown,
+#custom-units.critical,
+#custom-units.unknown {
     color: #f38ba8;
 }
 
