@@ -15,6 +15,7 @@
         "custom/protonmail",
         "custom/mullvad",
         "custom/volume",
+        "custom/disk",
         "custom/voxtype",
         "custom/desktop",
         "clock",
@@ -55,6 +56,13 @@
     },
     "custom/net": {
         "exec": "telltale-net --watch --format waybar",
+        "return-type": "json",
+        "tooltip": true
+    },
+    // The floor keeps it off the bar until a filesystem is 90% full: below
+    // that, the fullest disk is not something to act on.
+    "custom/disk": {
+        "exec": "telltale-disk --watch --format waybar --floor attention",
         "return-type": "json",
         "tooltip": true
     },
