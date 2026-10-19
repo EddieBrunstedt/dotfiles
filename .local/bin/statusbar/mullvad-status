@@ -8,7 +8,7 @@
 # unknown and listens again five seconds later.
 #
 # Classes are telltale's level names, so style.css colours this segment like
-# the gauges: connected is normal, a transition is attention, no tunnel is
+# the gauges: connected is quiet, a transition is attention, no tunnel is
 # critical, an unreachable daemon is unknown.
 #
 # The JSON names the country but has no code for it, so the code is the exit
@@ -32,7 +32,7 @@ while :; do
         | "\($l.city // "unknown city"), \($l.country // "unknown country") (\($l.hostname // "unknown relay"))" as $where
         | if .state == "connected" then
             {text: "\($lock) \($code | if . == "" then "?" end | cells)",
-             class: "normal", tooltip: "Connected via \($where)"}
+             class: "quiet", tooltip: "Connected via \($where)"}
           elif .state == "connecting" then
             {text: "\($open) \($code | if . == "" then "…" end | cells)",
              class: "attention",

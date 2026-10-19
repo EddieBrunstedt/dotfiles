@@ -1,5 +1,8 @@
 /* One font only. monospace resolves to Maple Mono NF, which carries every
-   icon glyph the bar uses at exactly one cell wide. With "Symbols Nerd Font"
+   icon glyph the bar uses at exactly one cell's advance. Their ink is wider
+   and spills right, into the space after the icon or, for an icon alone,
+   the padding: the Material Design (nf-md) icons spill at most 5px, so the
+   6px padding below holds them. With "Symbols Nerd Font"
    as a fallback, Pango drew icons from it and kept the spaces after them in
    it too, where a space is narrower than a digit: right-aligned values like
    " 49K" came out narrower than "708B", and the bar shifted as they changed. */
@@ -138,13 +141,15 @@ window#waybar.empty #window {
 /* Classes are telltale's levels. Quiet recedes to the stopped-service grey,
    attention takes the peach and critical/unknown the red used elsewhere on
    the bar, so a colour means the same thing whichever gauge shows it.
-   Normal keeps the bar's default text colour. mullvad-status and
+   Normal keeps the bar's default text colour. mullvad-status, volume and
    dunst-status are not telltale gauges but report in the same levels. */
 #custom-disk.quiet,
 #custom-dunst.quiet,
 #custom-inbox.quiet,
 #custom-mem.quiet,
-#custom-net.quiet {
+#custom-mullvad.quiet,
+#custom-net.quiet,
+#custom-volume.quiet {
     color: #6c7086;
 }
 
@@ -153,7 +158,8 @@ window#waybar.empty #window {
 #custom-inbox.attention,
 #custom-mem.attention,
 #custom-mullvad.attention,
-#custom-net.attention {
+#custom-net.attention,
+#custom-volume.attention {
     color: #fab387;
 }
 
@@ -167,6 +173,7 @@ window#waybar.empty #window {
 #custom-mullvad.unknown,
 #custom-net.critical,
 #custom-net.unknown,
+#custom-volume.unknown,
 #custom-units.critical,
 #custom-units.unknown {
     color: #f38ba8;

@@ -100,6 +100,7 @@
     },
     "custom/volume": {
         "exec": "volume",
+        "return-type": "json",
         "interval": 10,
         "signal": 1,
         "on-click": "ghostty -e wiremix -s compat -v output",
@@ -107,15 +108,19 @@
         "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 2%- && pkill -RTMIN+1 waybar",
         "tooltip": false
     },
+    // Material Design icons (nf-md-microphone, record, loading,
+    // microphone_off), like the rest of the bar. Their ink spills at most a
+    // quarter cell past the advance, inside the 6px padding; the Font
+    // Awesome ones used before spilled nearly a cell and were clipped.
     "custom/voxtype": {
         "exec": "voxtype status --follow --format json --extended",
         "return-type": "json",
         "format": "{icon}",
         "format-icons": {
-            "idle": "\uf130",
-            "recording": "\uf111",
-            "transcribing": "\uf110",
-            "stopped": "\uf131"
+            "idle": "\udb80\udf6c",
+            "recording": "\udb81\udc4a",
+            "transcribing": "\udb81\udf72",
+            "stopped": "\udb80\udf6d"
         },
         "tooltip": true,
         "on-click": "systemctl --user start voxtype.service",
@@ -159,12 +164,13 @@
     // ten-minute lock-and-blank is held off. Manual locking and suspend are
     // untouched. Not persisted: a waybar restart starts it deactivated again.
     // The eye opens and closes rather than only changing colour, so the state
-    // reads without colour, as with the desktop drawer.
+    // reads without colour, as with the desktop drawer. nf-md-eye and eye_off,
+    // for the same reason as voxtype's icons.
     "idle_inhibitor": {
         "format": "{icon}",
         "format-icons": {
-            "activated": "\uf06e",
-            "deactivated": "\uf070"
+            "activated": "\udb80\ude08",
+            "deactivated": "\udb80\ude09"
         },
         "tooltip-format-activated": "Staying awake: idle lock and blanking paused",
         "tooltip-format-deactivated": "Idle lock and blanking after 10 minutes"
