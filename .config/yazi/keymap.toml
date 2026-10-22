@@ -2,7 +2,7 @@
 prepend_keymap = [
   { on = ["<C-n>"], run = "plugin dragon", desc = "Drag selected files out" },
 
-  # Disable keybinds
+  # Disabled defaults
   { on = ["q"], run = "noop" },
   { on = ["g", "c"], run = "noop" },
   { on = ["g", "d"], run = "noop" },

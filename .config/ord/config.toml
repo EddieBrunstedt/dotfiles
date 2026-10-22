@@ -1,5 +1,4 @@
-# The active provider is at the bottom; the commented blocks are alternates
-# kept for swapping in — replace the live block, don't uncomment two.
+# Alternates — swap one in for the active block at the bottom.
 
 # provider = "anthropic"
 # model = "claude-opus-4-7"

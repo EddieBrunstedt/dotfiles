@@ -1,5 +1,2 @@
-# Global bat defaults; flags on the commandline override these.
 --theme="OneHalfDark"
-
-# Never soft-wrap; the terminal (or pager) folds long lines at its edge.
 --wrap=never

@@ -1,20 +1,10 @@
 #!/bin/sh
-# Waybar segment: the active white point override, or nothing when the screen is
-# neutral. Prints its own icon.
-#
-# Empty output hides the module, which is the point — the segment exists to catch
-# a tint left on by accident, so it has to be invisible the rest of the time.
-# That only works because whitetemp stops the unit for 6500 K instead of running
-# gammastep at it, so "active" now means a real override.
-#
-# Refreshed every interval and instantly via `pkill -RTMIN+5 waybar`
-# (see whitetemp); "signal": 5 in waybar config.jsonc.
+# Waybar segment: the active white point, hidden when neutral. Signal: RTMIN+5.
 systemctl --user is-active --quiet whitetemp.service || exit 0
 
 temp=$(systemctl --user show whitetemp.service -p ExecStart --value 2>/dev/null \
        | grep -oE '\-O[[:space:]]*[0-9]+' | grep -oE '[0-9]+')
 [ -n "$temp" ] || exit 0
 
-# U+F0594 nf-md-weather_night, written as an octal escape so this file stays
-# 7-bit and greppable.
+# nf-md-weather_night
 printf '%s %sK\n' "$(printf '\363\260\226\224')" "$temp"

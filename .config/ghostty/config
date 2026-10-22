@@ -1,27 +1,41 @@
-confirm-close-surface = false
-
+# ── Font ──
 font-family = "monospace"
 font-size = 12.5
 
-# Maple Mono's italic runs letters together; ss06 breaks the connecting
-# strokes and the cv rules straighten the letters that stay ambiguous.
+# Maple Mono italics: break the connecting strokes, straighten ambiguous letters.
 font-feature = ss06
 font-feature = cv33
 font-feature = cv34
 font-feature = cv35
 font-feature = cv36
 
-# Upright legibility: heavier escape backslash, plainer symbols, distinct a,
-# comma and semicolon, open question mark.
+# Maple Mono upright: distinct a, comma, semicolon; open question mark.
 font-feature = ss05
 font-feature = cv01
 font-feature = cv02
 font-feature = cv61
 font-feature = cv62
 
+# ── Look ──
+theme = Modus Vivendi Tinted
+minimum-contrast = 1.1
+
+window-decoration = none
+window-padding-balance = true
+window-padding-x = 3
+window-padding-y = 3
+window-padding-color = extend
+resize-overlay = never
+
+# ── Behavior ──
+confirm-close-surface = false
+quit-after-last-window-closed = false
+scrollback-limit = 50000000
+shell-integration-features = cursor,sudo,title,ssh-terminfo,path
+
+# ── Keys ──
 keybind = ctrl+enter=unbind
 
-# Scrollback navigation
 keybind = alt+y=scroll_page_lines:-1
 keybind = alt+e=scroll_page_lines:1
 keybind = alt+u=scroll_page_fractional:-0.5
@@ -29,32 +43,7 @@ keybind = alt+d=scroll_page_fractional:0.5
 keybind = alt+b=scroll_page_up
 keybind = alt+f=scroll_page_down
 
-# Never let a colour pair render as invisible text.
-minimum-contrast = 1.1
-
-quit-after-last-window-closed = false
-
-resize-overlay = never
-
-scrollback-limit = 50000000
-
-# Defaults plus sudo and ssh-terminfo, so terminfo survives both.
-shell-integration-features = cursor,sudo,title,ssh-terminfo,path
-
-# AAA contrast throughout, and black stays black for TUI status bars.
-theme = Modus Vivendi Tinted
-
-window-decoration = none
-window-padding-balance = true
-window-padding-x = 3
-window-padding-y = 3
-window-padding-color = extend
-
-# Retro CRT look, toggled by `ghostty-retro` (Super+Shift+r), which creates or
-# removes this link to retro.conf. Included files load after everything in
-# this one, so retro.conf's font and theme win while it is on.
+# ── Toggles (symlinks managed by ghostty-retro and ghostty-shader-menu) ──
+# Shader last so it replaces the retro one rather than stacking.
 config-file = ?~/.config/ghostty/retro-on.conf
-
-# Shader picked in `ghostty-shader-menu` (Super+Shift+h). After retro-on.conf
-# so a pick replaces the retro CRT shader instead of stacking on it.
 config-file = ?~/.config/ghostty/shader-on.conf

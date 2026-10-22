@@ -1,7 +1,6 @@
 [Desktop Entry]
 Type=Application
 Name=File Manager
-# NoDisplay: a handler target for mimeapps.list, not an app to pick from rofi.
 NoDisplay=true
 MimeType=inode/directory;
 Exec=uwsm app -- ghostty -e yazi %f

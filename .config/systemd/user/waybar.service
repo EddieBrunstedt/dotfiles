@@ -2,15 +2,10 @@
 Description=Waybar status bar
 Documentation=man:waybar(5)
 After=graphical-session.target
-# Redundant while Slice=app-graphical.slice below is itself PartOf this target;
-# stated so waybar still stops with the session if that Slice= ever changes.
 PartOf=graphical-session.target
 
 [Service]
 Type=exec
-# SOPS_AGE_KEY_CMD, needed by the custom/inbox shim, is inherited from
-# ~/.config/environment.d/10-defaults.conf.
-# Matches XDG_CURRENT_DESKTOP, so waybar only runs in a wlroots/mango session.
 ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""
 ExecStart=/usr/bin/waybar
 ExecReload=kill -SIGUSR2 $MAINPID

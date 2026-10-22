@@ -1,12 +1,6 @@
 #!/bin/sh
-#Run an ord LLM template against the clipboard, chosen from rofi (Wayland)
-
-# Templates live in ~/.config/ord/templates. `ord run <template> -f=text -c -n`
-# fills the template's `text` placeholder from the clipboard, copies the
-# result back to the clipboard, and sends a completion notification.
-#
-# Adding a prompt: drop a template in that directory, add a line to the list
-# and a matching case arm. The rofi height follows the list automatically.
+# Run an ord template (~/.config/ord/templates) on the clipboard; the result
+# replaces it. To add one: a template, a list line and a case arm.
 
 list='Fix grammar
 Get definition

@@ -1,6 +1,5 @@
 #!/bin/sh
-# Full-screen screenshot → satty annotation (crop inside satty when needed).
-# Bound to Print. Save-to-file and copy-to-clipboard are chosen in satty's UI.
+# Full-screen screenshot, annotated (and cropped, saved, copied) in satty.
 dir=~/screenshots
 mkdir -p "$dir"
 grim - | satty --filename - \

@@ -1,17 +1,10 @@
 #!/usr/bin/env bash
-# wallpaper — exec swaybg with the current wallpaper, or a solid color if no
-# image is set yet. Runs as ExecStart for wallpaper.service; it does not
-# daemonize or replace a running instance, because systemd owns the lifetime.
-#
-# Wallpapers live in ~/.local/share/wallpapers under their original names.
-# To change wallpaper, repoint the `current` symlink and restart the unit:
+# ExecStart of wallpaper.service. To change the wallpaper (swaylock follows):
 #   ln -sfn ~/.local/share/wallpapers/<image> ~/.local/share/wallpapers/current
 #   systemctl --user restart wallpaper.service
-# swaylock reads the same symlink, so both follow in one step. Any format
-# swaybg groks (png/jpg/webp) works.
 
 WALL="$HOME/.local/share/wallpapers/current"
-FALLBACK_COLOR="#1a1b26"   # shown until you set an image
+FALLBACK_COLOR="#1a1b26"
 
 if [[ -e $WALL ]]; then
   exec swaybg -c "$FALLBACK_COLOR" -i "$WALL" -m fill

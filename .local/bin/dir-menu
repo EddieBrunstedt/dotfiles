@@ -1,39 +1,21 @@
 #!/bin/sh
-# dir-menu — pick one or more directories, open each in its own file-explorer
-# window, as defined by file.desktop.
-# Bound to SUPER+y.
+# Pick one or more directories and open each in its own file-explorer window.
 #
 #   Enter        take the highlighted directory, then ask for another
-#   Ctrl+Enter   take it and open everything immediately
-#   Esc          cancel; nothing opens, however many were already picked
+#   Ctrl+Enter   take it and open everything now
+#   Esc          cancel; nothing opens
 #
-# Once something is picked the first row becomes "open the N selected", so the
-# two-directory case is: type, Enter, type, Enter, Enter. Picking the same
-# directory twice is supported on purpose -- that is why this loops instead of
-# using rofi's -multi-select, which can only ever mark an entry once.
-#
-# The goal is two explorer windows side by side in the tiling layout, so files
-# can be moved between folders without navigating to each one by hand.
+# Loops rather than using -multi-select so the same directory can be picked twice.
 
-# Explicitly unwanted subtrees: these are the ONLY discovery exclusions.
-# Ignore files and visit history must not hide otherwise useful directories.
-# Slashless fd patterns match any path component, pruning its descendants too.
-# .local/share and .pi are intentionally discoverable.
+# The only discovery exclusions; ignore files are bypassed.
 prune='.git node_modules .cache .npm .npm-global .cargo .rustup .bun
 target .venv venv __pycache__ .codex'
 
-# Leading marker, not a plain word: it must never look like a path, and the
-# glyph keeps it from fuzzy-matching the directory names being typed.
 sentinel='▶ open the '
 
 notify() { notify-send -u critical "Directory menu" "$1"; }
 
-# -kb-accept-custom is unbound first because it owns Control+Return by default;
-# rofi refuses to start on a duplicate binding, so the chord has to be freed
-# before kb-custom-1 (which reports exit code 10) can claim it.
-# -threads 0 = one matcher thread per core. With an empty filter, preserve
-# sentinel, home, then alphabetical paths. While typing, rank matches so an
-# exact path wins over incidental fuzzy matches elsewhere in the tree.
+# Control+Return is freed from kb-accept-custom so kb-custom-1 (exit 10) can take it.
 menu() {
     rofi -dmenu -i -sort -mesg "$scan_warning" \
         -matching fuzzy -threads 0 \
@@ -43,11 +25,7 @@ menu() {
 }
 
 expand_tilde() {
-    # shellcheck disable=SC2088  # the quotes are the point: a literal "~/"
-    # prefix is being stripped off, not a path being expanded. The directive
-    # belongs in front of the whole case: shellcheck only honours one ahead of
-    # a complete command, and on a single branch it fails to parse (SC1124)
-    # and silently stops checking everything below.
+    # shellcheck disable=SC2088  # stripping a literal "~/", not expanding it
     case $1 in
         '~') printf '%s\n' "$HOME" ;;
         '~/'*) printf '%s\n' "$HOME/${1#'~/'}" ;;
@@ -55,8 +33,6 @@ expand_tilde() {
     esac
 }
 
-# Build the fd arguments without word-splitting paths. --no-ignore bypasses
-# local, parent, and global ignore rules; explicit exclusions still apply.
 set -- --hidden --no-ignore --no-follow --show-errors --absolute-path --color never
 for p in $prune; do
     set -- "$@" --exclude "$p"
@@ -75,10 +51,7 @@ trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-# NUL records preserve arbitrary filenames until unsafe menu rows are rejected.
-# Two scans avoid shell/stat work for ordinary directories. Only symlinks need
-# a directory test, batched into a few shell processes by fd (not one per path).
-# No symlink is traversed, even when its destination is outside home.
+# Directories, plus symlinks that point at one (listed, never traversed).
 printf '%s\0' "$HOME" > "$scan_tmp/paths"
 fd "$@" --type d --print0 '' "$HOME" >> "$scan_tmp/paths" 2>> "$scan_tmp/errors" ||
     printf '%s\n' "Directory scan failed" >> "$scan_tmp/errors"
@@ -92,10 +65,7 @@ fd "$@" --type l '' "$HOME" -X sh -c '
 ' sh >> "$scan_tmp/paths" 2>> "$scan_tmp/errors" ||
     printf '%s\n' "Symlink scan failed" >> "$scan_tmp/errors"
 
-# GNU awk's NUL record separator keeps embedded newlines from becoming fake
-# rows. The existing picker returns newline-delimited strings, so omit such
-# paths and warn rather than incorrectly opening part of a filename.
-# ENVIRON avoids awk -v interpreting backslashes in HOME or the workspace.
+# Rewrite as ~/... rows. Paths containing newlines can't be menu rows; skip them.
 DIR_MENU_SKIPPED="$scan_tmp/skipped" LC_ALL=C awk '
     BEGIN {
         RS = "\0"
@@ -117,15 +87,13 @@ DIR_MENU_SKIPPED="$scan_tmp/skipped" LC_ALL=C awk '
     notify "Could not prepare directory list"
     exit 1
 }
-# All rows begin with ~: bytewise sorting puts ~ itself first. Build once per
-# invocation, outside the selection loop; no persistent cache or visit history.
+# Bytewise sort puts ~ itself first.
 candidates=$(LC_ALL=C sort -u "$scan_tmp/rows") || {
     notify "Could not sort directory list"
     exit 1
 }
 scan_warning=
 if [ -s "$scan_tmp/errors" ]; then
-    # fd can exit 0 despite unreadable subtrees, so diagnostics matter too.
     scan_warning="Discovery incomplete: some directories could not be scanned."
 fi
 if [ -s "$scan_tmp/skipped" ]; then
@@ -140,7 +108,7 @@ if [ -z "$candidates" ]; then
     exit 1
 fi
 
-# The positional parameters now hold the picked directories.
+# "$@" now collects the picked directories.
 set --
 
 while :; do
@@ -155,30 +123,23 @@ $candidates"
     chosen=$(printf '%s\n' "$list" | menu "$prompt")
     status=$?
 
-    # Anything other than Enter (0) or Ctrl+Enter (10) is a cancel, and a cancel
-    # discards the whole selection rather than opening a partial one: Esc keeps
-    # meaning Esc, so a reflexive press never spawns terminals.
+    # Anything but Enter (0) or Ctrl+Enter (10) cancels the whole selection.
     case $status in
         0 | 10) ;;
         *) exit 0 ;;
     esac
 
-    # An empty result means Enter on an empty list; only Ctrl+Enter ends it.
     if [ -z "$chosen" ]; then
         [ "$status" -eq 10 ] && break
         continue
     fi
 
-    # The "open the N selected" row finishes with what is already collected.
     case $chosen in
         "$sentinel"*) break ;;
     esac
 
     dir=$(expand_tilde "$chosen")
     if [ ! -d "$dir" ]; then
-        # Reachable two ways: a typed path that does not exist (rofi accepts
-        # custom input on purpose, so absolute paths can be entered directly),
-        # or a directory deleted since this invocation's discovery snapshot.
         notify "Not a directory: $dir"
         continue
     fi
@@ -189,34 +150,8 @@ done
 
 [ $# -gt 0 ] || exit 0
 
-# Through the desktop entry rather than a hardcoded terminal command:
-# inode/directory in ~/.config/mimeapps.list points at file.desktop, whose Exec
-# line is the single place the file explorer is defined. Changing explorer is
-# then a one-line edit there, and this script follows along with every GUI app
-# that opens a folder.
-#
-# `gio open`, NOT `xdg-open`: with no recognised desktop environment xdg-open
-# falls back to its "generic" backend, which runs the Exec line in the
-# FOREGROUND and blocks for as long as the terminal lives -- the second
-# directory would open only after the first was closed. gio open resolves the
-# same mimeapps entry, hands off, and returns in ~15ms.
-#
-# Despite the name gio is not a GNOME dependency: it ships in glib2, which rofi,
-# ghostty and libnotify already pull in, so nothing is dragged in for it here.
-# There is no leaner option either -- shared-mime-info, the freedesktop mime
-# database every launcher reads, itself depends on glib2, so handlr, gtk-launch
-# and mimeopen all land on it too. mimeopen is the one true drop-in (identical
-# argv, spaces included) but it is an order of magnitude slower and adds a
-# second mime implementation that can drift from the one the GUI apps resolve
-# against.
-#
-# No `uwsm app` wrapper here either: file.desktop's Exec already begins with
-# `uwsm app --`, so the terminal puts itself in app-graphical.slice. Wrapping
-# again just nests a scope inside a service.
-#
-# Sequentially rather than backgrounded: the compositor tiles windows in the
-# order it receives them, so launching in parallel would shuffle the panes
-# relative to the order the directories were picked.
+# Opens via the inode/directory handler (file.desktop). gio, not xdg-open,
+# which blocks until the terminal exits. Sequential to keep the tiling order.
 for dir do
     gio open "$dir" || notify "Could not open $dir"
 done

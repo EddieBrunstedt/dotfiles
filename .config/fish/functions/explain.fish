@@ -1,11 +1,8 @@
 # Explain a shell command with an LLM (pi) without running it.
 #   explain [--debug] [command ...]
-# With no command, explains the current commandline (it is bound to ctrl-e),
-# falling back to the last history entry. Each word is first resolved through
-# fish (functions, aliases, abbreviations, binaries) so the agent describes
-# what actually runs. The agent may consult documentation with its tools; each
-# tool call streams as a dim line while the final markdown answer is
-# highlighted by bat. --debug prints the assembled prompts instead of calling pi.
+# Defaults to the current commandline, then the last history entry. Words are
+# resolved through fish first so the answer matches what actually runs.
+# --debug prints the prompts instead of calling pi.
 function explain --description 'Explain a shell command via pi'
     argparse --ignore-unknown d/debug -- $argv; or return
 
@@ -22,8 +19,6 @@ function explain --description 'Explain a shell command via pi'
             set src 'history[1]'
         end
     end
-    # Whitespace-only input must fall back or bail, not resolve: `string split
-    # -n` below drops every field, leaving no words to explain.
     if not string match -qr -- '\S' "$cmd"
         commandline -f repaint
         return 1
@@ -92,8 +87,7 @@ $ctxtext"
                 empty
             end' \
         | command bat -l md --style plain --paging never
-    # The two-line prompt makes repaint redraw starting one line above the
-    # cursor; leave a blank line for it to consume instead of the output.
+    # Blank line for the two-line prompt's repaint to consume.
     echo
     commandline -f repaint
 end

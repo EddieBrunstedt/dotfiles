@@ -1,13 +1,6 @@
 #!/bin/sh
-# Force the US layout while voxtype types, then put the previous layout back.
-#
-# voxtype's ydotool driver emits raw US keycodes, so whatever layout mango has
-# active when the text is typed must be US or punctuation comes out wrong.
-# Wired to pre_output_command / post_output_command in
-# ~/.config/voxtype/config.toml.
-#
-# The index passed to switch_keyboard_layout is 1-based and follows the order of
-# xkb_rules_layout in ~/.config/mango/config.toml. Keep the two in sync.
+# Switch to US while voxtype types (ydotool sends US keycodes), then restore.
+# Indexes follow xkb_rules_layout in mango's config.
 
 state="${XDG_RUNTIME_DIR:-/tmp}/voxtype-layout.prev"
 us='English (US)'
@@ -29,7 +22,6 @@ layout_index() {
 case "$1" in
 hold)
     now=$(current_layout)
-    # No IPC answer means no compositor to switch; leave things alone.
     [ -n "$now" ] || exit 0
     printf '%s\n' "$now" >"$state"
     [ "$now" = "$us" ] && exit 0

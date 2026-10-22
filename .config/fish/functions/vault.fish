@@ -1,9 +1,7 @@
 function vault --description 'Mount/unmount the VeraCrypt shared vault at ~/vault'
-    # The VeraCrypt container file (lives on the NTFS /data/shared partition).
     set -l container /data/shared/vault
-    # Real mount point: per-session runtime dir, auto-wiped on logout/reboot.
     set -l mnt $XDG_RUNTIME_DIR/vault
-    # Convenience symlink in $HOME; only exists while the vault is mounted.
+    # Exists only while mounted.
     set -l link $HOME/vault
 
     switch "$argv[1]"
@@ -12,14 +10,12 @@ function vault --description 'Mount/unmount the VeraCrypt shared vault at ~/vaul
                 echo "vault: already mounted → $link"
                 return 0
             end
-            # Never clobber a real file/dir that happens to sit at ~/vault.
             if test -e $link; and not test -L $link
                 echo "vault: $link exists and is not a symlink — refusing to touch it" >&2
                 return 1
             end
             mkdir -p $mnt
-            # Prompts only for the volume password (and sudo); other questions
-            # are pre-answered so it's a clean single prompt.
+            # Pre-answer everything but the password.
             if veracrypt --text --mount $container $mnt --pim 0 --keyfiles "" --protect-hidden no
                 ln -sfn $mnt $link
                 echo "vault: mounted → $link"

@@ -1,14 +1,6 @@
 #!/bin/sh
-# Waybar segment: notification state. Refreshed every interval and instantly
-# via `pkill -RTMIN+3 waybar` (see dunst-toggle). Prints its own icon.
-#
-# Classes are telltale's level names, so style.css colours this segment like
-# the gauges: notifications showing is quiet, paused is attention, since a
-# pause left on by accident hides everything. The bell rings or is struck
-# through, so the state reads without colour too.
-#
-# U+F009A nf-md-bell and U+F009B nf-md-bell_off, written as octal escapes so
-# this file stays 7-bit and greppable.
+# Waybar segment: notifications paused or showing. Signal: RTMIN+3.
+# nf-md-bell_off / nf-md-bell
 if [ "$(dunstctl is-paused 2>/dev/null)" = "true" ]; then
     printf '{"text":"%s","class":"attention","tooltip":"Notifications paused"}\n' "$(printf '\363\260\202\233')"
 else

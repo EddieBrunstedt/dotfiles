@@ -1,22 +1,43 @@
-[alias]
-	last = log -1 HEAD
+[user]
+	name = Eddie Brunstedt
+	email = eddie.brunstedt@protonmail.com
+	signingkey = 5CC7BBDDF0534D09F82A6523B15F264ED2A15EFE
+[github]
+	user = EddieBrunstedt
+[commit]
+	gpgsign = true
+[init]
+	defaultBranch = main
 [core]
-	pager = delta
 	editor = nvim
-[fetch]
-	prune = true
+	pager = delta
 [credential]
 	helper = libsecret
+[fetch]
+	prune = true
 [pull]
 	ff = only
+[merge]
+	conflictstyle = zdiff3
+[alias]
+	last = log -1 HEAD
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+
+[interactive]
+	diffFilter = delta --color-only
 [delta]
 	dark = true
 	navigate = true
+	hyperlinks = true
 	tabs = 2
 	line-numbers = true
 	side-by-side = false
 	syntax-theme = ansi
-	
+
 	plus-style = syntax "#012800"
 	minus-style = syntax "#340001"
 	hunk-header-style = file line-number syntax
@@ -25,29 +46,8 @@
 	file-decoration-style = none
 	commit-style = bold "#e0af68"
 	commit-decoration-style = none
-	
+
 	line-numbers-left-style = "#6b7089"
 	line-numbers-right-style = "#6b7089"
 	line-numbers-minus-style = "#f7768e"
 	line-numbers-plus-style = "#9ece6a"
-	
-	hyperlinks = true
-[github]
-	user = EddieBrunstedt
-[init]
-	defaultBranch = main
-[interactive]
-	diffFilter = delta --color-only
-[merge]
-	conflictstyle = zdiff3
-[user]
-	email = eddie.brunstedt@protonmail.com
-	name = Eddie Brunstedt
-	signingkey = 5CC7BBDDF0534D09F82A6523B15F264ED2A15EFE
-[commit]
-	gpgsign = true
-[filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true

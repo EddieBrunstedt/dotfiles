@@ -1,11 +1,6 @@
 #!/bin/sh
-# emoji-menu — rofi emoji picker; the chosen emoji lands in the clipboard.
-# Bound to SUPER+SHIFT+e.
-#
-# The list comes from the official Unicode emoji-test.txt (UTS #51), so it
-# never goes stale like a hand-maintained file. A cached copy is kept so the
-# menu opens instantly and works offline; it is refreshed in the background
-# once it is older than $max_age_days.
+# Rofi emoji picker; copies the pick. The list is Unicode's emoji-test.txt,
+# cached and refreshed in the background once older than $max_age_days.
 
 url="https://unicode.org/Public/emoji/latest/emoji-test.txt"
 cache="${XDG_CACHE_HOME:-$HOME/.cache}/emoji-menu/emoji-test.txt"
@@ -16,16 +11,13 @@ fetch() { curl -sfL --max-time "$1" -o "$cache.new" "$url" && mv "$cache.new" "$
 
 mkdir -p "${cache%/*}"
 if [ ! -s "$cache" ]; then
-  # first run: nothing to show until the list is downloaded
   fetch 10 || { notify-send -u critical "Emoji" "Download failed and no cached list exists"; exit 1; }
 elif [ -n "$(find "$cache" -mtime +"$max_age_days" 2>/dev/null)" ]; then
   setsid -f sh -c "curl -sfL --max-time 60 -o '$cache.new' '$url' \
     && mv '$cache.new' '$cache'" >/dev/null 2>&1
 fi
 
-# Data lines look like:  1F600 ; fully-qualified  # 😀 E1.0 grinning face
-# Keep fully-qualified entries, drop the per-skin-tone variants (they would
-# quintuple the list; tone can be applied by whatever receives the emoji).
+# 1F600 ; fully-qualified  # 😀 E1.0 grinning face  (skin tones dropped)
 chosen=$(awk '
   /^[0-9A-F].*; fully-qualified/ && !/skin tone/ {
     c = substr($0, index($0, "# ") + 2)

@@ -1,31 +1,21 @@
 #!/bin/sh
-# Secret-injecting shim dispatcher.
-#
-# Invoked through a symlink in ~/.local/bin/shims named after the tool. Looks
-# that name up in `manifest`, fetches the listed secrets with `sec`, exports
-# them, and execs the real binary. Nothing else in the environment is touched.
-#
-# Adding a tool: one manifest line, one symlink in shims/, `just restow`.
-# See ~/.secret/README.md.
+# Secret-injecting shim. Run via a symlink in ~/.local/bin/shims named after
+# the tool: exports the secrets `manifest` lists for it, then execs the real
+# binary. See ~/.secret/README.md.
 set -eu
 
-# $0 is the symlink the shell resolved off $PATH, not this file, so $dir is the
-# shims directory rather than the libexec directory holding this script. That is
-# what we want: `manifest` and `sec` are located relative to the shims dir.
-# Running this script directly finds no manifest beside it and exits 1.
+# $0 is the symlink, so $dir is the shims directory.
 name=${0##*/}
 dir=$(dirname -- "$0")
 manifest=${SHIM_MANIFEST:-$dir/manifest}
 
-# `sec` lives one level up from shims/, in ~/.local/bin. Resolve it by location
-# rather than relying on $PATH, which is not dependable when a shim is exec'd by
-# a systemd unit. Fall back to $PATH if the layout ever changes.
+# By location: $PATH is unreliable under systemd units.
 sec=$dir/../sec
 [ -x "$sec" ] || sec=sec
 
 [ -f "$manifest" ] || { echo "shim: no manifest at $manifest" >&2; exit 1; }
 
-# $1 == tool, $2 == real binary, $3.. == secret names. Comments never match.
+# tool, real binary, secret names...
 entry=$(awk -v n="$name" '$1 == n { print; exit }' "$manifest")
 [ -n "$entry" ] || { echo "shim: no manifest entry for '$name'" >&2; exit 1; }
 
@@ -36,8 +26,7 @@ esac
 [ -x "$real" ] || { echo "shim: '$name' target not executable: $real" >&2; exit 1; }
 
 for var in $(printf '%s\n' "$entry" | awk '{ for (i = 3; i <= NF; i++) print $i }'); do
-    # Separate assignment so `set -e` aborts here if sec fails, rather than
-    # the failure being masked by export's own exit status.
+    # Separate assignment so set -e catches a failing sec.
     val=$("$sec" "$var")
     export "$var=$val"
 done

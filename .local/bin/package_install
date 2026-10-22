@@ -1,22 +1,13 @@
 #!/usr/bin/env bash
 
-# Package installer for Arch Linux using pacman and paru.
-# Idempotency goal: rerunning this script converges the system to the package
-# lists without reinstalling up-to-date packages or rebuilding paru unnecessarily.
+# Install the official and AUR applists with pacman and paru. Idempotent.
 
 set -Eeuo pipefail
 
 readonly OFFICIAL_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist"
 readonly AUR_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-aur"
-# Packages built by hand; listed for package_report's benefit, never installed
-# here because they exist in no repository.
+# Never installed here; only read so they aren't reported as untracked.
 readonly LOCAL_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-local"
-# applist-machine is deliberately absent from this script. It holds boot,
-# firmware, hardware and greeter packages, and it is gitignored — so it never
-# exists on a fresh clone, and where it does exist it describes packages the
-# machine already has. Installing from it cannot do useful work. Like
-# applist-local it exists only so package_report counts those packages as
-# tracked.
 
 if [[ -t 1 && -z ${NO_COLOR:-} ]]; then
 	readonly RED=$'\033[0;31m'

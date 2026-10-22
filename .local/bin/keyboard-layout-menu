@@ -1,8 +1,5 @@
 #!/bin/sh
-# Pick a keyboard layout via rofi. Bound to SUPER+SHIFT+k.
-#
-# The index passed to switch_keyboard_layout is 1-based and follows the order of
-# xkb_rules_layout in ~/.config/mango/config.toml. Keep the two in sync.
+# Pick a keyboard layout via rofi. Order must match xkb_rules_layout in mango.
 
 list='us (English)
 se (Swedish)

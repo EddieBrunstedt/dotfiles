@@ -1,24 +1,11 @@
 #!/bin/sh
-# Waybar segment: Mullvad tunnel state and exit country. Prints its own icon.
-#
-# Runs for as long as the bar does. `mullvad status -j listen` writes the
-# current state and then one JSON line per change, so connects, drops and relay
-# switches show as they happen, with no polling and no signal from
-# mullvad-menu. If the daemon goes away the stream ends; the segment shows
-# unknown and listens again five seconds later.
-#
-# Classes are telltale's level names, so style.css colours this segment like
-# the gauges: connected is quiet, a transition is attention, no tunnel is
-# critical, an unreachable daemon is unknown.
-#
-# The JSON names the country but has no code for it, so the code is the exit
-# relay's hostname prefix (se-sto-wg-201 -> SE). Every state is the icon and
-# three left-aligned cells, so the bar does not shift as the state changes and
-# the padding falls after the code, not between it and the icon.
+# Waybar segment: Mullvad tunnel state and exit country, streamed from
+# `mullvad status -j listen`. Classes use telltale's level names.
+# The country code is the relay hostname prefix (se-sto-wg-201 -> SE), padded
+# to three cells so the bar doesn't shift.
 set -u
 
-# U+F033E nf-md-lock and U+F033F nf-md-lock_open, written as octal escapes so
-# this file stays 7-bit and greppable.
+# nf-md-lock / nf-md-lock_open
 lock=$(printf '\363\260\214\276')
 open=$(printf '\363\260\214\277')
 
@@ -26,7 +13,7 @@ while :; do
     mullvad status -j listen 2>/dev/null | jq --unbuffered -c \
         --arg lock "$lock" --arg open "$open" '
         def cells: (. + "   ")[:3];
-        # The tooltip is Pango markup; & first, or &lt; gets mangled.
+        # Pango markup; & first.
         def esc: gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;");
         ((.details | objects | .location | objects) // {}) as $l
         | ($l.hostname // "" | (split("-")[0] // "") | ascii_upcase) as $code

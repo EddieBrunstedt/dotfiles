@@ -1,17 +1,11 @@
+# User units can't depend on system units (docker.service, network-online.target),
+# so Restart= covers starting before DNS is up. Enable docker separately.
 [Unit]
 Description=Forgejo Actions runner (Codeberg)
-# No After=/Wants= on docker.service or network-online.target: those are SYSTEM
-# units and this is a USER unit, so systemd silently ignores the dependency
-# (`systemctl --user show` still echoes it back, which makes it look effective).
-# User units cannot order against system units at all. At boot this daemon may
-# start before DNS resolves; Restart=on-failure below recovers it in ~5s.
-# The system-side docker.service must be enabled separately -- see README.
 
 [Service]
 Type=simple
-# Deliberately in background.slice rather than app-graphical.slice: this runner
-# starts at boot via Linger=yes and must outlive graphical-session.target.
-# app-graphical.slice is PartOf= that target; app.slice is not session-bound.
+# Not app-graphical.slice: started via linger, must outlive the session.
 Slice=background.slice
 WorkingDirectory=%h/.config/forgejo-runner
 ExecStart=/usr/bin/forgejo-runner daemon \

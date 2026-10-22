@@ -1,3 +1,5 @@
+set ignore-comments := true
+
 # List available recipes
 default:
     @just --list
@@ -5,25 +7,6 @@ default:
 # Symlink dotfiles into $HOME
 install:
     stow .
-
-# Install the root-owned uwsm session entry (once per machine)
-install-session:
-    # Root-owned, so stow cannot place it. Without this the greeter offers only
-    # the packaged `Mango` session, which runs the compositor bare: no uwsm, so
-    # no environment preload, no graphical-session target, no slice layout.
-    sudo install -Dm644 \
-        system/usr/share/wayland-sessions/mango-uwsm.desktop \
-        /usr/share/wayland-sessions/mango-uwsm.desktop
-    # Never suspend or hibernate: the machine works unattended.
-    sudo install -Dm644 \
-        system/etc/systemd/sleep.conf.d/no-sleep.conf \
-        /etc/systemd/sleep.conf.d/no-sleep.conf
-    # The power button is mango's (lock-blank), not logind's.
-    sudo install -Dm644 \
-        system/etc/systemd/logind.conf.d/power-key.conf \
-        /etc/systemd/logind.conf.d/power-key.conf
-    # Reload, not restart: restarting logind can end the running session.
-    sudo systemctl kill -s HUP systemd-logind
 
 # Re-symlink, cleaning up stale links
 restow:
@@ -33,22 +16,24 @@ restow:
 uninstall:
     stow --delete .
 
-# List broken symlinks pointing into the dotfiles repo
-clean-orphans:
-    @find $HOME -xdev \
-        -path "$HOME/.local/share/Trash" -prune -o \
-        -xtype l -lname '*dotfiles*' -print
+# Install root-owned files: uwsm session entry, no-sleep, power key (once per machine)
+install-session:
+    sudo install -Dm644 \
+        system/usr/share/wayland-sessions/mango-uwsm.desktop \
+        /usr/share/wayland-sessions/mango-uwsm.desktop
+    sudo install -Dm644 \
+        system/etc/systemd/sleep.conf.d/no-sleep.conf \
+        /etc/systemd/sleep.conf.d/no-sleep.conf
+    sudo install -Dm644 \
+        system/etc/systemd/logind.conf.d/power-key.conf \
+        /etc/systemd/logind.conf.d/power-key.conf
+    # Reload, not restart: restarting logind can end the session.
+    sudo systemctl kill -s HUP systemd-logind
 
-# Delete the broken symlinks listed by `clean-orphans`
-clean-orphans-apply:
-    @find $HOME -xdev \
-        -xtype l -lname '*dotfiles*' \
-        -not -path "$HOME/.local/share/Trash/*" \
-        -print -delete
-
-# Enable user systemd services (run once after `install` on a fresh machine)
+# Enable user systemd services (once per machine, after `install`)
 enable-services:
     systemctl --user daemon-reload
+    # ydotool is voxtype's typing backend; voxtype itself is started from waybar.
     systemctl --user enable \
         desktop-watch.service \
         protonmail-bridge.service \
@@ -57,15 +42,8 @@ enable-services:
         wallpaper.service \
         waybar.service \
         ydotool.service
-    # ydotool.service is voxtype's typing backend, not started on demand:
-    # voxtype shells out to the `ydotool` client, which needs ydotoold already
-    # listening on its socket. voxtype.service stays disabled by design and is
-    # started from the waybar module.
-    # soteria's packaged unit installs to default.target; wire it to the
-    # graphical session instead
     systemctl --user add-wants graphical-session.target soteria.service
-    # vault-cleanup and the forgejo runner are wanted by default.target, which
-    # only runs at boot with lingering on
+    # default.target units only start at boot with lingering on.
     loginctl enable-linger $USER
 
 # Enable the Forgejo Actions runner (this machine only; needs a runner token)
@@ -79,3 +57,16 @@ enable-forgejo:
         exit 1
     fi
     systemctl --user enable --now forgejo-runner.service
+
+# List broken symlinks pointing into the dotfiles repo
+clean-orphans:
+    @find $HOME -xdev \
+        -path "$HOME/.local/share/Trash" -prune -o \
+        -xtype l -lname '*dotfiles*' -print
+
+# Delete the broken symlinks listed by `clean-orphans`
+clean-orphans-apply:
+    @find $HOME -xdev \
+        -xtype l -lname '*dotfiles*' \
+        -not -path "$HOME/.local/share/Trash/*" \
+        -print -delete

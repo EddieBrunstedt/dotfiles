@@ -1,81 +1,48 @@
 #!/bin/sh
-# Waybar segment: whether ~/desktop is empty, and how old the mess is. Prints
-# its own icon.
+# Waybar segment for ~/desktop, the scratch drawer. Never hides.
 #
-# ~/desktop is the scratch drawer, so anything sitting in it is unfinished
-# work. Unlike whitetemp-status this segment never hides: an absent module
-# reads as a dead module, not as "nothing to do".
+#   clean  empty tray, grey    nothing there
+#   fresh  full tray, peach    dropped here this boot
+#   stale  full tray, red      survived a reboot
 #
-# Three states, on two axes that fail independently:
-#
-#   clean  empty tray, grey    nothing on the desk
-#   fresh  full tray, peach    dropped here during this boot
-#   stale  full tray, red      survived a reboot; should have been dealt with
-#
-# The glyph carries clean-vs-dirty, the only distinction that means "act", so
-# that much survives a glance that does not register colour -- the same
-# guarantee the folder icons used to give. Fresh-vs-stale is a priority
-# refinement on top of an alarm already raised, so it rides on colour alone;
-# the tooltip spells it out for the case where that is not enough.
-#
-# Hidden entries count. The folder is clean only when there is nothing left
-# for `rm -rf ~/desktop/{*,.*}` to take -- a stray .claude/ is still clutter.
-#
-# Refreshed every interval and instantly via `pkill -RTMIN+6 waybar`;
-# "signal": 6 in waybar config.jsonc.
+# Hidden entries count. Signal: RTMIN+6.
 set -u
 
 dir="$HOME/desktop"
 
-# U+F0687 nf-md-inbox and U+F1272 nf-md-inbox_full: the desk tray empty, and
-# the same tray with paper piled in it. ~/desktop is the physical in-tray on a
-# desk -- what is on it right now is what is being worked on -- so the tray
-# fills and empties rather than a folder opening and closing. Both are
-# 1536/2048 em in Symbols Nerd Font, unlike the folder pair they replace, which
-# differed by a tenth of an em and nudged the clock on every flip. Written as
-# octal escapes so this file stays 7-bit and greppable.
+# nf-md-inbox / nf-md-inbox_full (same width, so the clock doesn't shift)
 icon_clean=$(printf '\363\260\232\207')
 icon_dirty=$(printf '\363\261\211\262')
 
-# Where the "have we seen this boot already?" marker lives. XDG_RUNTIME_DIR is
-# tmpfs and is torn down with the session, so a marker can only be from this
-# boot. The /tmp fallback is not guaranteed that, which is why the boot id is
-# stored alongside the state rather than the file's existence being the whole
-# signal: a marker from an older boot has to read as no marker at all.
+# Stores the boot id with the state, so a marker from an older boot is ignored.
 marker="${XDG_RUNTIME_DIR:-/tmp}/desktop-status.state"
 boot=$(cat /proc/sys/kernel/random/boot_id 2>/dev/null || echo unknown)
 
-# Filenames reach the tooltip as a JSON string that waybar hands to pango, so
-# both layers need escaping. Order matters: & before < , or &lt; gets mangled.
+# JSON and pango escaping; & must go before <.
 json_escape() {
     sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/&/\&amp;/g' -e 's/</\&lt;/g' \
         | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g'
 }
 
-# Rewritten in full every run, so a torn read by the bar on the other output
-# would be a half-written line. Land it with a rename instead.
+# Atomic write via rename.
 remember() {
     printf '%s %s\n' "$boot" "$1" > "$marker.$$" 2>/dev/null \
         && mv -f "$marker.$$" "$marker" 2>/dev/null
     rm -f "$marker.$$" 2>/dev/null
 }
 
-# A missing folder is not a state worth a colour -- print nothing and hide.
 [ -d "$dir" ] || { printf '{"text":""}\n'; exit 0; }
 
 names=$(find "$dir" -mindepth 1 -maxdepth 1 -printf '%f\n' 2>/dev/null | LC_ALL=C sort)
 count=$(printf '%s' "$names" | grep -c '^')
 
 if [ "$count" -eq 0 ]; then
-    # Clearing the folder clears the debt: whatever lands here next is this
-    # session's problem, not the last one's.
     remember clean
     printf '{"text":"%s","class":"clean","tooltip":"~/desktop is clean"}\n' "$icon_clean"
     exit 0
 fi
 
-# A marker from an older boot is no marker. Anything already sitting here when
-# the first run of a boot looks is by definition older than the boot.
+# Anything already here on the first look of a boot is stale.
 prev=''
 seen_boot=''
 seen_state=''
@@ -84,7 +51,7 @@ seen_state=''
 
 case "$prev" in
     clean|fresh) state=fresh ;;
-    *)           state=stale ;;   # stale, or the first look of a fresh boot
+    *)           state=stale ;;
 esac
 remember "$state"
 

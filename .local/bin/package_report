@@ -5,9 +5,7 @@ set -euo pipefail
 APPLIST="${APPLIST:-$HOME/.config/applist}"
 APPLIST_AUR="${APPLIST_AUR:-$HOME/.config/applist-aur}"
 APPLIST_LOCAL="${APPLIST_LOCAL:-$HOME/.config/applist-local}"
-# Machine-specific and therefore gitignored: boot, firmware and hardware
-# packages differ per machine, so only applist-machine.example is committed.
-# Optional — absent on a machine where it has not been created yet.
+# Gitignored and optional.
 APPLIST_MACHINE="${APPLIST_MACHINE:-$HOME/.config/applist-machine}"
 
 audit=false
@@ -169,8 +167,6 @@ load_applist() {
 load_applist "$APPLIST" official official_packages official_list_set duplicate_official
 load_applist "$APPLIST_AUR" aur aur_packages aur_list_set duplicate_aur
 load_applist "$APPLIST_LOCAL" local local_packages local_list_set duplicate_local
-# Guarded rather than required: the other three lists are committed and must
-# exist, but applist-machine is gitignored and may legitimately be absent.
 if [[ -f $APPLIST_MACHINE ]]; then
 	load_applist "$APPLIST_MACHINE" machine machine_packages machine_list_set duplicate_machine
 fi
@@ -271,9 +267,7 @@ selected_count=${#selected_packages[@]}
 untracked_count=$((${#untracked_repository[@]} + ${#untracked_foreign[@]}))
 tracked_selected_count=$((selected_count - untracked_count))
 
-# The checks above only answer "is this installed package listed?". These answer
-# the reverse — "is this listed package actually installed, and installed
-# explicitly?" — which is what keeps the applists usable as an install manifest.
+# Reverse check: is every listed package installed, and installed explicitly?
 declare -a listed_missing=()
 declare -a listed_as_dependency=()
 

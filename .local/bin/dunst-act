@@ -1,14 +1,7 @@
 #!/bin/sh
-# Act on the top notification, or close it when it has nothing to act on.
-# With dunst at the bottom right the top card is the oldest, so repeated
-# presses work through the stack oldest first and a card that arrives just
-# before a press waits its turn. Bound to SUPER,i in mango.
-#
-# dunstctl action emits ActionInvoked for a card with one action, opens the
-# rofi menu for one with several, and does nothing for one with none, leaving
-# it up. dunst can't be asked which applies, so watch the bus for the signal
-# instead of waiting to see what happens. It goes only to the app that sent the
-# card, so it takes a bus monitor to see it.
+# Act on the top (oldest) notification and close it, or just close it when it
+# has no action. dunst can't say which applies, so watch the bus for
+# ActionInvoked.
 [ "$(dunstctl count displayed)" -gt 0 ] || exit 0
 
 log=$(mktemp)

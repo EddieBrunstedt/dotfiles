@@ -1,20 +1,6 @@
 #!/bin/sh
-# Single-flight launcher for the Super+\ dropdown scratchpad terminal.
-#
-# mango's toggle_named_scratchpad runs this ONLY when no scratchpad window
-# exists (i.e. the terminal is truly closed) -- when one exists it just
-# shows/hides it without calling us. Our only job is to swallow a fast
-# double-press during ghostty's startup gap, when two presses both see
-# "no window yet" and would each spawn a terminal.
-#
-# The unit name is the interlock: systemd-run refuses to start a second
-# ghostty-scratchpad.service while one is loaded. `gtk-single-instance = false`
-# means each ghostty process lives as long as its window, so the unit stays
-# active for the window's whole lifetime rather than a guessed interval.
-#
-# --collect reaps the unit if the terminal is force-killed, so a crashed
-# scratchpad never blocks the next launch. A refused second press exits
-# non-zero, which is the intended no-op.
+# Launch the dropdown scratchpad terminal (mango only calls this when none exists).
+# The fixed unit name makes a fast double-press start just one.
 exec systemd-run --user --quiet --collect \
     --unit=ghostty-scratchpad \
     --slice=app-graphical.slice \

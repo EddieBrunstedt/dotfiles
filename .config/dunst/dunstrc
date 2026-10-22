@@ -1,34 +1,18 @@
-# Styled after waybar (style.css): Catppuccin Mocha, Maple Mono, 6px radius,
-# 4px gaps. Only settings that differ from dunst's built-in defaults; full
-# option list in dunst(5).
+# Only settings that differ from dunst's defaults; see dunst(5).
+# Styled after waybar: Catppuccin Mocha, Maple Mono, 6px radius, 4px gaps.
 
 [global]
 
     ### Placement ###
 
-    # Right side, in the middle: terminals keep their prompt at the bottom,
-    # where a card in the corner would cover what is being typed. The origin
-    # stays bottom-right, with the vertical offset (measured from the top of
-    # the bar, at y=1050) centering a lone one-line card (99px) on y=540; a
-    # bottom origin keeps the stack growing upward, away from the prompt, and
-    # keeps the order SUPER+i relies on (see sort). Mango has no outer gaps,
-    # so a window's 2px border (border_px) runs along the edge; 16px keeps the
-    # card well clear of it.
+    # Right edge, vertically centered, stacking upward.
     origin = bottom-right
     offset = (16, 460)
-    # Fixed, so the rule line in format spans the text whatever the content.
-    # Every card has an icon (see [fallback_icon]), so the text is always this
-    # wide minus padding and icon: 40 cells of Maple Mono 11.
+    # Fixed so the rule line in format spans the text.
     width = 440
     notification_limit = 5
-    # Newest first, whatever the urgency (critical ones still stand out in
-    # red). With a bottom origin dunst reverses the stack, so the newest card
-    # sits in the corner, just above the bar. SUPER+i acts on position 0,
-    # which dunstctl counts from the top: the oldest card. So it works through
-    # the stack oldest first, and a card that lands just before the key press
-    # does not jump the queue.
+    # Newest at the bottom, so SUPER+i (position 0) works oldest first.
     sort = update
-    # Separate cards rather than one joined box.
     gap_size = 4
     separator_height = 0
 
@@ -43,12 +27,9 @@
     ### Text ###
 
     font = monospace 11
-    # Needed for the <b> and <span> in format.
     markup = full
-    # Small dimmed app name as a header and the heading, a rule line, then the
-    # body. Pango has no <hr>, so the line is box-drawing characters.
+    # App name, summary, a rule line, body.
     format = "<span size='small' foreground='#6c7086'>%a</span>\n<b>%s</b>\n<span foreground='#45475a'>────────────────────────────────────────</span>\n<span foreground='#bac2de'>%b</span>"
-    # No "(A)"/"(U)" prefixes.
     show_indicators = no
 
     ### Icons ###
@@ -58,23 +39,10 @@
     min_icon_size = 32
     max_icon_size = 32
 
-    ### History ###
+    ### Behavior ###
 
-    # lock-screen closes everything on screen; deep history keeps those
-    # notifications reachable with `dunstctl history-pop` afterwards.
     history_length = 1000
-
-    ### Menu ###
-
-    # The context menu, for picking among a notification's actions and URLs,
-    # renders through rofi like the other menus. dunst opens it when there is
-    # no single action to run.
     dmenu = /usr/bin/rofi -dmenu -i -no-custom -p dunst:
-
-    ### Mouse ###
-
-    # Left click runs the notification's action (Claude: focus its session),
-    # then closes it. Without an action it just closes.
     mouse_left_click = do_action, close_current
 
     ### Progress bar ###
@@ -83,10 +51,7 @@
     progress_bar_corner_radius = 3
     highlight = "#b4befe"
 
-# Normal and critical cards stay until dismissed, with SUPER+i working through
-# them oldest first; critical already does by default. Low ones are quiet by
-# definition (track changes and the like), so they still go by themselves,
-# into history.
+# Normal and critical stay until dismissed; low ones time out.
 [urgency_low]
     timeout = 20s
     background = "#1e1e2e"
@@ -104,9 +69,7 @@
     foreground = "#f38ba8"
     frame_color = "#f38ba8"
 
-# Confirmations (notify-send -e: emoji copied, sink switched) go by themselves
-# so they never pile up waiting for SUPER+i. Critical ones still wait: Mullvad
-# marks all of its cards transient, its errors too.
+# notify-send -e confirmations time out, unless critical (Mullvad marks everything transient).
 [transient]
     match_transient = yes
     timeout = 5s
@@ -116,12 +79,11 @@
     msg_urgency = critical
     timeout = 0
 
-# Ghostty sends no app name, so name it in the header.
+# Ghostty sends no app name.
 [ghostty]
     desktop_entry = com.mitchellh.ghostty
     format = "<span size='small' foreground='#6c7086'>Ghostty</span>\n<b>%s</b>\n<span foreground='#45475a'>────────────────────────────────────────</span>\n<span foreground='#bac2de'>%b</span>"
 
-# Notifications that bring no icon get a quiet feather, so every card has one
-# and the text, and with it the rule line, is the same width on all of them.
+# Every card gets an icon, so text width (and the rule line) is constant.
 [fallback_icon]
     default_icon = ~/.config/dunst/icons/feather.svg

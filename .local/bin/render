@@ -17,34 +17,22 @@ end
 
 set -l abs (path resolve $file)
 set -l ext (string lower (path extension $file))
-# qutebrowser is handed a filesystem path, not a file:// URL: it resolves an
-# existing path with QUrl.fromLocalFile, which percent-encodes characters
-# that raw concatenation would leave for Qt to misparse ('#' as a fragment).
+# A path, not a file:// URL, so qutebrowser encodes characters like '#'.
 set -l target
 
 switch $ext
     case .md .markdown
         set -l out
         if set -q _flag_save
-            # --save puts the html beside the source instead of in the
-            # runtime dir, under the source's real name, so the result is a
-            # file worth handing to someone else. --embed-resources below
-            # already makes it a single self-contained document.
+            # Self-contained html beside the source.
             set out (path change-extension html $abs)
             if test -e $out; and not set -q _flag_force
                 echo "render: $out already exists, pass --force to overwrite" >&2
                 return 1
             end
         else
-            # $XDG_RUNTIME_DIR is a tmpfs wiped at logout, so output never
-            # reaches disk. One stable filename per source file rather than an
-            # mktemp: re-rendering the same document overwrites its own output
-            # instead of leaving another copy behind for the rest of the session.
-            # The hash disambiguates same-named files in different directories.
-            # No /tmp fallback: that directory is world-writable, and this
-            # filename is predictable enough for another user to pre-plant a
-            # symlink for pandoc to follow. Without a runtime dir there is no
-            # session for the browser to open a window in anyway.
+            # One stable file per source on tmpfs. No /tmp fallback: the
+            # predictable name would be open to symlink attacks there.
             if test -z "$XDG_RUNTIME_DIR"
                 echo "render: \$XDG_RUNTIME_DIR is unset, nowhere safe to write" >&2
                 return 1
@@ -55,8 +43,6 @@ switch $ext
             set -l hash (printf '%s' $abs | sha256sum | string sub -l 8)
             set out $outdir/$stem-$hash.html
         end
-        # Relative image paths are relative to the Markdown file, not to the
-        # directory render was run from.
         pandoc --from gfm --to html --standalone --embed-resources \
             --css ~/.config/render/style.css \
             --resource-path (path dirname $abs) \

@@ -1,31 +1,16 @@
-# Mango config — only settings that DIFFER from /etc/mango/config.toml defaults.
-# Anything omitted falls back to the compiled-in default. Full option list + defaults:
-# https://github.com/mangowm/mango/wiki/
+# Only settings that differ from /etc/mango/config.toml.
+# Docs: https://github.com/mangowm/mango/wiki/
+# Validate: mango -p -c ~/.config/mango/config.toml
 #
-# Mango's TOML reader is its own line-based parser, not a full TOML library:
-# - Every plain option must sit in [global], before the first [bind.*] or
-#   [[rule.*]] table, so bindings and rules live at the bottom of the file.
-# - No inline tables, dotted keys or """ strings; rule values cannot contain commas.
-# - ~/.config/mango/config.conf wins over config.toml if both exist.
-# Check after editing: mango -p -c ~/.config/mango/config.toml
+# Mango's TOML parser is line-based: plain options must all sit in [global],
+# before the first [bind.*] / [[rule.*]] table. No inline tables, dotted keys
+# or """ strings, and rule values cannot contain commas.
+# Session env vars go in ~/.config/uwsm/env, not an [env] table here.
 
 [global]
 
-# ── Environment ──
-# Deliberately no [env] table: env only reaches clients mango spawns itself, so
-# user units and D-Bus-activated services never see it. Session-wide variables
-# belong in ~/.config/uwsm/env. Add [env] only for something mango-specific that
-# must NOT be visible to the rest of the session.
-
-# ── Explicit sync (linux-drm-syncobj-v1) ──
-# Required on NVIDIA: without it clients fall back to implicit sync, which the
-# NVIDIA driver doesn't do properly -> flicker/stale frames in Electron apps.
-# Takes effect on compositor restart, not on Super+r reload.
+# Required on NVIDIA, or Electron apps flicker. Needs a restart, not a reload.
 sync_obj_enable = 1
-
-# ── Session locking ──
-# Already the default; pinned so a change to the shipped config cannot make the
-# lock screen transparent.
 allow_lock_transparent = 0
 
 # ── Animations ──
@@ -36,163 +21,94 @@ animation_duration_open = 100
 animation_duration_tag = 100
 animation_duration_close = 100
 
-# ── Layout / gaps ──
-# gap_inner_* = between windows, gap_outer_* = screen edge. Super+a
-# (togglemaximizescreen) reads the OUTER values directly and ignores runtime
-# incgaps/togglegaps, so outer gaps of 0 are what make maximize edge-to-edge even
-# after live gap tweaks.
+# ── Layout ──
 smart_gaps = 1
 gap_inner_horizontal = 0
 gap_inner_vertical = 0
 gap_outer_horizontal = 0
 gap_outer_vertical = 0
-# Known issue: a lone window's stored border width is destructively zeroed and
-# stays 0 until the window is re-laid-out, so merging single-window tags via
-# toggleview (Super+Ctrl+N) can leave panes borderless. Set back to 0 if that bites.
+# Can leave panes borderless after merging single-window tags with toggleview.
 no_border_when_single = 1
 
-# ── Focus behavior ──
-# Don't let clients yank the view to their tag on activation requests: fullscreen
-# games re-activate themselves on focus loss, which made the first tag-switch
-# away from them snap back. Such apps get the urgent flag instead.
+# Activation requests set urgent instead of switching tags (games re-activate on focus loss).
 focus_on_activate = 0
 
 # ── Appearance ──
 cursor_size = 24
 border_px = 2
-# Hide the pointer after 3s idle, and immediately when typing. Only pointer input
-# brings it back (motion/click/scroll), not keys. 0 disables.
 cursor_hide_timeout = 3
 cursor_hide_on_keypress = 1
 
-# ── Keyboard ──
+# ── Input ──
 repeat_rate = 30
 repeat_delay = 200
 xkb_rules_options = "caps:escape"
-# Layouts offered by switch_keyboard_layout, which keyboard-layout-menu drives.
 xkb_rules_layout = "us,se,dk"
 
-# ── Mouse ──
-# profile: 0=None 1=Flat 2=Adaptive
+# 0=none 1=flat 2=adaptive
 mouse_accel_profile = 1
 mouse_accel_speed = 0.0
-# Off: when on, a plain left click within border_resize_size (default 10px) of an
-# edge shared with a neighbouring tiled window — every edge of a floating one —
-# starts a resize and never reaches the app. With zero gaps that eats scrollbars
-# and the first columns of terminals along the master/stack seam. Resize with
-# Super+h/l or Super+right-drag instead.
+# Off: with zero gaps it eats clicks on scrollbars along tiled window edges.
 enable_border_resize = 0
 
 # ── Monitor ──
-# Allow tearing in fullscreen apps that request it (lower input latency in games).
-# The monitor_rule tables themselves are at the bottom with the other rules.
 allow_tearing = 1
 
 # ── Autostart ──
-# exec_once runs at startup only, not on Super+r reload.
-#
-# Nothing else belongs here: waybar, soteria, the wallpaper and the ghostty
-# daemon are user units wanted by graphical-session.target; dunst and the
-# FileManager1 provider are D-Bus activated. gnome-keyring-daemon is systemd
-# socket-activated, and the greeter's PAM stack unlocks its login collection.
-# MEGAsync comes from ~/.config/autostart via uwsm's
-# xdg-desktop-autostart.target.
-#
-# Signals session readiness to uwsm and exports WAYLAND_DISPLAY into the systemd
-# activation environment, which is what lets graphical-session.target start.
-# Harmless no-op outside uwsm.
+# Everything else is a systemd user unit, D-Bus activated or XDG autostart.
 exec_once = ["uwsm finalize"]
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Key Bindings  (leader = SUPER; a few secondary actions on ALT)
-# key names: `wev` output; mod keys: super,ctrl,alt,shift,none
-# "MODS+key" = "action,args" — a key with no modifier is written bare.
+# Key bindings — "MODS+key" = "action,args"; key names from `wev`
 # ══════════════════════════════════════════════════════════════════════════════
 
 [bind.default]
 
 # ── Session ──
 "SUPER+r" = "reload_config"
-# There is no compiled-in default for killclient — /etc/mango/config.toml is only
-# read when no user config exists — so without this bind nothing closes a window.
-# Stopping the session is deliberately unbound; use power-menu (SUPER+q) or
-# `uwsm stop`, both of which tear down in order.
 "SUPER+SHIFT+c" = "killclient"
 
 # ── Launchers and menus ──
 "SUPER+p" = "spawn,rofi -show drun"
 "SUPER+SHIFT+Return" = "spawn,ghostty"
 "SUPER+e" = "spawn,librewolf"
-# Pick any number of directories, then open one file-explorer window per
-# directory -- two side by side is the point, for moving files between folders. Plain SUPER
-# rather than the SUPER+SHIFT menu group because it spawns windows like
-# SUPER+SHIFT+Return and SUPER+backslash, instead of acting on the session.
 "SUPER+y" = "spawn,~/.local/bin/dir-menu"
-# Wrapper, not swaylock directly: it switches the keyboard to US first.
+"SUPER+q" = "spawn,~/.local/bin/power-menu"
 "SUPER+SHIFT+l" = "spawn,~/.local/bin/lock-screen"
 "SUPER+SHIFT+a" = "spawn,ghostty -e wiremix -s compat -v output"
 "SUPER+SHIFT+g" = "spawn,~/.local/bin/whitetemp"
-# r for retro: CRT shader, phosphor theme and Fixedsys Excelsior in every open ghostty.
 "SUPER+SHIFT+r" = "spawn,~/.local/bin/ghostty-retro"
-# h for shader: rofi picker that overrides the shader the retro toggle brings.
 "SUPER+SHIFT+h" = "spawn,~/.local/bin/ghostty-shader-menu"
 "SUPER+SHIFT+k" = "spawn,~/.local/bin/keyboard-layout-menu"
-# v for VPN; SUPER+SHIFT+s belongs to the special workspace below.
 "SUPER+SHIFT+v" = "spawn,~/.local/bin/mullvad-menu"
 "SUPER+SHIFT+e" = "spawn,~/.local/bin/emoji-menu"
 "SUPER+SHIFT+p" = "spawn,env SHELL=/usr/bin/sh ~/.local/bin/ord_prompts"
 "SUPER+SHIFT+m" = "spawn,~/.local/bin/system-menu"
-# Power actions get plain SUPER, not SUPER+SHIFT like the other menus: it is the
-# one reached for while already standing up to leave. SUPER+SHIFT+q is left free
-# so a stray shift cannot land on something unrelated.
-"SUPER+q" = "spawn,~/.local/bin/power-menu"
-# The power button locks and blanks, as power-menu's first row. logind ignores
-# it (system/etc/systemd/logind.conf.d/power-key.conf), so it never powers off.
 "XF86PowerOff" = "spawn,~/.local/bin/lock-blank"
 "Print" = "spawn,~/.local/bin/screenshot"
 
 # ── Notifications ──
-# Act on the top notification, the oldest (dunst sits at the bottom right, so
-# its update sort runs newest at the bottom), and close it: Claude's focus
-# their session. Repeat to work down the stack.
-# SHIFT closes all, the ones queued past notification_limit too; all of them
-# stay in history (dunstctl history-pop).
 "SUPER+i" = "spawn,~/.local/bin/dunst-act"
 "SUPER+SHIFT+i" = "spawn,dunstctl close-all"
-# Browse history in rofi: show again, copy, delete, or clear it all.
 "SUPER+CTRL+i" = "spawn,~/.local/bin/dunst-history"
-# Do Not Disturb; updates the 🔔/🔕 waybar segment.
 "SUPER+SHIFT+n" = "spawn,~/.local/bin/dunst-toggle"
 
-# ── Media and hardware keys ──
-# wpctl because there is no PulseAudio daemon here, only pipewire-pulse's shim,
-# and waybar's volume module already reads through wpctl. -l 1.0 caps at 100%;
-# the pkill refreshes that module immediately. spawn_shell because && needs a shell.
+# ── Volume ──
 "XF86AudioRaiseVolume" = "spawn_shell,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ && pkill -RTMIN+1 waybar"
 "XF86AudioLowerVolume" = "spawn_shell,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%- && pkill -RTMIN+1 waybar"
-# Voxtype push-to-talk lives in the .conflict tables below.
 
 # ── Focus ──
 "SUPER+j" = "focusstack,next"
 "SUPER+k" = "focusstack,prev"
 "SUPER+space" = "focus_first_tiled"
-# Swaps the whole previous tag selection back in, including combinations
-# (e.g. tags 1+3), so it toggles between two views.
 "SUPER+Tab" = "view,-1"
 "SUPER+grave" = "toggleoverview"
-# Alt+Tab-style cycling; both commit when any held modifier is released, so
-# releasing Shift in the reverse binding also closes them.
-# overcircle: carousel over all tags, focused window large in the center.
 "ALT+Tab" = "overcircle,next"
 "ALT+SHIFT+Tab" = "overcircle,prev"
-# switcher: thumbnail strip of every window on all tags and monitors.
 "ALT+grave" = "switcher,all_next"
 "ALT+SHIFT+grave" = "switcher,all_prev"
 
-# ── Special workspace (tag 0) ──
-# A tiled overlay workspace summoned over the current tag, which stays visible
-# dimmed behind it. tag_special_tag moves the focused window in, or back out to
-# the tag it came from.
+# ── Special workspace ──
 "SUPER+s" = "toggle_special_tag"
 "SUPER+SHIFT+s" = "tag_special_tag"
 "SUPER+CTRL+s" = "tag_special_silent"
@@ -206,7 +122,7 @@ exec_once = ["uwsm finalize"]
 "SUPER+bracketright" = "groupfocus,next"
 "SUPER+ALT+g" = "groupleave"
 
-# ── Master area and layouts ──
+# ── Layouts ──
 "SUPER+h" = "setmfact,-0.05"
 "SUPER+l" = "setmfact,+0.05"
 "SUPER+Return" = "zoom"
@@ -217,12 +133,10 @@ exec_once = ["uwsm finalize"]
 "SUPER+u" = "setlayout,center_tile"
 "SUPER+w" = "setlayout,fair"
 "SUPER+SHIFT+w" = "setlayout,vertical_fair"
-# deck: stack windows full-size on top of each other, focused one on top.
-# Same SUPER/SUPER+SHIFT split as t: plain is master-right, shift is master-left.
 "SUPER+d" = "setlayout,right_deck"
 "SUPER+SHIFT+d" = "setlayout,deck"
 
-# Scroller layout, on ALT as a secondary layout.
+# Scroller
 "ALT+e" = "set_proportion,1.0"
 "ALT+x" = "switch_proportion_preset"
 "ALT+SUPER+CTRL+Left" = "scroller_stack,left"
@@ -230,10 +144,10 @@ exec_once = ["uwsm finalize"]
 "ALT+SUPER+CTRL+Up" = "scroller_stack,up"
 "ALT+SUPER+CTRL+Down" = "scroller_stack,down"
 
-# Dwindle layout: manual split mode.
+# Dwindle
 "ALT+SHIFT+Return" = "dwindle_toggle_split_direction"
 
-# ── Window position and state ──
+# ── Window state ──
 "SUPER+SHIFT+Up" = "exchange_client,up"
 "SUPER+SHIFT+Down" = "exchange_client,down"
 "SUPER+SHIFT+Left" = "exchange_client,left"
@@ -244,14 +158,9 @@ exec_once = ["uwsm finalize"]
 "SUPER+a" = "togglemaximizescreen"
 "SUPER+g" = "toggleglobal"
 "SUPER+o" = "toggleoverlay"
-# Quake-style dropdown terminal. The dedicated app_id keeps it isolated from
-# normal ghostty windows and is what the window_rule at the bottom matches on.
 "SUPER+backslash" = "toggle_named_scratchpad,com.ghostty.scratchpad,none,~/.local/bin/ghostty-scratchpad"
 
-# movewin is UNBOUND on purpose: Ctrl+Shift+arrows is a near-universal
-# text-editing shortcut, and binding it at the compositor stole it from every
-# app. Move floating windows with Super+left-drag instead, or re-add it on a
-# WM-only modifier such as SUPER+ALT+arrows.
+# movewin stays unbound: Ctrl+Shift+arrows belongs to text editing.
 "CTRL+ALT+Up" = "resizewin,+0,-50"
 "CTRL+ALT+Down" = "resizewin,+0,+50"
 "CTRL+ALT+Left" = "resizewin,-50,+0"
@@ -273,7 +182,6 @@ exec_once = ["uwsm finalize"]
 "SUPER+8" = "view,8,0"
 "SUPER+9" = "view,9,0"
 
-# Show tag N alongside the current view.
 "SUPER+CTRL+1" = "toggleview,1"
 "SUPER+CTRL+2" = "toggleview,2"
 "SUPER+CTRL+3" = "toggleview,3"
@@ -284,7 +192,6 @@ exec_once = ["uwsm finalize"]
 "SUPER+CTRL+8" = "toggleview,8"
 "SUPER+CTRL+9" = "toggleview,9"
 
-# Move the focused window to tag N without following it.
 "SUPER+SHIFT+1" = "tagsilent,1,0"
 "SUPER+SHIFT+2" = "tagsilent,2,0"
 "SUPER+SHIFT+3" = "tagsilent,3,0"
@@ -307,10 +214,8 @@ exec_once = ["uwsm finalize"]
 "SUPER+SHIFT+period" = "tagmon,right"
 
 # ── Voxtype push-to-talk ──
-# Hold Super+V to record. Release V before Super, or mango never matches the
-# release binding and recording never stops.
-# .conflict marks the press/release pair as intended: the conflict check
-# ignores the release flag and would otherwise warn about it.
+# Release V before Super, or the release bind never fires.
+# .conflict silences the press/release duplicate warning.
 [bind.default.conflict]
 "SUPER+v" = "spawn,voxtype record start"
 
@@ -321,7 +226,6 @@ exec_once = ["uwsm finalize"]
 [mousebind.default]
 "SUPER+btn_left" = "moveresize,curmove"
 "SUPER+btn_right" = "moveresize,curresize"
-# btn_middle intentionally left unbound so apps keep middle-click.
 
 [axisbind.default]
 "SUPER+UP" = "viewtoleft_have_client"
@@ -331,27 +235,16 @@ exec_once = ["uwsm finalize"]
 # Rules
 # ══════════════════════════════════════════════════════════════════════════════
 
-# ── Layouts: master area on the RIGHT ──
 [[rule.tag_rule]]
 id = "*"
 layout_name = "right_tile"
 
-# ── Monitor ──
-# Pinned to the panel's native mode so it does not switch modes on login.
-# Keyed on serial, not just the port: get_nearest_output_mode() demands an exact
-# width/height match and only fuzzes refresh, so a name-only rule would force one
-# panel's mode onto whatever else gets plugged into DP-1. Matching nothing is the
-# safe failure — an unmatched monitor falls through to wlr_output_preferred_mode().
-#
-# Serials are compared with strcmp, so they go in verbatim, 0x prefix and all —
-# quoted, so other TOML tools don't read them as hex integers.
-# The two rules match disjoint serials on purpose: createmon applies the FIRST
-# matching rule but reload (reapply_monitor_rules) walks the list backwards and
-# applies the LAST, so overlapping rules would behave differently at login than
-# on Super+r.
-#
-# Philips: the EDID-preferred mode is the 60Hz one, so without this rule the
-# panel silently runs 40Hz below what it can do.
+# ── Monitors ──
+# Keyed on serial so another panel on DP-1 falls back to its preferred mode.
+# Serials stay quoted and must not overlap: login applies the first match,
+# reload the last.
+
+# Philips (EDID prefers 60Hz)
 [[rule.monitor_rule]]
 name = "^DP-1$"
 serial = "0x000006A3"
@@ -368,16 +261,14 @@ height = 1080
 refresh = 239.964
 vrr = 0
 
-# ── Scratchpad ──
-# Fractions, not pixels: window_rule treats width/height <= 1 as a share of the
-# monitor, so the dropdown keeps its proportions on any panel.
+# ── Windows ──
 [[rule.window_rule]]
 is_named_scratchpad = 1
 app_id = "com.ghostty.scratchpad"
 width = 0.8
 height = 0.85
 
-# ── Layer rules ──
+# ── Layers ──
 [[rule.layer_rule]]
 animation_type_open = "zoom"
 layer_name = "rofi"

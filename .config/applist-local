@@ -1,6 +1,4 @@
-# Locally built packages. These are not in the official repos or the AUR, so
-# package_install cannot install them; they must be built by hand with makepkg.
-# Listed here so package_report counts them as tracked rather than untracked.
+# Built by hand with makepkg; listed so package_report counts them as tracked.
 
 ffmpeg-sofa
 mangowm-local

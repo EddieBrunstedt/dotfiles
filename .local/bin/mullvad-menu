@@ -1,6 +1,5 @@
 #!/bin/sh
-# Mullvad VPN menu for rofi. Bound to SUPER+SHIFT+v and to the Waybar segment.
-# The segment streams the daemon's state, so it needs no signal from here.
+# Mullvad VPN menu for rofi.
 
 set -u
 
@@ -16,14 +15,12 @@ for dep in rofi mullvad jq notify-send; do
     }
 done
 
-# $1 summary, $2 body, $3 urgency. A fixed id means each notification replaces
-# the last rather than stacking a transition's worth of popups.
+# $1 summary, $2 body, $3 urgency. Fixed id: each replaces the last.
 notify() {
     notify-send -e -r "$NOTIFY_ID" -a Mullvad -i mullvad-vpn \
         -u "${3:-normal}" "$1" "${2:-}" >/dev/null 2>&1 || :
 }
 
-# rofi -mesg renders pango markup
 escape_markup() { printf '%s' "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'; }
 
 # $1 prompt, $2 rows, $3 message
@@ -50,9 +47,7 @@ error_of() {
 }
 
 # await <target-state> <require-transition> <expected-country>
-# Polls until the tunnel reaches the target state, hits an error, or times out,
-# then notifies. require-transition=yes first waits for the tunnel to leave the
-# target state, so a reconnect is not satisfied by the connection it replaces.
+# require-transition=yes first waits to leave the target state (for reconnects).
 await() {
     target=$1 require_transition=$2 expected_country=$3
     i=0
@@ -74,8 +69,7 @@ await() {
             return 1
             ;;
         "$target")
-            # Landing in the wrong country is a failure worth reporting, so keep
-            # waiting rather than announcing a connection that missed the pick.
+            # Keep waiting until the requested country is reached.
             if [ -n "$expected_country" ]; then
                 case "$(hostname_of "$json")" in
                 "$expected_country"-*) ;;

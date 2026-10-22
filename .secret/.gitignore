@@ -1,4 +1,4 @@
-# Only encrypted files belong here. Anything else is assumed to be a mistake.
+# Encrypted files only.
 *
 !.gitignore
 !.sops.yaml

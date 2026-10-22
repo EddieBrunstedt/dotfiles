@@ -1,11 +1,18 @@
-/* One font only. monospace resolves to Maple Mono NF, which carries every
-   icon glyph the bar uses at exactly one cell's advance. Their ink is wider
-   and spills right, into the space after the icon or, for an icon alone,
-   the padding: the Material Design (nf-md) icons spill at most 5px, so the
-   6px padding below holds them. With "Symbols Nerd Font"
-   as a fallback, Pango drew icons from it and kept the spaces after them in
-   it too, where a space is narrower than a digit: right-aligned values like
-   " 49K" came out narrower than "708B", and the bar shifted as they changed. */
+/* Catppuccin Mocha */
+@define-color base     #1e1e2e;
+@define-color mantle   #181825;
+@define-color surface0 #313244;
+@define-color surface1 #45475a;
+@define-color overlay0 #6c7086;
+@define-color subtext1 #bac2de;
+@define-color text     #cdd6f4;
+@define-color lavender #b4befe;
+@define-color red      #f38ba8;
+@define-color peach    #fab387;
+@define-color yellow   #f9e2af;
+@define-color green    #a6e3a1;
+
+/* Maple Mono NF only: a Nerd Font fallback makes value widths jitter. */
 * {
     font-family: monospace;
     font-size: 16px;
@@ -17,88 +24,76 @@
 }
 
 window#waybar {
-    background-color: #1e1e2e;
-    color: #cdd6f4;
+    background-color: @base;
+    color: @text;
 }
 
 tooltip {
-    background-color: #181825;
-    border: 1px solid #45475a;
-    color: #cdd6f4;
+    background-color: @mantle;
+    border: 1px solid @surface1;
+    color: @text;
 }
 
 tooltip label {
-    color: #cdd6f4;
+    color: @text;
 }
 
-/* ── workspaces ──────────────────────────────────────────────────── */
+/* ── Workspaces ─────────────────────────────────────────────────── */
+
 #workspaces {
     margin: 0;
     padding: 0;
 }
 
-/* The transparent bottom border reserves the underline's 2px on every button,
-   so tags do not shift vertically as the active one changes. It has to be set
-   here because the `*` rule above clears borders bar-wide. */
+/* Transparent border reserves the underline space so tags don't shift. */
 #workspaces button {
     padding: 0 8px;
     background-color: transparent;
-    color: #cdd6f4;
+    color: @text;
     border-bottom: 2px solid transparent;
 }
 
 #workspaces button:hover {
-    background-color: #313244;
-    color: #cdd6f4;
+    background-color: @surface0;
+    color: @text;
 }
 
 #workspaces button.active {
-    color: #cdd6f4;
-    border-bottom-color: #b4befe;
+    color: @text;
+    border-bottom-color: @lavender;
 }
 
 #workspaces button.urgent {
-    color: #f38ba8;
-    border-bottom-color: #f38ba8;
+    color: @red;
+    border-bottom-color: @red;
 }
 
-/* hide-empty keeps empty tags off the bar unless they are the active one, so
-   this only ever dims a tag you have switched to and not yet filled. :not
-   keeps it from fighting the active underline. */
 #workspaces button.empty:not(.active) {
     opacity: 0.45;
 }
 
-/* Shown in place of the tag buttons while the overview is open (SUPER+grave). */
 #workspaces button.overview {
-    color: #b4befe;
+    color: @lavender;
 }
 
-/* button.current_output is deliberately not styled: this is a single-output
-   setup, so every tag carries the class and differentiating it would be noise.
-   Give it a rule here if a second monitor ever appears. */
+/* ── Layout and window title ────────────────────────────────────── */
 
-/* ── layout and window title ─────────────────────────────────────── */
 #layout {
     padding-left: 8px;
-    color: #bac2de;
+    color: @subtext1;
 }
 
 #window {
     padding: 0 8px;
-    color: #bac2de;
+    color: @subtext1;
 }
 
 window#waybar.empty #window {
     background: transparent;
 }
 
-/* ── status modules ──────────────────────────────────────────────── */
-/* Each segment sits in a recessed pill: mantle, a shade darker than the bar,
-   so it reads as pressed in rather than stuck on, and no text colour has to
-   change. The pill is what groups a value with its icon; the margin keeps it
-   4px off the bar's edges. The icon-only toggles share one pill (#toggles,
-   a group in config.jsonc) rather than making a row of tiles. */
+/* ── Status pills ───────────────────────────────────────────────── */
+
 #custom-mem,
 #custom-net,
 #custom-disk,
@@ -112,69 +107,43 @@ window#waybar.empty #window {
 #tray {
     margin: 4px 0;
     padding: 0 8px;
-    background-color: #181825;
+    background-color: @mantle;
     border-radius: 6px;
-    color: #cdd6f4;
+    color: @text;
 }
 
-/* The same 4px between the last pill and the edge of the screen as above and
-   below it. On the box rather than #tray, so it holds when the tray is empty. */
 .modules-right {
     margin-right: 4px;
 }
 
-/* Inside the shared pill the toggles keep the 6px padding their icons' ink
-   spills into, so the pill itself only needs a little more. */
 #toggles {
     padding: 0 2px;
 }
 
+/* Icon glyphs spill up to 5px to the right; the 6px padding holds them. */
 #custom-voxtype,
 #custom-desktop,
 #custom-whitetemp,
 #custom-dunst {
     padding: 0 6px;
     background-color: transparent;
-    color: #cdd6f4;
+    color: @text;
 }
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
 }
 
-/* ── desktop drawer ──────────────────────────────────────────────── */
-/* Clean recedes to the same grey as a stopped service. The two dirty states
-   climb a severity ramp: peach for a mess this boot made, red -- the same red
-   voxtype uses while recording -- for one that outlived a reboot and is
-   therefore overdue. The glyph changes between clean and dirty as well (an
-   empty desk tray vs one with paper piled in it), so the distinction that
-   means "act" survives a glance that does not register colour; peach vs red
-   only ranks two alarms that are both already showing. */
-#custom-desktop.clean {
-    color: #6c7086;
-}
+/* ── Levels (telltale and friends) ──────────────────────────────── */
+/* quiet = grey, normal = default, attention = peach, critical/unknown = red */
 
-#custom-desktop.fresh {
-    color: #fab387;
-}
-
-#custom-desktop.stale {
-    color: #f38ba8;
-}
-
-/* ── telltale gauges ─────────────────────────────────────────────── */
-/* Classes are telltale's levels. Quiet recedes to the stopped-service grey,
-   attention takes the peach and critical/unknown the red used elsewhere on
-   the bar, so a colour means the same thing whichever gauge shows it.
-   Normal keeps the bar's default text colour. mullvad-status, volume and
-   dunst-status are not telltale gauges but report in the same levels. */
 #custom-dunst.quiet,
 #custom-inbox.quiet,
 #custom-mem.quiet,
 #custom-mullvad.quiet,
 #custom-net.quiet,
 #custom-volume.quiet {
-    color: #6c7086;
+    color: @overlay0;
 }
 
 #custom-claude.attention,
@@ -185,7 +154,7 @@ window#waybar.empty #window {
 #custom-mullvad.attention,
 #custom-net.attention,
 #custom-volume.attention {
-    color: #fab387;
+    color: @peach;
 }
 
 #custom-claude.unknown,
@@ -202,25 +171,40 @@ window#waybar.empty #window {
 #custom-volume.unknown,
 #custom-units.critical,
 #custom-units.unknown {
-    color: #f38ba8;
+    color: @red;
 }
 
-/* ── voxtype states ──────────────────────────────────────────────── */
+/* ── Desktop drawer: clean / dirty this boot / dirty since last boot ── */
+
+#custom-desktop.clean {
+    color: @overlay0;
+}
+
+#custom-desktop.fresh {
+    color: @peach;
+}
+
+#custom-desktop.stale {
+    color: @red;
+}
+
+/* ── Voxtype ────────────────────────────────────────────────────── */
+
 #custom-voxtype.idle {
-    color: #a6e3a1;
+    color: @green;
 }
 
 #custom-voxtype.recording {
-    color: #f38ba8;
+    color: @red;
     animation: voxtype-pulse 1s ease-in-out infinite;
 }
 
 #custom-voxtype.transcribing {
-    color: #f9e2af;
+    color: @yellow;
 }
 
 #custom-voxtype.stopped {
-    color: #6c7086;
+    color: @overlay0;
 }
 
 @keyframes voxtype-pulse {

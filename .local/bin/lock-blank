@@ -1,41 +1,18 @@
 #!/usr/bin/env bash
-# lock-blank — lock, put the panel to sleep, and wake it on the next input.
-# Bound to the power-menu row "Lock and blank screen" (SUPER+q) and to the
-# power key; swayidle.service has no idle timeout, so this is the only way the
-# panel goes dark.
-#
-# Lock first, then blank: blanking first would leave a dark screen over a
-# still-unlocked desktop, which the very next mouse jiggle would put straight
-# back on display. Locking policy itself lives in lock-screen (keyboard layout,
-# do-not-disturb), so every lock behaves the same. Nothing here suspends: the
-# machine keeps serving Jellyfin with the monitor off.
-#
-# Waking up is the part that needs its own machinery: nothing else listens for
-# the keystroke that should bring the panel back. The one-shot swayidle at the
-# end is that listener.
+# Lock, turn the panel off, and turn it back on at the next input.
+# Bound to the power key and power-menu. Never suspends.
 set -u
 
 warn() { printf 'lock-blank: %s\n' "$1" >&2; }
 
-# Already locked? Then there is nothing to establish: lock-screen would return
-# at once without signalling readiness, and the wait below would sit out its
-# full timeout for a signal that can never arrive.
+# Already locked: lock-screen would never signal readiness.
 if ! pgrep -x swaylock >/dev/null; then
-  # swaylock's --ready-fd is its "the session lock is now established"
-  # signal: one write, then close. Wait for it rather than sleeping a guessed
-  # interval.
-  #
-  # The fifo is opened read-write here, so the read below can never block in
-  # open() waiting for a writer that failed to appear — the timeout bounds the
-  # rest. XDG_RUNTIME_DIR is the right home for it: 0700, and cleared at logout.
+  # Wait for swaylock's --ready-fd instead of sleeping. The fifo is opened
+  # read-write so open() can't block; the read timeout bounds the rest.
   ready=$(mktemp -u "${XDG_RUNTIME_DIR:-/tmp}/lock-blank.XXXXXX")
   if mkfifo -m 600 "$ready" 2>/dev/null && exec 3<>"$ready"; then
-    rm -f "$ready"   # unlinked immediately; the open descriptors keep it alive
+    rm -f "$ready"
     "$HOME"/.local/bin/lock-screen --ready-fd 4 4>&3 &
-    # Returns as soon as swaylock reports the lock, and after 5s regardless.
-    # Status is deliberately ignored: this fd is held open for writing here
-    # too, so a dying swaylock produces a timeout rather than an EOF. Whether
-    # the lock actually took is settled by pgrep below, not by this read.
     read -r -t 5 -u 3 _ || :
     exec 3>&-
   else
@@ -44,30 +21,18 @@ if ! pgrep -x swaylock >/dev/null; then
     sleep 1
   fi
 
-  # Blank either way. A lock that failed to take is a problem to report, but
-  # refusing to blank would not fix it: the session would be exactly as
-  # unlocked with the panel left burning. The message goes to the journal
-  # because lock-screen has just paused dunst.
+  # Blank regardless; leaving the panel on wouldn't make it any more locked.
   pgrep -x swaylock >/dev/null || warn "no swaylock running — blanking an UNLOCKED session"
 fi
 
-# wlr-output-power-management, not wlr-randr: mango flags a monitor powered off
-# this way as only_sleep and keeps it in the output layout (updatemons() in
-# mango.c), so windows are not reflowed onto a phantom smaller desktop and the
-# mode survives. Disabling the output outright does not take that path.
+# wlopm (output power) rather than disabling the output, so mango keeps the layout.
 wlopm --off '*'
 
-# $$ survives exec, so the pid written here is the swayidle that replaces this
-# shell -- no launch race, and no window in which the file names the wrong
-# process. Each run gets its own file and only ever reads that one, so a stale
-# file from a killed watcher is never acted on; XDG_RUNTIME_DIR clears at logout.
+# $$ survives exec, so this is swayidle's pid.
 pidfile=$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/lock-blank.XXXXXX") || exit 1
 printf '%s\n' "$$" >"$pidfile"
 
-# timeout 1 with a no-op command: the point is not what runs at the timeout but
-# that reaching it is what makes swayidle report the NEXT input as a resume.
-# Then restore the panel and retire -- leaving it running would re-arm on every
-# idle cycle for the rest of the session.
+# One-shot: the 1s timeout arms resume, which restores the panel and exits.
 exec swayidle -w \
   timeout 1 'true' \
   resume "/usr/bin/wlopm --on '*'; rm -f '$pidfile'; kill $$"

@@ -1,5 +1,2 @@
 .config/fish/fish_variables
-
-# Machine-specific package list. The .example template is committed; the real
-# file's contents differ per machine and are deliberately not tracked.
 .config/applist-machine

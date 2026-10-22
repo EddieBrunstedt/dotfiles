@@ -1,15 +1,9 @@
-# `image=` is passed by ~/.local/bin/lock-screen, which points it at the same
-# `current` symlink swaybg reads. swaylock's config parser does not expand `~`,
-# so the path cannot be written here.
+# image= is passed by lock-screen (this parser doesn't expand ~).
 scaling=fill
-# Safe background if no wallpaper has been selected or the image cannot load.
 color=020202
-# Always accept the password using US layout, but do not show a layout label.
 hide-keyboard-layout
 
-# The wallpaper is strictly grayscale: near-black (#000) through graphite
-# (#434343). Keep the normal indicator monochrome, with restrained status
-# accents only while verifying, reporting an error, or showing Caps Lock.
+# Monochrome to match the grayscale wallpaper; color only for status.
 inside-color=020202d9
 inside-clear-color=020202d9
 inside-caps-lock-color=020202d9

@@ -1,15 +1,7 @@
 #!/bin/sh
-# Pick Ghostty's custom shader(s) via rofi. Bound to SUPER+SHIFT+h.
-#
-# Writes ~/.config/ghostty/shader-on.conf, which the main config includes
-# after retro-on.conf, so a pick overrides the CRT shader that ghostty-retro
-# brings; the file opens with an empty custom-shader to clear that list.
-# "Default" deletes the file and hands the shader back to ghostty-retro.
-# Like ghostty-retro, the state lives outside the dotfiles.
-#
-# The menu reopens on the row just applied, so arrowing and pressing Enter
-# previews shaders live in every window; Escape keeps what is on. Shift+Enter
-# marks several to stack, run in list order once Enter is pressed.
+# Pick Ghostty shader(s) via rofi. Writes shader-on.conf, which overrides
+# the retro toggle's shader; "Default" removes it. The menu stays open so
+# Enter previews live; Shift+Enter marks several to stack.
 #
 # Usage: ghostty-shader-menu                  (rofi menu)
 #        ghostty-shader-menu default|none     (no menu)
@@ -49,7 +41,7 @@ apply() {
             done
         } > "$state"
     fi
-    # Ghostty reloads its config on SIGUSR2; signal the scratchpad too.
+    # Reload every ghostty, scratchpad included.
     pkill -USR2 -x ghostty
 }
 

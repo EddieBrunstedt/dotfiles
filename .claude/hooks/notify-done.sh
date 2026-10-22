@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
-# Stop / Notification hook: desktop notification for this session, unless its
-# window is focused. Ghostty names each window after the session title, so
-# match that against Mango's windows. Clicking the notification (or
-# `dunstctl action`) focuses the window, switching tags if needed.
+# Stop/Notification hook: notify unless this session's window is focused.
+# Clicking the notification focuses the window.
 input=$(cat)
 
 transcript=$(jq -r '.transcript_path // empty' <<<"$input")
 title=$(grep -hoE '"(customTitle|aiTitle)":"[^"]*"' "$transcript" 2>/dev/null | tail -1 | cut -d'"' -f4)
 title=${title:-Claude Code}
 
-# The window title is the session title, possibly behind a spinner glyph.
+# Ghostty's window title is the session title, possibly behind a spinner glyph.
 window=$(mmsg get all-clients 2>/dev/null | jq -r --arg t "$title" '
   [.clients[] | select(.appid == "com.mitchellh.ghostty")
               | select(.title == $t or (.title | sub("^[^ ]+ "; "")) == $t)][0]
@@ -21,8 +19,7 @@ id=${window%% *}
 label=$title
 [ "$label" = "Claude Code" ] && label="Claude Code · $(basename "$(jq -r '.cwd // empty' <<<"$input")")"
 
-# The body is the first line of Claude's reply, or the permission request in
-# waybar's peach, for anything waiting on you.
+# First line of the reply, or the permission request in peach.
 case $(jq -r .hook_event_name <<<"$input") in
   Notification)
     body=$(jq -r '.message // "Needs attention"' <<<"$input") colour='#fab387' ;;
@@ -33,13 +30,11 @@ case $(jq -r .hook_event_name <<<"$input") in
     body=${body:-Done} colour= ;;
 esac
 
-# dunst parses markup in the body (not the summary). Quoted, or bash 5.2 reads
-# the & in each replacement as the matched text.
+# Escape body markup. Quoted, or bash 5.2 reads & as the match.
 body=${body//'&'/'&amp;'} body=${body//'<'/'&lt;'} body=${body//'>'/'&gt;'}
 [ -n "$colour" ] && body="<span foreground='$colour'>$body</span>"
 
-# --wait keeps notify-send around to print the chosen action; detach it so the
-# hook returns at once.
+# Detached so the hook returns while notify-send --wait waits for a click.
 setsid bash -c '
   action=$(notify-send --wait -a Claude -i ~/.config/dunst/icons/claude.svg \
     ${1:+-A default=Focus} -- "$2" "$3")

@@ -6,19 +6,9 @@ PartOf=graphical-session.target
 
 [Service]
 Type=exec
-# Matches waybar's own condition: mango is the only session these commands
-# (mmsg in lock-screen) work under.
 ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""
-# No idle timeout: locking and blanking are only ever deliberate (SUPER+q, Lock
-# and blank screen, which is lock-blank). -w: finish one handler before acting
-# on the next event.
-#
-# The lock handler is for logind's LockSession signal (loginctl lock-session),
-# so anything asking the session to lock lands on the same wrapper as SUPER+q.
-# Suspend is disabled outright (system/etc/systemd/sleep.conf.d/no-sleep.conf);
-# before-sleep stays as a backstop should that ever change. With -w and
-# lock-screen -f, both handlers wait for readiness but return before unlock.
-# logind still imposes its InhibitDelayMaxSec deadline on before-sleep.
+# No idle timeout: locking is always deliberate. before-sleep is a backstop;
+# suspend is disabled system-wide.
 ExecStart=/usr/bin/swayidle -w \
   lock '%h/.local/bin/lock-screen -f' \
   before-sleep '%h/.local/bin/lock-screen -f'
