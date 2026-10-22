@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-# Install the official and AUR applists with pacman and paru. Idempotent.
+# Install the official and AUR applists with pacman and paru, then the
+# optional dependencies as dependencies. Idempotent.
 
 set -Eeuo pipefail
 
 readonly OFFICIAL_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist"
 readonly AUR_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-aur"
+# Installed --asdeps, so each becomes an orphan once nothing lists it as optional.
+readonly OPTDEPS_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-optdeps"
 # Never installed here; only read so they aren't reported as untracked.
 readonly LOCAL_LIST="${XDG_CONFIG_HOME:-$HOME/.config}/applist-local"
 
@@ -35,9 +38,9 @@ usage() {
 Usage: ${0##*/} OPTION
 
 Options:
-  -o, --official  Install official packages from applist
+  -o, --official  Install official packages from applist, then applist-optdeps
   -a, --aur       Install AUR packages from applist-aur
-  -b, --both      Install both official and AUR packages
+  -b, --both      Install both, then applist-optdeps
   -h, --help      Display this help message
 EOF
 }
@@ -120,6 +123,9 @@ install_aur_packages() {
 	ensure_paru
 	install_from_list AUR "$AUR_LIST" paru
 }
+install_optional_packages() {
+	install_from_list "optional dependency" "$OPTDEPS_LIST" sudo pacman --asdeps
+}
 
 report_local_packages() {
 	local -a packages=()
@@ -145,6 +151,7 @@ case $1 in
 	;;
 -o | --official)
 	check_file "$OFFICIAL_LIST"
+	check_file "$OPTDEPS_LIST"
 	;;
 -a | --aur)
 	check_file "$AUR_LIST"
@@ -152,6 +159,7 @@ case $1 in
 -b | --both)
 	check_file "$OFFICIAL_LIST"
 	check_file "$AUR_LIST"
+	check_file "$OPTDEPS_LIST"
 	;;
 *)
 	print_msg "Invalid option: $1" "$RED" >&2
@@ -165,6 +173,8 @@ check_prerequisites
 case $1 in
 -o | --official)
 	install_official_packages
+	printf '\n'
+	install_optional_packages
 	;;
 -a | --aur)
 	install_aur_packages
@@ -173,6 +183,8 @@ case $1 in
 	install_official_packages
 	printf '\n'
 	install_aur_packages
+	printf '\n'
+	install_optional_packages
 	;;
 esac
 

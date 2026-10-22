@@ -24,7 +24,7 @@ Given a machine that boots and has a greeter, in order:
 
 ```sh
 sudo pacman -S --needed git just stow  # 1. what the rest of this needs
-./.local/bin/package_install -b        # 2. official + AUR; not on $PATH yet
+./.local/bin/package_install -b        # 2. official, AUR, optdeps; not on $PATH yet
                                        # 3. build .config/applist-local by hand
 just install                           # 4. symlink into $HOME
 just install-session                   # 5. root-owned: uwsm session entry, no-sleep, power key
@@ -92,7 +92,7 @@ session — it also holds the D-Bus, PipeWire and keyring sockets.
 
 ## Packages
 
-Four lists under `.config/`, all reconciled by `package_report`:
+Five lists under `.config/`, all reconciled by `package_report`:
 
 | List | Contents |
 | --- | --- |
@@ -100,18 +100,25 @@ Four lists under `.config/`, all reconciled by `package_report`:
 | `applist-aur` | AUR |
 | `applist-local` | built by hand; `package_install` never touches these |
 | `applist-machine` | boot, firmware, hardware, greeter — gitignored, per machine |
+| `applist-optdeps` | optional dependencies kept on purpose; installed `--asdeps` |
 
 ```sh
 package_report            # both directions: untracked, and listed-but-missing
 package_report --audit    # also check for packages that moved or disappeared
-package_install -b        # official + AUR
+package_install -b        # official + AUR, then optdeps
 ```
 
-Only the first two lists are installable. `applist-local` holds packages that
+`applist`, `applist-aur` and `applist-optdeps` are installable. `applist-local` holds packages that
 exist in no repository, and `applist-machine` describes hardware a machine must
 already have to have booted at all — and being gitignored, it does not exist on
 a fresh clone. Both exist so `package_report` counts those packages as tracked
 rather than reporting them as untracked noise.
+
+`applist-optdeps` is for packages that something lists only as an optional
+dependency (`pacman -Qi`'s "Optional For") and that you want anyway. They stay
+marked as dependencies rather than explicit, so removing the program that wants
+them turns them into orphans instead of leaving them behind. Any other package
+installed only as an optional dependency is reported as needing a decision.
 
 ## Disk cleanup
 

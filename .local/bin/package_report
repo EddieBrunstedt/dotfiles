@@ -5,6 +5,7 @@ set -euo pipefail
 APPLIST="${APPLIST:-$HOME/.config/applist}"
 APPLIST_AUR="${APPLIST_AUR:-$HOME/.config/applist-aur}"
 APPLIST_LOCAL="${APPLIST_LOCAL:-$HOME/.config/applist-local}"
+APPLIST_OPTDEPS="${APPLIST_OPTDEPS:-$HOME/.config/applist-optdeps}"
 # Gitignored and optional.
 APPLIST_MACHINE="${APPLIST_MACHINE:-$HOME/.config/applist-machine}"
 
@@ -19,11 +20,11 @@ usage() {
 	cat <<'EOF'
 Usage: package_report [OPTIONS]
 
-Compare the installed system against the official, AUR, local-build and
-machine applists in both directions: packages installed but not listed, and
-packages listed but not installed (or installed only as a dependency). Also
-reports orphans. The default report is local-only and does not refresh
-package databases or contact the AUR.
+Compare the installed system against the official, AUR, local-build, machine
+and optional-dependency applists in both directions: packages installed but
+not listed, and packages listed but not installed (or installed only as a
+dependency). Also reports orphans. The default report is local-only and does
+not refresh package databases or contact the AUR.
 
 Entries in applist-local are packages built by hand that exist in no
 repository, so --audit does not try to resolve them.
@@ -32,6 +33,12 @@ applist-machine holds hardware-, boot-, firmware- and greeter-specific
 packages. Its contents differ per machine, so it is gitignored and optional;
 only applist-machine.example is committed. Nothing installs from it — like
 applist-local it exists so its entries count as tracked.
+
+applist-optdeps holds packages kept on purpose as optional dependencies of
+something installed (pacman's "Optional For"). They stay installed as
+dependencies, so once nothing lists them as optional they become orphans.
+Any other package installed only as an optional dependency is reported as
+unlisted.
 
 Options:
   --audit          Also check whether listed packages moved between
@@ -75,7 +82,7 @@ if ! command -v pacman >/dev/null 2>&1; then
 	exit 2
 fi
 
-for file in "$APPLIST" "$APPLIST_AUR" "$APPLIST_LOCAL"; do
+for file in "$APPLIST" "$APPLIST_AUR" "$APPLIST_LOCAL" "$APPLIST_OPTDEPS"; do
 	if [[ ! -f $file ]]; then
 		printf 'Error: %s not found.\n' "$file" >&2
 		exit 2
@@ -107,10 +114,12 @@ declare -a official_packages=()
 declare -a aur_packages=()
 declare -a local_packages=()
 declare -a machine_packages=()
+declare -a optdeps_packages=()
 declare -a duplicate_official=()
 declare -a duplicate_aur=()
 declare -a duplicate_local=()
 declare -a duplicate_machine=()
+declare -a duplicate_optdeps=()
 declare -a overlap_packages=()
 declare -A official_list_set=()
 declare -A aur_list_set=()
@@ -119,6 +128,7 @@ declare -A aur_list_set=()
 declare -A local_list_set=()
 # shellcheck disable=SC2034
 declare -A machine_list_set=()
+declare -A optdeps_list_set=()
 declare -A tracked_set=()
 input_errors=0
 
@@ -167,6 +177,7 @@ load_applist() {
 load_applist "$APPLIST" official official_packages official_list_set duplicate_official
 load_applist "$APPLIST_AUR" aur aur_packages aur_list_set duplicate_aur
 load_applist "$APPLIST_LOCAL" local local_packages local_list_set duplicate_local
+load_applist "$APPLIST_OPTDEPS" optdeps optdeps_packages optdeps_list_set duplicate_optdeps
 if [[ -f $APPLIST_MACHINE ]]; then
 	load_applist "$APPLIST_MACHINE" machine machine_packages machine_list_set duplicate_machine
 fi
@@ -190,6 +201,13 @@ done
 for package in "${machine_packages[@]}"; do
 	if [[ ${official_list_set[$package]+present} || ${aur_list_set[$package]+present} ||
 		${local_list_set[$package]+present} ]]; then
+		overlap_packages+=("$package")
+	fi
+done
+
+for package in "${optdeps_packages[@]}"; do
+	if [[ ${official_list_set[$package]+present} || ${aur_list_set[$package]+present} ||
+		${local_list_set[$package]+present} || ${machine_list_set[$package]+present} ]]; then
 		overlap_packages+=("$package")
 	fi
 done
@@ -225,6 +243,8 @@ fi
 
 # pacman exits 1 when there is nothing to report, which is not an error here.
 orphan_output=$(pacman -Qqdt || true)
+# -tt adds dependencies that something lists only as optional.
+optional_output=$(pacman -Qqdtt || true)
 
 declare -a selected_packages=()
 declare -a untracked_repository=()
@@ -233,6 +253,8 @@ declare -a orphan_packages=()
 declare -A foreign_set=()
 declare -A installed_set=()
 declare -A explicit_set=()
+declare -A orphan_set=()
+declare -A optional_set=()
 
 while IFS= read -r package; do
 	[[ -n $package ]] && foreign_set["$package"]=1
@@ -247,8 +269,15 @@ while IFS= read -r package; do
 done <<<"$explicit_output"
 
 while IFS= read -r package; do
-	[[ -n $package ]] && orphan_packages+=("$package")
+	[[ -z $package ]] && continue
+	orphan_set["$package"]=1
+	# Listed ones are reported as unused optional dependencies instead.
+	[[ ${optdeps_list_set[$package]+present} ]] || orphan_packages+=("$package")
 done <<<"$orphan_output"
+
+while IFS= read -r package; do
+	[[ -n $package ]] && optional_set["$package"]=1
+done <<<"$optional_output"
 
 while IFS= read -r package; do
 	[[ -z $package ]] && continue
@@ -279,6 +308,88 @@ for package in "${official_packages[@]}" "${aur_packages[@]}" "${local_packages[
 		listed_as_dependency+=("$package")
 	fi
 done
+
+# applist-optdeps entries should be installed as dependencies that something
+# lists only as optional. Anything else installed that way is unlisted.
+declare -a optdeps_explicit=()
+declare -a optdeps_unused=()
+declare -a optdeps_required=()
+declare -a optional_unlisted=()
+
+for package in "${optdeps_packages[@]}"; do
+	if [[ ! ${installed_set[$package]+present} ]]; then
+		listed_missing+=("$package")
+	elif [[ ${explicit_set[$package]+present} ]]; then
+		optdeps_explicit+=("$package")
+	elif [[ ${orphan_set[$package]+present} ]]; then
+		optdeps_unused+=("$package")
+	elif [[ ! ${optional_set[$package]+present} ]]; then
+		optdeps_required+=("$package")
+	fi
+done
+
+for package in "${!optional_set[@]}"; do
+	if [[ ! ${orphan_set[$package]+present} && ! ${optdeps_list_set[$package]+present} ]]; then
+		optional_unlisted+=("$package")
+	fi
+done
+if ((${#optional_unlisted[@]})); then
+	mapfile -t optional_unlisted < <(printf '%s\n' "${optional_unlisted[@]}" | sort)
+fi
+
+optdeps_issue_count=$((${#optdeps_explicit[@]} + ${#optdeps_unused[@]} +
+	${#optdeps_required[@]} + ${#optional_unlisted[@]}))
+
+# "optional for …" / "required by …", shown next to the packages that need a decision.
+# Both used indirectly through print_package_section's nameref.
+# shellcheck disable=SC2034
+declare -A package_details=()
+# shellcheck disable=SC2034
+declare -A no_details=()
+
+# shellcheck disable=SC2034
+load_package_details() {
+	local line field='' name='' value
+	local -A optional_for=() required_by=()
+
+	while IFS= read -r line; do
+		if [[ $line =~ ^([A-Za-z][A-Za-z\ ]*[A-Za-z])[[:space:]]*:[[:space:]]?(.*)$ ]]; then
+			field=${BASH_REMATCH[1]}
+			value=${BASH_REMATCH[2]}
+			case $field in
+			Name) name=$value ;;
+			'Optional For') optional_for["$name"]=$value ;;
+			'Required By') required_by["$name"]=$value ;;
+			esac
+		elif [[ $line == [[:space:]]* ]]; then
+			# pacman wraps long fields onto indented lines.
+			case $field in
+			'Optional For') optional_for["$name"]+=" $line" ;;
+			'Required By') required_by["$name"]+=" $line" ;;
+			esac
+		fi
+	done < <(LC_ALL=C pacman -Qi "${optional_unlisted[@]}" "${optdeps_required[@]}")
+
+	local -a names
+	for name in "${optional_unlisted[@]}"; do
+		read -ra names <<<"${optional_for[$name]:-}"
+		package_details["$name"]="optional for $(join_by ', ' "${names[@]}")"
+	done
+	for name in "${optdeps_required[@]}"; do
+		read -ra names <<<"${required_by[$name]:-}"
+		package_details["$name"]="required by $(join_by ', ' "${names[@]}")"
+	done
+}
+
+join_by() {
+	local separator=$1 first=$2
+	shift 2
+	printf '%s' "$first" "${@/#/$separator}"
+}
+
+if ((${#optional_unlisted[@]} + ${#optdeps_required[@]})); then
+	load_package_details
+fi
 
 drift_count=$((${#listed_missing[@]} + ${#listed_as_dependency[@]}))
 
@@ -429,9 +540,9 @@ print_json_report() {
 	printf '  "mode": '
 	json_quote "$selection_mode"
 	printf ',\n'
-	printf '  "configured": {"official": %d, "aur": %d, "local": %d, "machine": %d, "unique": %d},\n' \
+	printf '  "configured": {"official": %d, "aur": %d, "local": %d, "machine": %d, "optdeps": %d, "unique": %d},\n' \
 		"${#official_packages[@]}" "${#aur_packages[@]}" "${#local_packages[@]}" \
-		"${#machine_packages[@]}" "$configured_count"
+		"${#machine_packages[@]}" "${#optdeps_packages[@]}" "$configured_count"
 	printf '  "installed_selected": %d,\n' "$selected_count"
 	printf '  "tracked_selected": %d,\n' "$tracked_selected_count"
 	printf '  "untracked": {\n'
@@ -451,6 +562,16 @@ print_json_report() {
 	printf '  "orphans": '
 	json_array orphan_packages
 	printf ',\n'
+	printf '  "optional_dependencies": {\n'
+	printf '    "unlisted": '
+	json_array optional_unlisted
+	printf ',\n    "listed_but_explicit": '
+	json_array optdeps_explicit
+	printf ',\n    "listed_but_unused": '
+	json_array optdeps_unused
+	printf ',\n    "listed_but_required": '
+	json_array optdeps_required
+	printf '\n  },\n'
 	printf '  "input_warnings": {\n'
 	printf '    "duplicate_official": '
 	json_array duplicate_official
@@ -460,6 +581,8 @@ print_json_report() {
 	json_array duplicate_local
 	printf ',\n    "duplicate_machine": '
 	json_array duplicate_machine
+	printf ',\n    "duplicate_optdeps": '
+	json_array duplicate_optdeps
 	printf ',\n    "in_multiple_lists": '
 	json_array overlap_packages
 	printf '\n  },\n'
@@ -490,12 +613,17 @@ print_package_section() {
 	local title=$2
 	local array_name=$3
 	local -n array_ref=$array_name
+	local -n details_ref=${4:-no_details}
 	local package
 
 	((${#array_ref[@]})) || return 0
 	printf '%b%s (%d):%b\n' "$color" "$title" "${#array_ref[@]}" "$NC"
 	for package in "${array_ref[@]}"; do
-		printf '  • %s\n' "$package"
+		if [[ -n ${details_ref[$package]:-} ]]; then
+			printf '  • %s (%s)\n' "$package" "${details_ref[$package]}"
+		else
+			printf '  • %s\n' "$package"
+		fi
 	done
 	printf '\n'
 }
@@ -504,14 +632,15 @@ print_text_report() {
 	printf '%b══════════════════════════════════════════%b\n' "$BLUE" "$NC"
 	printf '%b         PACKAGE TRACKING REPORT%b\n' "$BLUE" "$NC"
 	printf '%b══════════════════════════════════════════%b\n\n' "$BLUE" "$NC"
-	printf 'Configured packages: %d (%d official, %d AUR, %d local, %d machine)\n' \
+	printf 'Configured packages: %d (%d official, %d AUR, %d local, %d machine, %d optdeps)\n' \
 		"$configured_count" "${#official_packages[@]}" "${#aur_packages[@]}" \
-		"${#local_packages[@]}" "${#machine_packages[@]}"
+		"${#local_packages[@]}" "${#machine_packages[@]}" "${#optdeps_packages[@]}"
 	printf '%s: %d\n' "$selection_label" "$selected_count"
 	printf '%bTracked: %d%b\n' "$GREEN" "$tracked_selected_count" "$NC"
 	printf '%bUntracked: %d%b\n' "$YELLOW" "$untracked_count" "$NC"
 	printf '%bListed but missing or not explicit: %d%b\n' "$YELLOW" "$drift_count" "$NC"
-	printf '%bOrphans: %d%b\n\n' "$YELLOW" "${#orphan_packages[@]}" "$NC"
+	printf '%bOrphans: %d%b\n' "$YELLOW" "${#orphan_packages[@]}" "$NC"
+	printf '%bOptional dependencies needing a decision: %d%b\n\n' "$YELLOW" "$optdeps_issue_count" "$NC"
 
 	print_package_section "$GREEN" 'Marked as explicitly installed' fixed_explicit
 
@@ -531,10 +660,20 @@ print_text_report() {
 
 	print_package_section "$YELLOW" 'Orphans (installed as a dependency, nothing requires them)' orphan_packages
 
+	print_package_section "$YELLOW" 'Optional dependencies not in applist-optdeps' optional_unlisted package_details
+	print_package_section "$YELLOW" 'In applist-optdeps but installed explicitly (pacman -D --asdeps)' optdeps_explicit
+	print_package_section "$YELLOW" 'In applist-optdeps but nothing uses them anymore' optdeps_unused
+	print_package_section "$YELLOW" 'In applist-optdeps but now a hard dependency' optdeps_required package_details
+
+	if ((optdeps_issue_count == 0)); then
+		printf '%bEvery optional dependency is accounted for in applist-optdeps.%b\n\n' "$GREEN" "$NC"
+	fi
+
 	print_package_section "$YELLOW" 'Duplicate entries in the official applist' duplicate_official
 	print_package_section "$YELLOW" 'Duplicate entries in the AUR applist' duplicate_aur
 	print_package_section "$YELLOW" 'Duplicate entries in the local applist' duplicate_local
 	print_package_section "$YELLOW" 'Duplicate entries in the machine applist' duplicate_machine
+	print_package_section "$YELLOW" 'Duplicate entries in the optional-dependency applist' duplicate_optdeps
 	print_package_section "$YELLOW" 'Packages present in more than one applist' overlap_packages
 
 	if $audit; then
@@ -562,9 +701,9 @@ else
 	print_text_report
 fi
 
-issue_count=$((untracked_count + drift_count + ${#orphan_packages[@]} +
+issue_count=$((untracked_count + drift_count + ${#orphan_packages[@]} + optdeps_issue_count +
 	${#duplicate_official[@]} + ${#duplicate_aur[@]} + ${#duplicate_local[@]} +
-	${#duplicate_machine[@]} + ${#overlap_packages[@]}))
+	${#duplicate_machine[@]} + ${#duplicate_optdeps[@]} + ${#overlap_packages[@]}))
 if $audit; then
 	issue_count=$((issue_count + ${#official_moved_to_aur[@]} + ${#aur_moved_to_official[@]} +
 		${#official_missing[@]} + ${#aur_missing[@]} + ${#audit_query_errors[@]}))
