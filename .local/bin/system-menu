@@ -49,8 +49,7 @@ rows=$(printf '%s\n' "$sink_map" \
     "Dictation: Stop service" \
     "Disk: Show usage by filesystem" \
     "Disk: Show usage under ~" \
-    "Disk: Clean package and build caches" \
-    "Docker: Delete stopped containers and unused images")
+    "Disk: Clean caches, build artifacts and Docker data")
 
 chosen=$(printf '%s\n' "$rows" \
   | rofi -dmenu -i -no-custom -l "$(printf '%s\n' "$rows" | wc -l)" -p "Run") || exit 0
@@ -88,6 +87,5 @@ case "$chosen" in
   # system-cleanup fixes it. disk_usage is a fish alias, so duf is called direct.
   "Disk: Show usage by filesystem") term 'duf' ;;
   "Disk: Show usage under ~")       term 'dust "$HOME"' ;;
-  "Disk: Clean package and build caches") term '"$HOME"/.local/bin/system-cleanup caches' ;;
-  "Docker: Delete stopped containers and unused images") term '"$HOME"/.local/bin/system-cleanup docker-data' ;;
+  "Disk: Clean caches, build artifacts and Docker data") term '"$HOME"/.local/bin/system-cleanup' ;;
 esac

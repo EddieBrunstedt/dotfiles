@@ -1,6 +1,11 @@
 #!/bin/sh
-# Reclaim disk space from selected package/build caches. Run by hand when
-# caches have grown; there is no timer. Docker data deletion is a separate mode.
+# Reclaim disk space from selected package/build caches, project build
+# artifacts, the Doorman CI build cache, devtools build chroots and unused Docker
+# data. Run by hand when caches have grown; there is no timer.
+#
+# Everything removed here can be rebuilt or re-downloaded. Named Docker volumes
+# are the exception, since they can hold real data, so they are never touched:
+# review them with `docker system df -v` and remove them by hand.
 #
 # Journal size is not handled here: SystemMaxUse=500M in
 # /etc/systemd/journald.conf.d/00-size.conf lets journald enforce it
@@ -11,27 +16,13 @@
 set -u
 
 usage() {
-    printf 'Usage: system-cleanup [caches|docker-data]\n'
-    printf '  caches       Clean selected caches; retain three package versions (default).\n'
-    printf '  docker-data  Confirm deletion of stopped containers and unused Docker data.\n'
+    printf 'Usage: system-cleanup\n'
+    printf 'Clean caches, build artifacts and unused Docker data; retain one package version.\n'
+    printf 'Named Docker volumes are never removed.\n'
 }
 
-[ "$#" -le 1 ] || { usage >&2; exit 2; }
-mode=${1:-caches}
-case "$mode" in
-    caches) ;;
-    docker-data)
-        printf '%s\n' \
-            'This deletes ALL stopped containers, including work in their writable layers,' \
-            'all unused images and networks, and unused build cache in the current Docker context.' \
-            'Volumes are not pruned. Containers used by background jobs may also be affected.' \
-            'Type delete to proceed; anything else cancels.'
-        printf '> '
-        if ! IFS= read -r answer || [ "$answer" != delete ]; then
-            printf 'Cancelled; no cleanup performed.\n'
-            exit 0
-        fi
-        ;;
+case "${1-}" in
+    '') ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; exit 2 ;;
 esac
@@ -51,6 +42,48 @@ run_step() {
   - $label (exit $status)"
         failed=$((failed + 1))
     fi
+}
+
+# True while the Forgejo runner has a job in flight: on the `native` label, jobs
+# run as child processes in the runner service's own cgroup, so anything beyond
+# the daemon itself means a build may be writing to the cache.
+runner_busy() {
+    cgroup=$(systemctl --user show -p ControlGroup --value forgejo-runner.service 2>/dev/null) ||
+        return 1
+    procs=/sys/fs/cgroup$cgroup/cgroup.procs
+    [ -n "$cgroup" ] && [ -r "$procs" ] || return 1
+    [ "$(wc -l < "$procs")" -gt 1 ]
+}
+
+# Doorman's CI points CARGO_TARGET_DIR here (.forgejo/workflows/ci.yml) and
+# nothing ever trims it. Next CI run rebuilds from cold.
+clear_doorman_ci_cache() {
+    target=$HOME/.cache/doorman-ci/target
+    if [ ! -e "$target" ]; then
+        printf 'Nothing to remove.\n'
+        return 0
+    fi
+    if runner_busy; then
+        printf 'A Forgejo CI job is running; rerun once it finishes.\n' >&2
+        return 1
+    fi
+    rm -rf -- "$target"
+}
+
+# devtools (pkgctl build) keeps a clean chroot plus a working copy per build
+# here, and never removes the copies. The next build recreates the chroot.
+clear_archbuild() {
+    dir=/var/lib/archbuild
+    if [ ! -e "$dir" ]; then
+        printf 'Nothing to remove.\n'
+        return 0
+    fi
+    if pgrep -x makechrootpkg >/dev/null || pgrep -x arch-nspawn >/dev/null; then
+        printf 'A devtools package build is running; rerun once it finishes.\n' >&2
+        return 1
+    fi
+    # --one-file-system: never descend into anything still mounted in a chroot.
+    sudo rm -rf --one-file-system -- "$dir"
 }
 
 available_kb() {
@@ -78,22 +111,28 @@ human_kb() {
 before_kb=$(available_kb)
 printf 'Available disk space before cleanup: %s\n\n' "$(human_kb "$before_kb")"
 
-case "$mode" in
-    caches)
-        run_step 'Pacman archives (keep three versions)' sudo paccache --remove --keep 3
-        run_step 'Unused Docker build cache' docker builder prune --all --force
-        run_step 'Unreferenced pnpm store packages' pnpm store prune
-        run_step 'npm cache verification and garbage collection' npm cache verify
-        run_step 'Go build and test caches' go clean -cache -testcache
-        run_step 'tldr cache' tldr --clear-cache
-        # Leave application caches and Paru build trees alone: they can contain
-        # active state or local work and should be reviewed with their owners.
-        ;;
-    docker-data)
-        run_step 'Stopped containers and unused Docker images, networks and build cache' \
-            docker system prune --all --force
-        ;;
-esac
+# One version only: older ones remain on the Arch Linux Archive for downgrades.
+run_step 'Pacman archives (keep one version)' sudo paccache --remove --keep 1
+run_step 'Pacman archives of uninstalled packages' sudo paccache --remove --uninstalled --keep 0
+run_step 'devtools build chroots' clear_archbuild
+# Running containers and the images they use are left alone, but a CI job that
+# has pulled an image and not yet started its container can lose it and fail.
+run_step 'Stopped containers and unused Docker images, networks and build cache' \
+    docker system prune --all --force
+# After the container prune, so volumes of the containers it removed are unused
+# too. Without --all only anonymous volumes go: nothing can reattach to those
+# once their container is gone, unlike named volumes, which are kept.
+run_step 'Unused anonymous Docker volumes' docker volume prune --force
+run_step 'Unreferenced pnpm store packages' pnpm store prune
+run_step 'npm cache verification and garbage collection' npm cache verify
+run_step 'Go build and test caches' go clean -cache -testcache
+run_step 'tldr cache' tldr --clear-cache
+# kondo skips hidden directories, so tool-managed trees such as ~/.local/share
+# and ~/.cargo are left alone.
+run_step 'Project build artifacts (kondo)' kondo --all "$HOME"
+run_step 'Doorman CI build cache' clear_doorman_ci_cache
+# Leave application caches and Paru build trees alone: they can contain active
+# state or local work and should be reviewed with their owners.
 
 after_kb=$(available_kb)
 difference_kb=$((after_kb - before_kb))

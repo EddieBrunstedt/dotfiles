@@ -115,24 +115,22 @@ rather than reporting them as untracked noise.
 
 ## Disk cleanup
 
-The system menu's **Disk: Clean package and build caches** runs
-`system-cleanup caches` (also the default with no argument). It retains the
-newest three versions of each cached Pacman package using `sudo paccache`,
-cleans unused Docker build cache, prunes the pnpm store, verifies/garbage-collects
-the npm cache, and clears Go build/test and tldr caches. It leaves application
-caches and Paru build trees alone. Tools may need to download or rebuild cache
-contents afterwards; `pacman-contrib` supplies `paccache`.
-
-**Docker: Delete stopped containers and unused images** runs
-`system-cleanup docker-data`. It requires typing `delete` before removing all
-stopped containers (including their writable layers), unused images/networks,
-and unused build cache in the current Docker context. This can erase work in
-stopped containers, including containers used by background jobs. It does not
-prune volumes. Review needed containers/images before choosing it.
+The system menu's **Disk: Clean caches, build artifacts and Docker data** runs
+`system-cleanup`, which takes no arguments and asks no questions. It keeps only
+the installed version of each cached Pacman package (`sudo paccache`; older ones
+remain on the Arch Linux Archive) and drops archives of uninstalled packages,
+removes devtools build chroots, runs `docker system prune --all --force` and
+prunes anonymous Docker volumes, prunes the pnpm store, verifies/garbage-collects
+the npm cache, clears Go build/test and tldr caches, removes project build
+artifacts under `~` with `kondo --all`, and clears the Doorman CI build cache.
+Steps that would race a running devtools build or Forgejo CI job are skipped
+and reported as failed. Named Docker volumes, application caches and Paru build
+trees are left alone. Everything removed can be rebuilt or re-downloaded;
+`pacman-contrib` supplies `paccache`.
 See [Docker's prune documentation](https://docs.docker.com/reference/cli/docker/system/prune/).
 
-Each action reports failed steps at the end and exits nonzero on partial failure;
-the terminal stays open for review. Reported free-space changes also include
+It reports failed steps at the end and exits nonzero on partial failure; the
+terminal stays open for review. Reported free-space changes also include
 other activity on the measured filesystems. Run the isolated regression checks
 with `python3 tests/system-cleanup.test.py`; they use command doubles and never
 prune real data.
