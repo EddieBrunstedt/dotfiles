@@ -11,7 +11,3 @@ export ELECTRON_OZONE_PLATFORM_HINT=auto
 export QT_QPA_PLATFORM='wayland;xcb'
 # Not set: SDL_VIDEODRIVER (breaks some games), XDG_SESSION_TYPE and
 # XDG_CURRENT_DESKTOP (the session sets them).
-
-# ── Xwayland ──
-# Java GUI apps render grey under a non-reparenting WM without this.
-export _JAVA_AWT_WM_NONREPARENTING=1
