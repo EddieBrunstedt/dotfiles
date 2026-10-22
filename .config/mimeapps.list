@@ -1,7 +1,6 @@
 [Default Applications]
 application/json=text.desktop;
 application/pdf=pdf.desktop;
-application/postscript=pdf.desktop;
 application/x-bittorrent=org.qbittorrent.qBittorrent.desktop;
 application/x-matroska=mpv.desktop;
 audio/matroska=mpv.desktop;
