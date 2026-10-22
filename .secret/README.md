@@ -70,10 +70,6 @@ sops ~/.secret/env.optimusprime.sops.yaml             # add or change values
 curl -H "Authorization: Bearer $(sec OPENAI_API_KEY)" # fish 4.x and bash
 ```
 
-```nu
-http get -H ["Authorization" $"Bearer (sec OPENAI_API_KEY)"] $url
-```
-
 `sec NAME` resolves `env.$HOSTNAME.sops.yaml` first, then `env.shared.sops.yaml`; exits 1 with a message on stderr if the name is in neither. Output has no trailing newline, so `$(sec NAME)` is byte-exact.
 
 **Secrets are not in the environment.** `$OPENAI_API_KEY` is empty in a shell. Use `$(sec NAME)`, or a shim for tools that read the environment.

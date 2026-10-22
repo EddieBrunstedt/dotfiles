@@ -15,7 +15,6 @@ export __GLX_VENDOR_LIBRARY_NAME=nvidia
 export LIBVA_DRIVER_NAME=nvidia
 
 # ── Native Wayland for the big toolkits ──
-export MOZ_ENABLE_WAYLAND=1
 export ELECTRON_OZONE_PLATFORM_HINT=auto
 # Prefer Wayland, fall back to xcb for Qt apps without Wayland support.
 export QT_QPA_PLATFORM='wayland;xcb'

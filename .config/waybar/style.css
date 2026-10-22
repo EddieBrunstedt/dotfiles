@@ -168,7 +168,6 @@ window#waybar.empty #window {
    the bar, so a colour means the same thing whichever gauge shows it.
    Normal keeps the bar's default text colour. mullvad-status, volume and
    dunst-status are not telltale gauges but report in the same levels. */
-#custom-disk.quiet,
 #custom-dunst.quiet,
 #custom-inbox.quiet,
 #custom-mem.quiet,

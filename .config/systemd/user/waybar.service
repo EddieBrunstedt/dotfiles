@@ -8,7 +8,7 @@ PartOf=graphical-session.target
 
 [Service]
 Type=exec
-# SOPS_AGE_KEY_CMD, needed by the custom/protonmail shim, is inherited from
+# SOPS_AGE_KEY_CMD, needed by the custom/inbox shim, is inherited from
 # ~/.config/environment.d/10-defaults.conf.
 # Matches XDG_CURRENT_DESKTOP, so waybar only runs in a wlroots/mango session.
 ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""

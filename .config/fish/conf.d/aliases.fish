@@ -2,10 +2,8 @@
 
 abbr -a vim nvim
 abbr -a lg lazygit
-alias bc="bc -l"
 
 abbr -a ka 'killall'
-abbr -a tkill 'tmux kill-server'
 abbr -a clip 'wl-copy'
 abbr -a j 'just'
 abbr -a dc 'cd ~/desktop && claude'
