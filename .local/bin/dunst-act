@@ -1,0 +1,46 @@
+#!/bin/sh
+# Act on the top notification, or close it when it has nothing to act on.
+# With dunst at the bottom right the top card is the oldest, so repeated
+# presses work through the stack oldest first and a card that arrives just
+# before a press waits its turn. Bound to SUPER,i in mango.
+#
+# dunstctl action emits ActionInvoked for a card with one action, opens the
+# rofi menu for one with several, and does nothing for one with none, leaving
+# it up. dunst can't be asked which applies, so watch the bus for the signal
+# instead of waiting to see what happens. It goes only to the app that sent the
+# card, so it takes a bus monitor to see it.
+[ "$(dunstctl count displayed)" -gt 0 ] || exit 0
+
+log=$(mktemp)
+trap 'kill "$mon" 2>/dev/null; rm -f "$log"' EXIT
+dbus-monitor --session \
+	"type='signal',interface='org.freedesktop.Notifications',member='ActionInvoked'" \
+	"type='signal',path='/dunst_act/marker'" >"$log" 2>/dev/null &
+mon=$!
+
+# wait_for PATTERN: poll the log, giving up after about half a second.
+wait_for() {
+	i=0
+	until grep -q "$1" "$log"; do
+		i=$((i + 1))
+		[ "$i" -gt 250 ] && return 1
+		sleep 0.002
+	done
+}
+
+# The bus hands a new monitor its NameLost once it is listening.
+wait_for NameLost || exit 1
+dunstctl action 0
+# dunst sends ActionInvoked before it replies to dunstctl, so once a marker
+# sent after that reply shows up, any signal is already in the log.
+dbus-send --session --type=signal /dunst_act/marker org.dunst_act.Marker
+wait_for /dunst_act/marker || exit 1
+
+id=$(awk '/member=ActionInvoked/ { getline; print $2; exit }' "$log")
+if [ -n "$id" ]; then
+	# Close it as a click would; the app may have beaten us to it.
+	dunstctl close "$id" 2>/dev/null
+elif ! pgrep -x rofi >/dev/null; then
+	# Without an ID, close takes the top one, the same card.
+	dunstctl close
+fi
