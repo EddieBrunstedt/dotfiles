@@ -165,8 +165,6 @@ Things a fresh machine needs that these files cannot provide:
 - **`~/.config/forgejo-runner/runner-token`** — a registration secret. Run
   `just enable-forgejo` rather than `enable-services`; it checks for the token
   and explains how to register if it is missing.
-- **`/etc/systemd/journald.conf.d/00-size.conf`** — `SystemMaxUse=500M`, so
-  `system-cleanup` does not have to vacuum the journal by hand. Root-owned.
 - **The age identity** in the login keyring, without which no secret decrypts.
 - **The OpenPGP secret key used for Git commit signing.** `.gitconfig` tracks
   the public identity, key fingerprint and mandatory-signing policy, but never
