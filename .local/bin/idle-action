@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# idle-action — what happens when the session goes idle, run by swayidle.service.
+# idle-action — lock, then power the panel down. Run by lock-blank ("Lock and
+# blank screen" in power-menu). The name is from when swayidle.service also ran
+# it after ten idle minutes; it no longer has an idle timeout.
 #
 # Two things, in this order: lock, then power the panel down. Ordering is the
 # whole reason this is a script rather than a shell fragment in the unit —

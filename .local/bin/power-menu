@@ -5,7 +5,8 @@
 # ever cost a keypress. Rows are alphabetical, which happens to leave the
 # harmless "Lock and blank screen" under the cursor; everything that cannot be
 # undone asks first. Each entry runs exactly the one command its label names —
-# none of them chain a session stop into a power action.
+# none of them chain a session stop into a power action. No Suspend row: the
+# machine never sleeps (system/etc/systemd/sleep.conf.d/no-sleep.conf).
 
 menu() { rofi -dmenu -i -no-custom -l "$1" -p "$2"; }
 confirm() { [ "$(printf '%s\n' 'No' 'Yes' | menu 2 "$1")" = "Yes" ]; }
@@ -17,22 +18,18 @@ action=$(printf '%s\n' \
   "Reboot" \
   "Reboot to Windows" \
   "Stop Mango session" \
-  "Suspend" \
-  | menu 7 "Power") || exit 0
+  | menu 6 "Power") || exit 0
 [ -n "$action" ] || exit 0
 
 case "$action" in
   # Wrapper, not swaylock directly: it switches the keyboard to US first.
   "Lock screen") exec "$HOME/.local/bin/lock-screen" ;;
 
-  # Same lock, plus the panel put to sleep immediately rather than after
-  # swayidle.service's ten idle minutes. Not a bare wlopm call: lock-blank also
+  # Same lock, plus the panel put to sleep: the only way it goes dark, as
+  # swayidle.service has no idle timeout. Not a bare wlopm call: lock-blank also
   # leaves behind the one-shot listener that wakes the panel on the next
-  # keypress, which swayidle.service cannot do until its own timeout has fired.
+  # keypress.
   "Lock and blank screen") exec "$HOME/.local/bin/lock-blank" ;;
-  # Also gate the menu directly: do not request suspend if locking fails, even
-  # when swayidle is stopped. Its before-sleep hook reuses the established lock.
-  "Suspend")     "$HOME/.local/bin/lock-screen" -f && systemctl suspend ;;
   "Reboot")      confirm "Reboot?"    && systemctl reboot ;;
   "Power off")   confirm "Power off?" && systemctl poweroff ;;
 

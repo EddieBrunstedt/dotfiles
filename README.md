@@ -27,7 +27,7 @@ sudo pacman -S --needed git just stow  # 1. what the rest of this needs
 ./.local/bin/package_install -b        # 2. official + AUR; not on $PATH yet
                                        # 3. build .config/applist-local by hand
 just install                           # 4. symlink into $HOME
-just install-session                   # 5. root-owned uwsm session entry
+just install-session                   # 5. root-owned: uwsm session entry, no-sleep, power key
 just enable-services                   # 6. user units, then log out and back in
 ```
 
@@ -73,7 +73,7 @@ is D-Bus activated, or (MEGAsync) comes from `~/.config/autostart` via uwsm's
 | Unit | Notes |
 | --- | --- |
 | `waybar.service` | `ExecCondition` matches `XDG_CURRENT_DESKTOP`, so it only runs under mango |
-| `swayidle.service` | locks then blanks after 10 idle minutes; also handles `loginctl lock-session` and before-sleep |
+| `swayidle.service` | locks on `loginctl lock-session` and before sleep; no idle timeout, so locking and blanking are only ever deliberate |
 | `desktop-watch.service` | signals waybar's `~/desktop` segment whenever the folder changes |
 | `wallpaper.service` | swaybg; restart it after repointing the `current` symlink |
 | `filemanager-yazi.service` | `Type=dbus`, activated on demand, exits when idle |

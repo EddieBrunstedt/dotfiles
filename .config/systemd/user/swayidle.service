@@ -1,5 +1,5 @@
 [Unit]
-Description=Idle monitor blanking and session lock (swayidle)
+Description=Session lock on request and before sleep (swayidle)
 Documentation=man:swayidle(1)
 After=graphical-session.target
 PartOf=graphical-session.target
@@ -7,23 +7,19 @@ PartOf=graphical-session.target
 [Service]
 Type=exec
 # Matches waybar's own condition: mango is the only session these commands
-# (mmsg in lock-screen, wlr-output-power-management in idle-action) work under.
+# (mmsg in lock-screen) work under.
 ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""
-# -w: finish one handler before acting on the next event, so a mouse jiggle
-# during the lock-then-blank sequence cannot interleave with it.
-#
-# resume fires on any input, locked or not — swaylock takes no idle inhibitor
-# and mango reports activity to the idle notifier while the session is locked,
-# which is what makes the panel sleep and wake normally behind the lock screen.
+# No idle timeout: locking and blanking are only ever deliberate (SUPER+q, Lock
+# and blank screen, which is lock-blank). -w: finish one handler before acting
+# on the next event.
 #
 # The lock handler is for logind's LockSession signal (loginctl lock-session),
 # so anything asking the session to lock lands on the same wrapper as SUPER+q.
-# before-sleep also covers suspend requested outside power-menu. With -w and
+# Suspend is disabled outright (system/etc/systemd/sleep.conf.d/no-sleep.conf);
+# before-sleep stays as a backstop should that ever change. With -w and
 # lock-screen -f, both handlers wait for readiness but return before unlock.
 # logind still imposes its InhibitDelayMaxSec deadline on before-sleep.
 ExecStart=/usr/bin/swayidle -w \
-  timeout 600 '%h/.local/bin/idle-action' \
-  resume '/usr/bin/wlopm --on "*"' \
   lock '%h/.local/bin/lock-screen -f' \
   before-sleep '%h/.local/bin/lock-screen -f'
 Restart=on-failure

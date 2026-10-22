@@ -14,6 +14,16 @@ install-session:
     sudo install -Dm644 \
         system/usr/share/wayland-sessions/mango-uwsm.desktop \
         /usr/share/wayland-sessions/mango-uwsm.desktop
+    # Never suspend or hibernate: the machine works unattended.
+    sudo install -Dm644 \
+        system/etc/systemd/sleep.conf.d/no-sleep.conf \
+        /etc/systemd/sleep.conf.d/no-sleep.conf
+    # The power button is mango's (lock-blank), not logind's.
+    sudo install -Dm644 \
+        system/etc/systemd/logind.conf.d/power-key.conf \
+        /etc/systemd/logind.conf.d/power-key.conf
+    # Reload, not restart: restarting logind can end the running session.
+    sudo systemctl kill -s HUP systemd-logind
 
 # Re-symlink, cleaning up stale links
 restow:

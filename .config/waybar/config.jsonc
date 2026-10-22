@@ -21,7 +21,6 @@
         "custom/voxtype",
         "custom/desktop",
         "custom/whitetemp",
-        "idle_inhibitor",
         "custom/dunst",
         "clock",
         "tray"
@@ -169,23 +168,6 @@
         "on-click": "whitetemp",
         "on-click-right": "systemctl --user stop whitetemp.service; pkill -RTMIN+5 waybar",
         "tooltip": false
-    },
-    // Stay-awake toggle. While activated, waybar holds a Wayland idle
-    // inhibitor on the bar surface; mango honours it because the bar is
-    // always mapped, so the idle notifier never fires and swayidle.service's
-    // ten-minute lock-and-blank is held off. Manual locking and suspend are
-    // untouched. Not persisted: a waybar restart starts it deactivated again.
-    // The eye opens and closes rather than only changing colour, so the state
-    // reads without colour, as with the desktop drawer. nf-md-eye and eye_off,
-    // for the same reason as voxtype's icons.
-    "idle_inhibitor": {
-        "format": "{icon}",
-        "format-icons": {
-            "activated": "\udb80\ude08",
-            "deactivated": "\udb80\ude09"
-        },
-        "tooltip-format-activated": "Staying awake: idle lock and blanking paused",
-        "tooltip-format-deactivated": "Idle lock and blanking after 10 minutes"
     },
     "custom/dunst": {
         "exec": "dunst-status",

@@ -142,6 +142,9 @@ exec_once = ["uwsm finalize"]
 # one reached for while already standing up to leave. SUPER+SHIFT+q is left free
 # so a stray shift cannot land on something unrelated.
 "SUPER+q" = "spawn,~/.local/bin/power-menu"
+# The power button locks and blanks, as power-menu's first row. logind ignores
+# it (system/etc/systemd/logind.conf.d/power-key.conf), so it never powers off.
+"XF86PowerOff" = "spawn,~/.local/bin/lock-blank"
 "Print" = "spawn,~/.local/bin/screenshot"
 
 # ── Notifications ──
