@@ -4,9 +4,10 @@ set ignore-comments := true
 default:
     @just --list
 
-# Symlink dotfiles into $HOME
+# Symlink dotfiles into $HOME, then fetch the yazi plugins pinned in package.toml
 install:
     stow .
+    ya pkg install
 
 # Re-symlink, cleaning up stale links
 restow:

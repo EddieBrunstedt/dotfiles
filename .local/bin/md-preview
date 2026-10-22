@@ -1,0 +1,43 @@
+#!/bin/sh
+# Yazi's Markdown preview: the heading tree, then the source without blank
+# lines, word-wrapped to the pane. Run by the piper plugin, which sets $w to the
+# pane width; piper and bat don't wrap, and the source has no hard wraps.
+# Highlighting comes first: without its blank lines, a heading after a list
+# reads as part of the list, and a wrapped heading loses its '#'.
+f=$1
+export w=${w:-80}
+
+# Escapes take no width, and each continuation line reopens the colour active
+# at the break.
+wrap() {
+    perl -CS -ne '
+        chomp;
+        my ($o, $c, $g, $sp) = ("", 0, "");
+        for my $t (/\e\[[0-9;]*m|./g) {
+            if ($t =~ /^\e/) { $o .= $t; $g = $t; next }
+            if ($c >= $ENV{w}) {
+                if ($t eq " ") { print "$o\e[0m\n"; ($o, $c, $sp) = ($g, 0); next }
+                if ($sp) {
+                    my $rest = substr($o, $sp->[0] + 1);
+                    print substr($o, 0, $sp->[0]), "\e[0m\n";
+                    $o = $sp->[1] . $rest;
+                    $c = length($rest =~ s/\e\[[0-9;]*m//gr);
+                } else {
+                    print "$o\e[0m\n";
+                    ($o, $c) = ($g, 0);
+                }
+                undef $sp;
+            }
+            $sp = [length $o, $g] if $t eq " ";
+            $o .= $t;
+            $c++;
+        }
+        print "$o\n";
+    '
+}
+
+if [ "$(treemd -l "$f" 2>/dev/null | wc -l)" -ge 3 ]; then
+    treemd --tree -n "$f" | wrap
+    printf '\033[2m%s\033[0m\n' "$(printf '─%.0s' $(seq "$w"))"
+fi
+bat --color=always --style=plain -l md "$f" | grep -Pv '^(\e\[[0-9;]*m|\s)*$' | wrap
