@@ -155,10 +155,6 @@ Things a fresh machine needs that these files cannot provide:
   units. Docker also wants your user in the `docker` group; and because a user
   unit cannot order itself against a system one, the forgejo runner cannot pull
   Docker up on its own.
-- **MonoLisa** — a commercial font, installed to `/usr/local/share/fonts`.
-  Only mpv's `SimpleBookmark.lua` still names it. The `monospace` alias in
-  fontconfig, which ghostty and waybar use, resolves to Maple Mono from
-  `applist-aur`.
 - **Telltale** — the `telltale-*` gauges on waybar, installed to
   `~/.cargo/bin` with `cargo install --path ~/projects/telltale`.
   Self-maintained; not yet tracked by any applist.

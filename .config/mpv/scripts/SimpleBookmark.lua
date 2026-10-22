@@ -15,7 +15,7 @@ local keys = {
 }
 
 local style = {
-	font = "MonoLisa Medium",
+	font = "monospace",
 	align = 1,
 	max_items = 10,
 	max_title_length = 90,
