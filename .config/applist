@@ -10,6 +10,7 @@ bat-extras
 bfs
 biome
 bitwarden
+blender
 bun
 caligula
 cargo-update
@@ -48,6 +49,7 @@ ghostty
 gimp
 git
 git-delta
+git-lfs
 github-cli
 glab
 glow

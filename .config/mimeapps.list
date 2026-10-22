@@ -27,7 +27,10 @@ x-scheme-handler/http=librewolf.desktop;
 x-scheme-handler/https=librewolf.desktop;
 x-scheme-handler/magnet=org.qbittorrent.qBittorrent.desktop;
 x-scheme-handler/unknown=librewolf.desktop;
-x-scheme-handler/codex=chatgpt.desktop;
+x-scheme-handler/codex=chatgpt.desktop
+audio/x-opus+ogg=mpv.desktop
+audio/opus=mpv.desktop
+audio/ogg=mpv.desktop
 
 [Added Associations]
 image/png=gimp.desktop;krita_png.desktop;
