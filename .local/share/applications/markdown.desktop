@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Markdown reader
+NoDisplay=true
+MimeType=text/markdown;text/x-markdown;
+Exec=uwsm app -- ghostty -e treemd %f
