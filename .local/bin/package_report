@@ -97,16 +97,16 @@ fi
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
+BOLD='\033[1m'
+DIM='\033[2m'
 NC='\033[0m'
 
 if $json || $no_color || [[ ! -t 1 ]] || [[ -v NO_COLOR ]]; then
 	RED=''
 	GREEN=''
 	YELLOW=''
-	BLUE=''
-	MAGENTA=''
+	BOLD=''
+	DIM=''
 	NC=''
 fi
 
@@ -213,11 +213,11 @@ for package in "${optdeps_packages[@]}"; do
 done
 
 query_args=(-Qqe)
-selection_label='Explicitly installed'
+untracked_label='Untracked'
 selection_mode='explicit'
 if $leaf; then
 	query_args=(-Qqet)
-	selection_label='Explicit leaf packages'
+	untracked_label='Untracked leaves'
 	selection_mode='leaf'
 fi
 
@@ -341,13 +341,8 @@ optdeps_issue_count=$((${#optdeps_explicit[@]} + ${#optdeps_unused[@]} +
 	${#optdeps_required[@]} + ${#optional_unlisted[@]}))
 
 # "optional for …" / "required by …", shown next to the packages that need a decision.
-# Both used indirectly through print_package_section's nameref.
-# shellcheck disable=SC2034
 declare -A package_details=()
-# shellcheck disable=SC2034
-declare -A no_details=()
 
-# shellcheck disable=SC2034
 load_package_details() {
 	local line field='' name='' value
 	local -A optional_for=() required_by=()
@@ -373,11 +368,11 @@ load_package_details() {
 	local -a names
 	for name in "${optional_unlisted[@]}"; do
 		read -ra names <<<"${optional_for[$name]:-}"
-		package_details["$name"]="optional for $(join_by ', ' "${names[@]}")"
+		package_details["$name"]="optional for $(summarize_names "${names[@]}")"
 	done
 	for name in "${optdeps_required[@]}"; do
 		read -ra names <<<"${required_by[$name]:-}"
-		package_details["$name"]="required by $(join_by ', ' "${names[@]}")"
+		package_details["$name"]="required by $(summarize_names "${names[@]}")"
 	done
 }
 
@@ -385,6 +380,15 @@ join_by() {
 	local separator=$1 first=$2
 	shift 2
 	printf '%s' "$first" "${@/#/$separator}"
+}
+
+# The first three names, then a count: glibc alone is required by hundreds.
+summarize_names() {
+	if (($# > 3)); then
+		printf '%s +%d more' "$(join_by ', ' "${@:1:3}")" $(($# - 3))
+	else
+		join_by ', ' "$@"
+	fi
 }
 
 if ((${#optional_unlisted[@]} + ${#optdeps_required[@]})); then
@@ -410,8 +414,6 @@ if $fix_explicit && ((${#listed_as_dependency[@]})); then
 		exit 2
 	fi
 
-	# Used indirectly through print_package_section's nameref.
-	# shellcheck disable=SC2034
 	fixed_explicit=("${listed_as_dependency[@]}")
 	listed_as_dependency=()
 	drift_count=${#listed_missing[@]}
@@ -608,98 +610,157 @@ print_json_report() {
 	printf '}\n'
 }
 
-print_package_section() {
-	local color=$1
-	local title=$2
-	local array_name=$3
-	local -n array_ref=$array_name
-	local -n details_ref=${4:-no_details}
-	local package
+# Which applists name a package, e.g. "applist and applist-optdeps".
+lists_containing() {
+	local package=$1
+	local -a lists=()
+	if [[ ${official_list_set[$package]+present} ]]; then lists+=(applist); fi
+	if [[ ${aur_list_set[$package]+present} ]]; then lists+=(applist-aur); fi
+	if [[ ${local_list_set[$package]+present} ]]; then lists+=(applist-local); fi
+	if [[ ${machine_list_set[$package]+present} ]]; then lists+=(applist-machine); fi
+	if [[ ${optdeps_list_set[$package]+present} ]]; then lists+=(applist-optdeps); fi
+	join_by ' and ' "${lists[@]}"
+}
 
-	((${#array_ref[@]})) || return 0
-	printf '%b%s (%d):%b\n' "$color" "$title" "${#array_ref[@]}" "$NC"
-	for package in "${array_ref[@]}"; do
-		if [[ -n ${details_ref[$package]:-} ]]; then
-			printf '  • %s (%s)\n' "$package" "${details_ref[$package]}"
-		else
-			printf '  • %s\n' "$package"
-		fi
+# A check row collects items with add_item, then print_row prints it: a ✓ when
+# empty, otherwise ✗, a count, and one line per package with what is wrong and
+# what to do about it.
+declare -a row_names=()
+declare -a row_details=()
+declare -a row_fixes=()
+
+add_item() {
+	row_names+=("$1")
+	row_details+=("${2:-}")
+	row_fixes+=("${3:-}")
+}
+
+print_row() {
+	local label=$1 hint=${2:-} mark=${3:-✗} color=${4:-$YELLOW}
+	local i name_width=0 detail_width=0 fix line
+
+	if ((${#row_names[@]} == 0)); then
+		printf '  %b✓%b %s\n' "$GREEN" "$NC" "$label"
+		return 0
+	fi
+
+	printf '  %b%s%b %-16s%b%d%b\n' "$color" "$mark" "$NC" "$label" "$color" "${#row_names[@]}" "$NC"
+	for i in "${!row_names[@]}"; do
+		if ((${#row_names[i]} > name_width)); then name_width=${#row_names[i]}; fi
+		if ((${#row_details[i]} > detail_width)); then detail_width=${#row_details[i]}; fi
 	done
-	printf '\n'
+	for i in "${!row_names[@]}"; do
+		fix=${row_fixes[i]:+  → ${row_fixes[i]}}
+		# Padding sits outside the colour codes so a line without a fix can drop it.
+		printf -v line '      %-*s  %b%s%b%*s%s' "$name_width" "${row_names[i]}" \
+			"$DIM" "${row_details[i]}" "$NC" $((detail_width - ${#row_details[i]})) '' "$fix"
+		[[ -n $fix ]] || line=${line%"${line##*[! ]}"}
+		printf '%s\n' "$line"
+	done
+	if [[ -n $hint ]]; then
+		printf '      → %s\n' "$hint"
+	fi
+
+	row_names=()
+	row_details=()
+	row_fixes=()
 }
 
 print_text_report() {
-	printf '%b══════════════════════════════════════════%b\n' "$BLUE" "$NC"
-	printf '%b         PACKAGE TRACKING REPORT%b\n' "$BLUE" "$NC"
-	printf '%b══════════════════════════════════════════%b\n\n' "$BLUE" "$NC"
-	printf 'Configured packages: %d (%d official, %d AUR, %d local, %d machine, %d optdeps)\n' \
-		"$configured_count" "${#official_packages[@]}" "${#aur_packages[@]}" \
-		"${#local_packages[@]}" "${#machine_packages[@]}" "${#optdeps_packages[@]}"
-	printf '%s: %d\n' "$selection_label" "$selected_count"
-	printf '%bTracked: %d%b\n' "$GREEN" "$tracked_selected_count" "$NC"
-	printf '%bUntracked: %d%b\n' "$YELLOW" "$untracked_count" "$NC"
-	printf '%bListed but missing or not explicit: %d%b\n' "$YELLOW" "$drift_count" "$NC"
-	printf '%bOrphans: %d%b\n' "$YELLOW" "${#orphan_packages[@]}" "$NC"
-	printf '%bOptional dependencies needing a decision: %d%b\n\n' "$YELLOW" "$optdeps_issue_count" "$NC"
+	local package message
 
-	print_package_section "$GREEN" 'Marked as explicitly installed' fixed_explicit
+	printf '%bPackages%b  %d listed %b· %d official · %d AUR · %d local · %d machine · %d optdeps%b\n\n' \
+		"$BOLD" "$NC" "$configured_count" "$DIM" "${#official_packages[@]}" "${#aur_packages[@]}" \
+		"${#local_packages[@]}" "${#machine_packages[@]}" "${#optdeps_packages[@]}" "$NC"
 
-	print_package_section "$MAGENTA" 'Untracked repository packages' untracked_repository
-	print_package_section "$MAGENTA" 'Untracked foreign packages (typically AUR or manual)' untracked_foreign
+	for package in "${untracked_repository[@]}"; do
+		add_item "$package" 'repository' 'add to applist'
+	done
+	for package in "${untracked_foreign[@]}"; do
+		add_item "$package" 'foreign' 'add to applist-aur or applist-local'
+	done
+	print_row "$untracked_label"
 
-	if ((untracked_count == 0)); then
-		printf '%bAll selected packages are included in an applist.%b\n\n' "$GREEN" "$NC"
+	for package in "${listed_missing[@]}"; do
+		add_item "$package" "in $(lists_containing "$package")"
+	done
+	print_row 'Not installed' 'install it, or drop it from the list'
+
+	if ((${#fixed_explicit[@]})); then
+		for package in "${fixed_explicit[@]}"; do
+			add_item "$package" 'marked explicit'
+		done
+		print_row 'Not explicit' '' '✓' "$GREEN"
+	else
+		for package in "${listed_as_dependency[@]}"; do
+			add_item "$package" "in $(lists_containing "$package")"
+		done
+		print_row 'Not explicit' 'package_report --fix-explicit'
 	fi
 
-	print_package_section "$RED" 'Listed but not installed' listed_missing
-	print_package_section "$YELLOW" 'Listed but installed as a dependency (not explicit)' listed_as_dependency
+	for package in "${orphan_packages[@]}"; do
+		add_item "$package"
+	done
+	print_row 'Orphans' 'pacman -Qqdt | sudo pacman -Rns -'
 
-	if ((drift_count == 0)); then
-		printf '%bEvery listed package is installed and marked explicit.%b\n\n' "$GREEN" "$NC"
+	for package in "${optional_unlisted[@]}"; do
+		add_item "$package" "${package_details[$package]}" 'keep in applist-optdeps, or remove'
+	done
+	for package in "${optdeps_explicit[@]}"; do
+		add_item "$package" 'listed, but explicit' "sudo pacman -D --asdeps $package"
+	done
+	for package in "${optdeps_unused[@]}"; do
+		add_item "$package" 'listed, but nothing uses it' 'remove, and drop it from applist-optdeps'
+	done
+	for package in "${optdeps_required[@]}"; do
+		add_item "$package" "listed, but ${package_details[$package]}" 'drop it from applist-optdeps'
+	done
+	print_row 'Optional deps'
+
+	# Only shown when something is wrong with the lists themselves.
+	for package in "${duplicate_official[@]}"; do add_item "$package" 'twice in applist'; done
+	for package in "${duplicate_aur[@]}"; do add_item "$package" 'twice in applist-aur'; done
+	for package in "${duplicate_local[@]}"; do add_item "$package" 'twice in applist-local'; done
+	for package in "${duplicate_machine[@]}"; do add_item "$package" 'twice in applist-machine'; done
+	for package in "${duplicate_optdeps[@]}"; do add_item "$package" 'twice in applist-optdeps'; done
+	for package in "${overlap_packages[@]}"; do
+		add_item "$package" "in $(lists_containing "$package")" 'keep it in one'
+	done
+	if ((${#row_names[@]})); then
+		print_row 'List entries'
 	fi
-
-	print_package_section "$YELLOW" 'Orphans (installed as a dependency, nothing requires them)' orphan_packages
-
-	print_package_section "$YELLOW" 'Optional dependencies not in applist-optdeps' optional_unlisted package_details
-	print_package_section "$YELLOW" 'In applist-optdeps but installed explicitly (pacman -D --asdeps)' optdeps_explicit
-	print_package_section "$YELLOW" 'In applist-optdeps but nothing uses them anymore' optdeps_unused
-	print_package_section "$YELLOW" 'In applist-optdeps but now a hard dependency' optdeps_required package_details
-
-	if ((optdeps_issue_count == 0)); then
-		printf '%bEvery optional dependency is accounted for in applist-optdeps.%b\n\n' "$GREEN" "$NC"
-	fi
-
-	print_package_section "$YELLOW" 'Duplicate entries in the official applist' duplicate_official
-	print_package_section "$YELLOW" 'Duplicate entries in the AUR applist' duplicate_aur
-	print_package_section "$YELLOW" 'Duplicate entries in the local applist' duplicate_local
-	print_package_section "$YELLOW" 'Duplicate entries in the machine applist' duplicate_machine
-	print_package_section "$YELLOW" 'Duplicate entries in the optional-dependency applist' duplicate_optdeps
-	print_package_section "$YELLOW" 'Packages present in more than one applist' overlap_packages
 
 	if $audit; then
-		printf '%bREPOSITORY AUDIT%b\n\n' "$BLUE" "$NC"
-		print_package_section "$YELLOW" 'Moved from Official to AUR' official_moved_to_aur
-		print_package_section "$GREEN" 'Moved from AUR to Official' aur_moved_to_official
-		print_package_section "$RED" 'Missing packages from the official applist' official_missing
-		print_package_section "$RED" 'Missing packages from the AUR applist' aur_missing
-		print_package_section "$RED" 'AUR query errors (status unknown)' audit_query_errors
-		print_package_section "$RED" 'AUR query failure details' audit_error_messages
+		for package in "${official_moved_to_aur[@]}"; do
+			add_item "$package" 'in applist, now in the AUR' 'move it to applist-aur'
+		done
+		for package in "${aur_moved_to_official[@]}"; do
+			add_item "$package" 'in applist-aur, now official' 'move it to applist'
+		done
+		for package in "${official_missing[@]}"; do
+			add_item "$package" 'in applist, gone from the repos' 'replace or drop it'
+		done
+		for package in "${aur_missing[@]}"; do
+			add_item "$package" 'in applist-aur, gone from the AUR' 'replace or drop it'
+		done
+		for package in "${audit_query_errors[@]}"; do
+			add_item "$package" 'unknown: the AUR query failed'
+		done
+		print_row 'Sources'
+		for message in "${audit_error_messages[@]}"; do
+			printf '      %b%s%b\n' "$RED" "$message" "$NC"
+		done
+	fi
 
-		if ((${#official_moved_to_aur[@]} == 0 &&
-			${#aur_moved_to_official[@]} == 0 &&
-			${#official_missing[@]} == 0 &&
-			${#aur_missing[@]} == 0 &&
-			${#audit_query_errors[@]} == 0)); then
-			printf '%bAll configured packages remain in their expected source.%b\n\n' "$GREEN" "$NC"
-		fi
+	printf '\n'
+	if ((issue_count == 0)); then
+		printf '%bAll in order.%b\n' "$GREEN" "$NC"
+	elif ((issue_count == 1)); then
+		printf '%b1 issue.%b\n' "$YELLOW" "$NC"
+	else
+		printf '%b%d issues.%b\n' "$YELLOW" "$issue_count" "$NC"
 	fi
 }
-
-if $json; then
-	print_json_report
-else
-	print_text_report
-fi
 
 issue_count=$((untracked_count + drift_count + ${#orphan_packages[@]} + optdeps_issue_count +
 	${#duplicate_official[@]} + ${#duplicate_aur[@]} + ${#duplicate_local[@]} +
@@ -707,6 +768,12 @@ issue_count=$((untracked_count + drift_count + ${#orphan_packages[@]} + optdeps_
 if $audit; then
 	issue_count=$((issue_count + ${#official_moved_to_aur[@]} + ${#aur_moved_to_official[@]} +
 		${#official_missing[@]} + ${#aur_missing[@]} + ${#audit_query_errors[@]}))
+fi
+
+if $json; then
+	print_json_report
+else
+	print_text_report
 fi
 
 if $audit && $aur_query_failed; then
