@@ -12,7 +12,6 @@
 ^/justfile$
 ^/\.stowrc$
 ^/\.stow-local-ignore$
-^/tests$
 
 # Root-owned; installed by `just install-session`
 ^/system$

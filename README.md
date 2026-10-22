@@ -131,9 +131,7 @@ See [Docker's prune documentation](https://docs.docker.com/reference/cli/docker/
 
 It reports failed steps at the end and exits nonzero on partial failure; the
 terminal stays open for review. Reported free-space changes also include
-other activity on the measured filesystems. Run the isolated regression checks
-with `python3 tests/system-cleanup.test.py`; they use command doubles and never
-prune real data.
+other activity on the measured filesystems.
 
 ## Secrets
 
