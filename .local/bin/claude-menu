@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# Rofi menu of the open Claude Code sessions, bound to the telltale-claude
+# segment. Rows are in the tooltip's order: waiting first, then working, then
+# idle, each newest first, marked with the tooltip's icons. Picking one
+# focuses its Ghostty window; a background session (`claude --bg`) has no
+# window, so it opens in a new one with `claude attach`.
+#
+# A killed session leaves its file in ~/.claude/sessions behind, so a file
+# counts only while its pid is alive and started when the file says. Windows
+# are found as ~/.claude/hooks/notify-done.sh finds them: Ghostty names each
+# window after the session title.
+
+set -u
+
+# Fields are joined by the unit separator, not tabs: read collapses runs of
+# a whitespace IFS, so an empty field would shift the rest.
+US=$'\x1f'
+
+records=
+for file in ~/.claude/sessions/*.json; do
+    IFS=$US read -r pid start status kind updated id cwd name job < <(jq -r \
+        '[.pid, .procStart, .status // "starting", .kind, .statusUpdatedAt // 0,
+          .sessionId, .cwd, .name // "", .jobId // ""] | join("\u001f")' \
+        "$file" 2>/dev/null) || continue
+    [ "$kind" = daemon ] && continue
+    [ "$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null)" = "$start" ] || continue
+    case $status in
+        waiting) rank=0 icon=󰏤 ;;
+        busy | shell) rank=1 icon=󰚩 ;;
+        *) rank=2 icon=󰒲 ;;
+    esac
+
+    # Claude Code keeps transcripts under the directory with every character
+    # but letters and digits turned into '-'.
+    transcript=~/.claude/projects/$(sed 's/[^A-Za-z0-9]/-/g' <<<"$cwd")/$id.jsonl
+    title=$(grep -hoE '"(customTitle|aiTitle)":"[^"]*"' "$transcript" 2>/dev/null | tail -1 | cut -d'"' -f4)
+    label=${title:-$name}
+    dir=${cwd/#$HOME/\~}
+
+    records+="$rank $((9999999999999 - updated))$US$icon$US$label$US$dir$US$kind$US$job$US$id$US${title:-Claude Code}"$'\n'
+done
+[ -n "$records" ] || exit 0
+records=$(printf %s "$records" | sort -t "$US" -k1,1)
+
+# Columns padded by character, not byte, so titles with an ellipsis or
+# accents still line up in rofi's monospace font.
+rows=$(awk -F "$US" '
+    { icon[NR] = $2; label[NR] = length($3) > 45 ? substr($3, 1, 44) "…" : $3
+      dir[NR] = $4; if (length(label[NR]) > w) w = length(label[NR]) }
+    END { for (i = 1; i <= NR; i++) printf "%s  %-*s  %s\n", icon[i], w, label[i], dir[i] }
+' <<<"$records")
+
+count=$(wc -l <<<"$records")
+pick=$(rofi -dmenu -i -no-custom -format i -p Claude -l "$((count < 10 ? count : 10))" <<<"$rows") || exit 0
+[ -n "$pick" ] || exit 0
+
+IFS=$US read -r _ _ _ _ kind job id title < <(sed -n "$((pick + 1))p" <<<"$records")
+
+clients=$(mmsg get all-clients 2>/dev/null)
+
+if [ "$kind" = bg ]; then
+    # A window opened here before is a Ghostty process of its own (-e skips
+    # the single instance), so it is found by its pid rather than opened
+    # again.
+    attach="ghostty -e claude attach ${job:-$id}"
+    window=$(jq -r --argjson pids "[$(pgrep -d, -fx "$attach")]" '
+      [.clients[] | select(.pid as $p | $pids | index($p))][0] // empty | .id' \
+      <<<"$clients" 2>/dev/null)
+    [ -n "$window" ] || exec $attach
+    exec mmsg dispatch focusid client,"$window" >/dev/null
+fi
+
+# The window title is the session title, possibly behind a spinner glyph.
+window=$(jq -r --arg t "$title" '
+  [.clients[] | select(.appid == "com.mitchellh.ghostty")
+              | select(.title == $t or (.title | sub("^[^ ]+ "; "")) == $t)][0]
+  // empty | .id' <<<"$clients" 2>/dev/null)
+[ -n "$window" ] && mmsg dispatch focusid client,"$window" >/dev/null

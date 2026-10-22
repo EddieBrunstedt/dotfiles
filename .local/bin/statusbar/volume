@@ -1,8 +1,9 @@
 #!/bin/sh
 # Waybar segment: default sink volume, or muted. Polled every 10s and
 # refreshed instantly via `pkill -RTMIN+1 waybar` on volume keys and scroll.
-# Prints its own icon. The value is four right-aligned cells ("100%" at most,
-# as scroll caps at 1.0), so the bar does not shift as it changes.
+# Prints its own icon. The value is four left-aligned cells ("100%" at most,
+# as scroll caps at 1.0), so the bar does not shift as it changes and the
+# padding falls after the value, not between it and the icon.
 #
 # Classes are telltale's level names, so style.css colours this segment like
 # the gauges: sound playing is quiet, muted is attention, as a mute left on
@@ -14,7 +15,7 @@ icon_on=$(printf '\363\260\225\276')
 icon_off=$(printf '\363\260\226\201')
 
 # $1 icon, $2 value, $3 class
-show() { printf '{"text":"%s %4s","class":"%s"}\n' "$1" "$2" "$3"; }
+show() { printf '{"text":"%s %-4s","class":"%s"}\n' "$1" "$2" "$3"; }
 
 out=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null) || { show "$icon_off" "?" unknown; exit 0; }
 

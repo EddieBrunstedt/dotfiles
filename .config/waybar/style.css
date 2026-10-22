@@ -94,6 +94,11 @@ window#waybar.empty #window {
 }
 
 /* ── status modules ──────────────────────────────────────────────── */
+/* Each segment sits in a recessed pill: mantle, a shade darker than the bar,
+   so it reads as pressed in rather than stuck on, and no text colour has to
+   change. The pill is what groups a value with its icon; the margin keeps it
+   4px off the bar's edges. The icon-only toggles share one pill (#toggles,
+   a group in config.jsonc) rather than making a row of tiles. */
 #custom-mem,
 #custom-net,
 #custom-disk,
@@ -102,12 +107,32 @@ window#waybar.empty #window {
 #custom-claude,
 #custom-mullvad,
 #custom-volume,
+#toggles,
+#clock,
+#tray {
+    margin: 4px 0;
+    padding: 0 8px;
+    background-color: #181825;
+    border-radius: 6px;
+    color: #cdd6f4;
+}
+
+/* The same 4px between the last pill and the edge of the screen as above and
+   below it. On the box rather than #tray, so it holds when the tray is empty. */
+.modules-right {
+    margin-right: 4px;
+}
+
+/* Inside the shared pill the toggles keep the 6px padding their icons' ink
+   spills into, so the pill itself only needs a little more. */
+#toggles {
+    padding: 0 2px;
+}
+
 #custom-voxtype,
 #custom-desktop,
 #custom-whitetemp,
-#custom-dunst,
-#clock,
-#tray {
+#custom-dunst {
     padding: 0 6px;
     background-color: transparent;
     color: #cdd6f4;

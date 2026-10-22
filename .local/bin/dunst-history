@@ -1,0 +1,88 @@
+#!/bin/sh
+# Notification history in rofi, newest first. Bound to SUPER+CTRL+i and to a
+# right click on the Waybar dunst segment.
+#
+# Typing filters on app, summary and body alike. Pick a notification to show
+# it again (back on screen, where SUPER+i acts on it: Claude's focus their
+# session), copy its text, or delete it. Alt+Delete clears the whole history,
+# for after SUPER+SHIFT+i on something sensitive, which only moves it here.
+#
+# dunst keeps history in memory only, so it is gone once dunst restarts or the
+# session ends.
+
+set -u
+
+for dep in rofi dunstctl jq wl-copy; do
+    command -v "$dep" >/dev/null 2>&1 || {
+        printf 'dunst-history: required command not found: %s\n' "$dep" >&2
+        exit 1
+    }
+done
+
+# rofi -mesg renders pango markup
+escape_markup() { printf '%s' "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'; }
+
+# Newest first by when each was sent. dunst's own history order is by when
+# each left the screen, so one brought back with "Show again" would jump to the
+# top; its timestamp stays the original.
+history=$(dunstctl history | jq '.data[0] | sort_by(-.timestamp.data)') || exit 1
+count=$(printf '%s' "$history" | jq 'length')
+if [ "$count" -eq 0 ]; then
+    rofi -e "No notifications in history"
+    exit 0
+fi
+
+# dunst stamps notifications in microseconds of CLOCK_BOOTTIME, which keeps
+# counting through suspend, as /proc/uptime does; the difference from now is
+# each one's age, and from that its wall-clock time.
+now_wall=$(date +%s)
+now_boot=$(awk '{ printf "%d", $1 * 1000000 }' /proc/uptime)
+today=$(date +%F)
+
+# One row per notification, in that order: time, app in bold, summary, then
+# the body dimmed, all on one line and cut to fit. Times from before today get
+# their date instead.
+rows=$(printf '%s' "$history" | jq -r --argjson now_wall "$now_wall" \
+    --argjson now_boot "$now_boot" --arg today "$today" '
+    def esc: gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;");
+    def oneline: gsub("\\s+"; " ") | ltrimstr(" ") | rtrimstr(" ");
+    def cut($n): if length > $n then .[:$n - 1] + "…" else . end;
+    .[]
+    | ($now_wall - (($now_boot - .timestamp.data) / 1000000) | floor) as $t
+    | (if ($t | strflocaltime("%F")) == $today
+       then $t | strflocaltime("%H:%M")
+       else $t | strflocaltime("%b %d") end) as $when
+    | (.summary.data | oneline) as $summary
+    | (.body.data | oneline) as $body
+    | "<span foreground=\"#6c7086\">\($when)</span>  <b>\(.appname.data | oneline | cut(16) | esc)</b>  \($summary | cut(60) | esc)"
+      + (if $body == "" then "" else "  <span foreground=\"#6c7086\">\($body | cut(80) | esc)</span>" end)
+    ')
+
+# -format i returns the row index, which indexes the same sorted list.
+index=$(printf '%s\n' "$rows" | rofi -dmenu -i -no-custom -markup-rows \
+    -format i -p "History" -l 12 -kb-custom-1 "Alt+Delete" \
+    -mesg "$count notifications · Enter to pick · Alt+Delete clears all")
+status=$?
+
+if [ "$status" -eq 10 ]; then
+    dunstctl history-clear
+    exit 0
+fi
+[ "$status" -eq 0 ] && [ -n "$index" ] || exit 0
+
+note=$(printf '%s' "$history" | jq --argjson i "$index" '.[$i]')
+field() { printf '%s' "$note" | jq -r ".$1.data"; }
+id=$(field id)
+summary=$(field summary)
+body=$(field body)
+
+choice=$(printf '%s\n' "Show again" "Copy text" "Delete" \
+    | rofi -dmenu -i -no-custom -p "$(field appname)" -l 3 \
+        -mesg "<b>$(escape_markup "$summary")</b>
+$(escape_markup "$body")") || exit 0
+
+case "$choice" in
+"Show again") dunstctl history-pop "$id" ;;
+"Copy text") printf '%s\n%s' "$summary" "$body" | wl-copy ;;
+Delete) dunstctl history-rm "$id" ;;
+esac

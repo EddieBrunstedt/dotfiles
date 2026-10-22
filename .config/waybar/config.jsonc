@@ -3,11 +3,7 @@
     "position": "bottom",
     "height": 30,
     "spacing": 4,
-    "modules-left": [
-        "mango/workspaces",
-        "mango/layout",
-        "mango/window"
-    ],
+    "modules-left": ["mango/workspaces", "mango/layout", "mango/window"],
     "modules-center": [],
     "modules-right": [
         "custom/mem",
@@ -18,10 +14,7 @@
         "custom/volume",
         "custom/units",
         "custom/disk",
-        "custom/voxtype",
-        "custom/desktop",
-        "custom/whitetemp",
-        "custom/dunst",
+        "group/toggles",
         "clock",
         "tray"
     ],
@@ -93,12 +86,11 @@
     // Claude Code sessions. Off the bar while none is open; otherwise the
     // working ones by the robot and the idle ones by the sleep sign, peach
     // while one waits on you (a permission prompt or a question). A click
-    // focuses the top row of the tooltip that is not working: the newest
-    // waiting session, or else the one that finished last.
+    // opens a rofi menu of the tooltip's rows; picking one focuses its window.
     "custom/claude": {
         "exec": "telltale-claude --watch --format waybar --floor normal",
         "return-type": "json",
-        "on-click": "claude-focus",
+        "on-click": "claude-menu",
         "tooltip": true
     },
     // No interval: mullvad-status streams the daemon's state changes, so
@@ -119,6 +111,18 @@
         "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 2%- && pkill -RTMIN+1 waybar",
         "tooltip": false
     },
+    // The icon-only segments, which are switches rather than readings, share
+    // one pill in style.css instead of each drawing a tile of its own.
+    "group/toggles": {
+        "orientation": "horizontal",
+        "modules": [
+            "custom/voxtype",
+            "custom/desktop",
+            "custom/whitetemp",
+            "custom/dunst"
+        ]
+    },
+
     // Material Design icons (nf-md-microphone, record, loading,
     // microphone_off), like the rest of the bar. Their ink spills at most a
     // quarter cell past the advance, inside the 6px padding; the Font
@@ -175,15 +179,20 @@
         "interval": 5,
         "signal": 3,
         "on-click": "dunst-toggle",
+        "on-click-right": "dunst-history",
         "tooltip": true
     },
     // Fixed width: %a and %d are always three and two characters. Waybar
     // aligns the interval to the minute, so 60 changes the text on time. The
     // full date and ISO week are in the tooltip rather than a format-alt.
+    // The tooltip is formatted with the time as its only argument, so each
+    // field names it as {0:...}: a bare {:...} takes the next argument, and the
+    // second one would ask for an argument that does not exist.
     "clock": {
         "interval": 60,
         "format": "{:%a %d %H:%M}",
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>\n{:%F, week %V}"
+        "tooltip-format": "{0:%F, week %V}\n<tt><small>{calendar}</small></tt>",
+        "on-click": "xdg-open https://calendar.proton.me/"
     },
 
     "tray": {

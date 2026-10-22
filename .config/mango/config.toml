@@ -136,10 +136,6 @@ exec_once = ["uwsm finalize"]
 "SUPER+SHIFT+r" = "spawn,~/.local/bin/ghostty-retro"
 # h for shader: rofi picker that overrides the shader the retro toggle brings.
 "SUPER+SHIFT+h" = "spawn,~/.local/bin/ghostty-shader-menu"
-# r for retro: CRT shader, phosphor theme and Fixedsys Excelsior in every open ghostty.
-"SUPER+SHIFT+r" = "spawn,~/.local/bin/ghostty-retro"
-# h for shader: rofi picker that overrides the shader the retro toggle brings.
-"SUPER+SHIFT+h" = "spawn,~/.local/bin/ghostty-shader-menu"
 "SUPER+SHIFT+k" = "spawn,~/.local/bin/keyboard-layout-menu"
 # v for VPN; SUPER+SHIFT+s belongs to the special workspace below.
 "SUPER+SHIFT+v" = "spawn,~/.local/bin/mullvad-menu"
@@ -153,16 +149,18 @@ exec_once = ["uwsm finalize"]
 # The power button locks and blanks, as power-menu's first row. logind ignores
 # it (system/etc/systemd/logind.conf.d/power-key.conf), so it never powers off.
 "XF86PowerOff" = "spawn,~/.local/bin/lock-blank"
-# The power button locks and blanks, as power-menu's first row. logind ignores
-# it (system/etc/systemd/logind.conf.d/power-key.conf), so it never powers off.
-"XF86PowerOff" = "spawn,~/.local/bin/lock-blank"
-# The power button locks and blanks, as power-menu's first row. logind ignores
-# it (system/etc/systemd/logind.conf.d/power-key.conf), so it never powers off.
-"XF86PowerOff" = "spawn,~/.local/bin/lock-blank"
 "Print" = "spawn,~/.local/bin/screenshot"
 
 # ── Notifications ──
+# Act on the top notification, the oldest (dunst sits at the bottom right, so
+# its update sort runs newest at the bottom), and close it: Claude's focus
+# their session. Repeat to work down the stack.
+# SHIFT closes all, the ones queued past notification_limit too; all of them
+# stay in history (dunstctl history-pop).
+"SUPER+i" = "spawn,~/.local/bin/dunst-act"
 "SUPER+SHIFT+i" = "spawn,dunstctl close-all"
+# Browse history in rofi: show again, copy, delete, or clear it all.
+"SUPER+CTRL+i" = "spawn,~/.local/bin/dunst-history"
 # Do Not Disturb; updates the 🔔/🔕 waybar segment.
 "SUPER+SHIFT+n" = "spawn,~/.local/bin/dunst-toggle"
 

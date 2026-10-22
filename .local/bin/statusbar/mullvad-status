@@ -13,7 +13,8 @@
 #
 # The JSON names the country but has no code for it, so the code is the exit
 # relay's hostname prefix (se-sto-wg-201 -> SE). Every state is the icon and
-# three right-aligned cells, so the bar does not shift as the state changes.
+# three left-aligned cells, so the bar does not shift as the state changes and
+# the padding falls after the code, not between it and the icon.
 set -u
 
 # U+F033E nf-md-lock and U+F033F nf-md-lock_open, written as octal escapes so
@@ -24,7 +25,7 @@ open=$(printf '\363\260\214\277')
 while :; do
     mullvad status -j listen 2>/dev/null | jq --unbuffered -c \
         --arg lock "$lock" --arg open "$open" '
-        def cells: ("   " + .)[-3:];
+        def cells: (. + "   ")[:3];
         # The tooltip is Pango markup; & first, or &lt; gets mangled.
         def esc: gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;");
         ((.details | objects | .location | objects) // {}) as $l
@@ -49,6 +50,6 @@ while :; do
                        | if type == "string" then . else tostring end)}
           end
         | .tooltip |= esc'
-    printf '{"text":"%s   ?","class":"unknown","tooltip":"Mullvad daemon unreachable; retrying"}\n' "$open"
+    printf '{"text":"%s ?  ","class":"unknown","tooltip":"Mullvad daemon unreachable; retrying"}\n' "$open"
     sleep 5
 done
