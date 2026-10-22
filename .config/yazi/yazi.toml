@@ -5,3 +5,8 @@ show_hidden = false
 prepend_previewers = [
   { url = "*.{md,markdown}", run = 'piper -- md-preview "$1"' },
 ]
+
+[open]
+prepend_rules = [
+  { mime = "text/*", use = ["edit", "open", "reveal"] },
+]
