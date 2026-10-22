@@ -49,3 +49,12 @@ window-padding-balance = true
 window-padding-x = 3
 window-padding-y = 3
 window-padding-color = extend
+
+# Retro CRT look, toggled by `ghostty-retro` (Super+Shift+r), which creates or
+# removes this link to retro.conf. Included files load after everything in
+# this one, so retro.conf's font and theme win while it is on.
+config-file = ?~/.config/ghostty/retro-on.conf
+
+# Shader picked in `ghostty-shader-menu` (Super+Shift+h). After retro-on.conf
+# so a pick replaces the retro CRT shader instead of stacking on it.
+config-file = ?~/.config/ghostty/shader-on.conf

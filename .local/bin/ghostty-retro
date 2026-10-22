@@ -1,0 +1,32 @@
+#!/bin/sh
+# Toggle the retro CRT look in every open Ghostty window (Super+Shift+r).
+#
+# The main config ends with `config-file = ?~/.config/ghostty/retro-on.conf`;
+# the ? makes a missing file a silent no-op. This script creates or removes
+# that link to retro.conf, so the on/off state lives outside the dotfiles
+# and toggling never dirties the repo.
+#
+# Ghostty reloads its config on SIGUSR2. The scratchpad runs as its own
+# process (gtk-single-instance = false), so signal every ghostty, not just
+# the main instance.
+#
+# Usage: ghostty-retro [on|off]   (no argument toggles)
+
+dir="$HOME/.config/ghostty"
+link="$dir/retro-on.conf"
+
+case "${1:-toggle}" in
+    on) want=on ;;
+    off) want=off ;;
+    toggle) if [ -e "$link" ]; then want=off; else want=on; fi ;;
+    *) echo "usage: ghostty-retro [on|off]" >&2; exit 2 ;;
+esac
+
+if [ "$want" = on ]; then
+    ln -sfn retro.conf "$link"
+else
+    rm -f "$link"
+fi
+
+pkill -USR2 -x ghostty
+exit 0

@@ -132,6 +132,10 @@ exec_once = ["uwsm finalize"]
 "SUPER+SHIFT+l" = "spawn,~/.local/bin/lock-screen"
 "SUPER+SHIFT+a" = "spawn,ghostty -e wiremix -s compat -v output"
 "SUPER+SHIFT+g" = "spawn,~/.local/bin/whitetemp"
+# r for retro: CRT shader, phosphor theme and Fixedsys Excelsior in every open ghostty.
+"SUPER+SHIFT+r" = "spawn,~/.local/bin/ghostty-retro"
+# h for shader: rofi picker that overrides the shader the retro toggle brings.
+"SUPER+SHIFT+h" = "spawn,~/.local/bin/ghostty-shader-menu"
 "SUPER+SHIFT+k" = "spawn,~/.local/bin/keyboard-layout-menu"
 # v for VPN; SUPER+SHIFT+s belongs to the special workspace below.
 "SUPER+SHIFT+v" = "spawn,~/.local/bin/mullvad-menu"
@@ -142,6 +146,9 @@ exec_once = ["uwsm finalize"]
 # one reached for while already standing up to leave. SUPER+SHIFT+q is left free
 # so a stray shift cannot land on something unrelated.
 "SUPER+q" = "spawn,~/.local/bin/power-menu"
+# The power button locks and blanks, as power-menu's first row. logind ignores
+# it (system/etc/systemd/logind.conf.d/power-key.conf), so it never powers off.
+"XF86PowerOff" = "spawn,~/.local/bin/lock-blank"
 # The power button locks and blanks, as power-menu's first row. logind ignores
 # it (system/etc/systemd/logind.conf.d/power-key.conf), so it never powers off.
 "XF86PowerOff" = "spawn,~/.local/bin/lock-blank"

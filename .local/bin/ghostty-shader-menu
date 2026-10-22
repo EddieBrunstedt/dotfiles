@@ -1,0 +1,81 @@
+#!/bin/sh
+# Pick Ghostty's custom shader(s) via rofi. Bound to SUPER+SHIFT+h.
+#
+# Writes ~/.config/ghostty/shader-on.conf, which the main config includes
+# after retro-on.conf, so a pick overrides the CRT shader that ghostty-retro
+# brings; the file opens with an empty custom-shader to clear that list.
+# "Default" deletes the file and hands the shader back to ghostty-retro.
+# Like ghostty-retro, the state lives outside the dotfiles.
+#
+# The menu reopens on the row just applied, so arrowing and pressing Enter
+# previews shaders live in every window; Escape keeps what is on. Shift+Enter
+# marks several to stack, run in list order once Enter is pressed.
+#
+# Usage: ghostty-shader-menu                  (rofi menu)
+#        ghostty-shader-menu default|none     (no menu)
+#        ghostty-shader-menu NAME...          (stack shaders/NAME.glsl, no menu)
+
+dir="$HOME/.config/ghostty"
+shaders="$dir/shaders"
+state="$dir/shader-on.conf"
+
+default='Default (follow retro toggle)'
+none='None'
+
+list() {
+    printf '%s\n%s\n' "$default" "$none"
+    for f in "$shaders"/*.glsl; do basename "$f" .glsl; done
+}
+
+# Comma-separated 0-based rows of what is on now, for rofi -a.
+active_rows() {
+    [ -e "$state" ] || { echo 0; return; }
+    current=$(sed -n 's|^custom-shader = .*/\(.*\)\.glsl$|\1|p' "$state")
+    [ -n "$current" ] || { echo 1; return; }
+    list | grep -nxF "$current" | cut -d: -f1 \
+        | awk '{ printf "%s%d", (NR > 1 ? "," : ""), $1 - 1 }'
+}
+
+# $1 newline-separated menu entries
+apply() {
+    if printf '%s\n' "$1" | grep -qxF "$default"; then
+        rm -f "$state"
+    else
+        {
+            echo '# Written by ghostty-shader-menu; pick "Default" there to remove.'
+            echo 'custom-shader = ""'
+            printf '%s\n' "$1" | grep -vxF "$none" | while IFS= read -r name; do
+                echo "custom-shader = ~/.config/ghostty/shaders/$name.glsl"
+            done
+        } > "$state"
+    fi
+    # Ghostty reloads its config on SIGUSR2; signal the scratchpad too.
+    pkill -USR2 -x ghostty
+}
+
+if [ $# -gt 0 ]; then
+    case "$1" in
+        default) apply "$default"; exit 0 ;;
+        none) apply "$none"; exit 0 ;;
+    esac
+    for name; do
+        [ -f "$shaders/$name.glsl" ] || {
+            printf 'ghostty-shader-menu: no such shader: %s\n' "$name" >&2
+            exit 1
+        }
+    done
+    apply "$(printf '%s\n' "$@")"
+    exit 0
+fi
+
+row=$(active_rows | cut -d, -f1)
+while :; do
+    chosen=$(list | rofi -dmenu -i -no-custom -multi-select -l 15 \
+        -p "Ghostty shader" -selected-row "$row" -a "$(active_rows)" \
+        -mesg "Enter applies, menu stays open · Shift+Enter marks several to stack · Esc closes") \
+        || exit 0
+    [ -n "$chosen" ] || exit 0
+    apply "$chosen"
+    first=$(printf '%s\n' "$chosen" | head -n 1)
+    row=$(( $(list | grep -nxF "$first" | cut -d: -f1) - 1 ))
+done
