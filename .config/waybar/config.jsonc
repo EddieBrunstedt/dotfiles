@@ -13,6 +13,7 @@
         "custom/mem",
         "custom/net",
         "custom/inbox",
+        "custom/claude",
         "custom/mullvad",
         "custom/volume",
         "custom/units",
@@ -88,6 +89,17 @@
         "exec": "~/.local/bin/shims/telltale-inbox --watch --format waybar --server imap://127.0.0.1:1143 --insecure --user-env PROTON_BRIDGE_IMAP_USER --password-env PROTON_BRIDGE_IMAP_PASS",
         "return-type": "json",
         "on-click": "xdg-open https://mail.proton.me/",
+        "tooltip": true
+    },
+    // Claude Code sessions. Off the bar while none is open; otherwise the
+    // working ones by the robot and the idle ones by the sleep sign, peach
+    // while one waits on you (a permission prompt or a question). A click
+    // focuses the top row of the tooltip that is not working: the newest
+    // waiting session, or else the one that finished last.
+    "custom/claude": {
+        "exec": "telltale-claude --watch --format waybar --floor normal",
+        "return-type": "json",
+        "on-click": "claude-focus",
         "tooltip": true
     },
     // No interval: mullvad-status streams the daemon's state changes, so

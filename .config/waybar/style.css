@@ -99,6 +99,7 @@ window#waybar.empty #window {
 #custom-disk,
 #custom-units,
 #custom-inbox,
+#custom-claude,
 #custom-mullvad,
 #custom-volume,
 #custom-voxtype,
@@ -153,6 +154,7 @@ window#waybar.empty #window {
     color: #6c7086;
 }
 
+#custom-claude.attention,
 #custom-disk.attention,
 #custom-dunst.attention,
 #custom-inbox.attention,
@@ -163,6 +165,7 @@ window#waybar.empty #window {
     color: #fab387;
 }
 
+#custom-claude.unknown,
 #custom-disk.critical,
 #custom-disk.unknown,
 #custom-inbox.critical,

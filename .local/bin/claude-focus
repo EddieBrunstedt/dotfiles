@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Focus the top row of telltale-claude's tooltip that is not working: the
+# session that most recently started waiting on you or, with none waiting,
+# the one that finished last. Bound to the telltale-claude segment.
+#
+# Sessions come from Claude Code's own files in ~/.claude/sessions, as
+# telltale-claude reads them: a killed session leaves its file behind, so a
+# file counts only while its pid is alive and started when the file says.
+# The window is found as ~/.claude/hooks/notify-done.sh finds it: Ghostty
+# names each window after the session title.
+
+set -u
+
+best=
+for file in ~/.claude/sessions/*.json; do
+    read -r pid start status kind updated id cwd < <(jq -r \
+        '[.pid, .procStart, .status, .kind, .statusUpdatedAt // 0, .sessionId, .cwd] | @tsv' \
+        "$file" 2>/dev/null) || continue
+    [ "$kind" = daemon ] && continue
+    [ "$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null)" = "$start" ] || continue
+    # Waiting sorts before idle, each newest first, as in the tooltip.
+    case $status in
+        waiting) key="0 $((9999999999999 - updated))" ;;
+        idle) key="1 $((9999999999999 - updated))" ;;
+        *) continue ;;
+    esac
+    best+="$key"$'\t'"$id"$'\t'"$cwd"$'\n'
+done
+IFS=$'\t' read -r _ id cwd < <(printf %s "$best" | sort -k1,1n -k2,2n | head -1)
+[ -n "${id:-}" ] || exit 0
+
+# Claude Code keeps transcripts under the directory with every character
+# but letters and digits turned into '-'.
+transcript=~/.claude/projects/$(sed 's/[^A-Za-z0-9]/-/g' <<<"$cwd")/$id.jsonl
+title=$(grep -hoE '"(customTitle|aiTitle)":"[^"]*"' "$transcript" 2>/dev/null | tail -1 | cut -d'"' -f4)
+title=${title:-Claude Code}
+
+# The window title is the session title, possibly behind a spinner glyph.
+window=$(mmsg get all-clients 2>/dev/null | jq -r --arg t "$title" '
+  [.clients[] | select(.appid == "com.mitchellh.ghostty")
+              | select(.title == $t or (.title | sub("^[^ ]+ "; "")) == $t)][0]
+  // empty | .id' 2>/dev/null)
+[ -n "$window" ] && mmsg dispatch focusid client,"$window" >/dev/null
