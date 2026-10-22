@@ -9,5 +9,7 @@ function yt
     set -l cookie_file $argv[2]
     set -l output "%(upload_date)s-%(uploader)s-%(title)s-[%(id)s].%(ext)s"
 
-    yt-dlp --cookies "$cookie_file" --restrict-filenames -f "bv*+ba/b" --merge-output-format mkv -o "$output" "$url"
+    yt-dlp --cookies "$cookie_file" --restrict-filenames -f "bv*+ba/b" --merge-output-format mkv \
+        --embed-metadata --embed-chapters --embed-thumbnail --convert-thumbnails jpg \
+        -o "$output" "$url"
 end
