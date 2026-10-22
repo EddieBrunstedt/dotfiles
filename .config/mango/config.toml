@@ -136,6 +136,10 @@ exec_once = ["uwsm finalize"]
 "SUPER+SHIFT+r" = "spawn,~/.local/bin/ghostty-retro"
 # h for shader: rofi picker that overrides the shader the retro toggle brings.
 "SUPER+SHIFT+h" = "spawn,~/.local/bin/ghostty-shader-menu"
+# r for retro: CRT shader, phosphor theme and Fixedsys Excelsior in every open ghostty.
+"SUPER+SHIFT+r" = "spawn,~/.local/bin/ghostty-retro"
+# h for shader: rofi picker that overrides the shader the retro toggle brings.
+"SUPER+SHIFT+h" = "spawn,~/.local/bin/ghostty-shader-menu"
 "SUPER+SHIFT+k" = "spawn,~/.local/bin/keyboard-layout-menu"
 # v for VPN; SUPER+SHIFT+s belongs to the special workspace below.
 "SUPER+SHIFT+v" = "spawn,~/.local/bin/mullvad-menu"
@@ -146,6 +150,9 @@ exec_once = ["uwsm finalize"]
 # one reached for while already standing up to leave. SUPER+SHIFT+q is left free
 # so a stray shift cannot land on something unrelated.
 "SUPER+q" = "spawn,~/.local/bin/power-menu"
+# The power button locks and blanks, as power-menu's first row. logind ignores
+# it (system/etc/systemd/logind.conf.d/power-key.conf), so it never powers off.
+"XF86PowerOff" = "spawn,~/.local/bin/lock-blank"
 # The power button locks and blanks, as power-menu's first row. logind ignores
 # it (system/etc/systemd/logind.conf.d/power-key.conf), so it never powers off.
 "XF86PowerOff" = "spawn,~/.local/bin/lock-blank"
@@ -302,17 +309,14 @@ exec_once = ["uwsm finalize"]
 "SUPER+SHIFT+period" = "tagmon,right"
 
 # ── Voxtype push-to-talk ──
-# F13 (code 191) for keyboards that have it, Super+V as the fallback chord — with
-# Super+V, release V before Super, or mango never matches the release binding and
-# recording never stops.
-# .conflict marks each press/release pair as intended: the conflict check
-# ignores the release flag and would otherwise warn about them.
+# Hold Super+V to record. Release V before Super, or mango never matches the
+# release binding and recording never stops.
+# .conflict marks the press/release pair as intended: the conflict check
+# ignores the release flag and would otherwise warn about it.
 [bind.default.conflict]
-"code:191" = "spawn,voxtype record start"
 "SUPER+v" = "spawn,voxtype record start"
 
 [bind.default.release.conflict]
-"code:191" = "spawn,voxtype record stop"
 "SUPER+v" = "spawn,voxtype record stop"
 
 # ── Mouse ──

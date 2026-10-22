@@ -9,12 +9,13 @@
 # ("idle", "recording", "transcribing") to this file whenever it changes.
 # Required for `voxtype record toggle` and `voxtype status` commands.
 state_file = "auto"
+engine = "parakeet"
 
 [hotkey]
 # Key to hold for push-to-talk
 # Common choices: SCROLLLOCK, PAUSE, RIGHTALT, F13-F24
 # Use `evtest` to find key names for your keyboard
-key = "F13"
+# key = "SCROLLLOCK"
 
 # Optional modifier keys that must also be held
 # Example: modifiers = ["LEFTCTRL", "LEFTALT"]
@@ -28,6 +29,7 @@ modifiers = []
 # Enable built-in hotkey detection (default: true)
 # Set to false when using compositor keybindings (Hyprland, Sway) instead
 # When disabled, use `voxtype record start/stop/toggle` to control recording
+# Disabled: mango's Super+V binding runs `voxtype record start/stop`.
 enabled = false
 
 # Modifier key to select secondary model (evdev input mode only)
@@ -267,6 +269,10 @@ on_transcription = false
 [text.replacements]
 "way bar" = "Waybar"
 "row fee" = "Rofi"
+"ghosty" = "Ghostty"
+
+[parakeet]
+model = "parakeet-tdt-0.6b-v2"
 
 # [text]
 # Text processing options (word replacements, spoken punctuation)
