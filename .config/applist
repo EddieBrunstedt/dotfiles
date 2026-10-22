@@ -88,7 +88,6 @@ opencode
 openresolv
 openssh
 pacman-contrib
-pandoc-cli
 papirus-icon-theme
 perl-file-mimeinfo
 pipewire
@@ -102,7 +101,6 @@ python-gobject
 qbittorrent
 qt5-wayland
 qt6-wayland
-qutebrowser
 reaper
 resvg
 ripgrep
