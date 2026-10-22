@@ -1,71 +1,122 @@
-# Only settings that differ from dunst's built-in defaults. Anything omitted
-# falls back to the default. Full option list: dunst(5).
-#
-# dunst's built-in defaults are not the same as the shipped /etc/dunst/dunstrc,
-# which itself overrides several of them. That file is not read once this one
-# exists, so it is not a reference for what is default.
+# Styled after waybar (style.css): Catppuccin Mocha, Maple Mono, 6px radius,
+# 4px gaps. Only settings that differ from dunst's built-in defaults; full
+# option list in dunst(5).
 
 [global]
 
-    ### Display ###
+    ### Placement ###
 
-    # Follow the pointer across monitors; this overrides `monitor`.
-    follow = mouse
-    offset = (10,10)
-    # Dynamic width up to 800; long single-line notifications stay readable.
-    width = (0, 800)
+    # Right side, in the middle: terminals keep their prompt at the bottom,
+    # where a card in the corner would cover what is being typed. The origin
+    # stays bottom-right, with the vertical offset (measured from the top of
+    # the bar, at y=1050) centering a lone one-line card (99px) on y=540; a
+    # bottom origin keeps the stack growing upward, away from the prompt, and
+    # keeps the order SUPER+i relies on (see sort). Mango has no outer gaps,
+    # so a window's 2px border (border_px) runs along the edge; 16px keeps the
+    # card well clear of it.
+    origin = bottom-right
+    offset = (16, 460)
+    # Fixed, so the rule line in format spans the text whatever the content.
+    # Every card has an icon (see [fallback_icon]), so the text is always this
+    # wide minus padding and icon: 40 cells of Maple Mono 11.
+    width = 440
+    notification_limit = 5
+    # Newest first, whatever the urgency (critical ones still stand out in
+    # red). With a bottom origin dunst reverses the stack, so the newest card
+    # sits in the corner, just above the bar. SUPER+i acts on position 0,
+    # which dunstctl counts from the top: the oldest card. So it works through
+    # the stack oldest first, and a card that lands just before the key press
+    # does not jump the queue.
+    sort = update
+    # Separate cards rather than one joined box.
+    gap_size = 4
+    separator_height = 0
+
+    ### Card ###
+
+    frame_width = 1
+    corner_radius = 6
+    padding = 10
+    horizontal_padding = 12
+    text_icon_padding = 12
 
     ### Text ###
 
-    font = sans-serif 12.5
-    # Default is `no`, which also drops body-markup from the advertised D-Bus
-    # capabilities. Required for the default `format`, which wraps %s in <b>.
+    font = monospace 11
+    # Needed for the <b> and <span> in format.
     markup = full
-    vertical_alignment = top
-
-    ### Appearance ###
-
-    frame_width = 2
-    frame_color = "#7d7d7d"
-    corner_radius = 5
+    # Small dimmed app name as a header and the heading, a rule line, then the
+    # body. Pango has no <hr>, so the line is box-drawing characters.
+    format = "<span size='small' foreground='#6c7086'>%a</span>\n<b>%s</b>\n<span foreground='#45475a'>────────────────────────────────────────</span>\n<span foreground='#bac2de'>%b</span>"
+    # No "(A)"/"(U)" prefixes.
+    show_indicators = no
 
     ### Icons ###
 
-    # Off by default. Resolves icons by theme name rather than through icon_path.
     enable_recursive_icon_lookup = true
-    # Equal min and max pins every icon to one size regardless of what is sent.
-    min_icon_size = 64
-    max_icon_size = 64
+    icon_position = left
+    min_icon_size = 32
+    max_icon_size = 32
 
     ### History ###
 
-    # Deep history so `dunstctl history-pop` can still reach notifications
-    # cleared by lock-screen or SUPER+SHIFT+i.
+    # lock-screen closes everything on screen; deep history keeps those
+    # notifications reachable with `dunstctl history-pop` afterwards.
     history_length = 1000
 
-    ### Misc ###
+    ### Away ###
 
-    # Actions and URL menus render through rofi, matching the other menus.
+    # No keyboard or mouse input for this long (the compositor's idle signal)
+    # and notifications stop timing out, so they are
+    # still up on return; the next input restarts their timers. Notifications
+    # marked transient time out regardless.
+    idle_threshold = 2m
+
+    ### Menu ###
+
+    # The context menu, for picking among a notification's actions and URLs,
+    # renders through rofi like the other menus. dunst opens it when there is
+    # no single action to run.
     dmenu = /usr/bin/rofi -dmenu -i -no-custom -p dunst:
 
     ### Mouse ###
-    # Defaults are close_current / "do_action, remove_current" / close_all.
-    mouse_left_click = do_action
-    mouse_middle_click = context
-    mouse_right_click = close_current
 
+    # Left click runs the notification's action (Claude: focus its session),
+    # then closes it. Without an action it just closes.
+    mouse_left_click = do_action, close_current
+
+    ### Progress bar ###
+
+    progress_bar_frame_width = 0
+    progress_bar_corner_radius = 3
+    highlight = "#b4befe"
+
+# Timeouts are long enough to work through the stack with SUPER+i, oldest
+# first, before cards expire (dunst's default is 10s). Critical stays until
+# dismissed, dunst's default.
 [urgency_low]
-    background = "#121212"
-    foreground = "#d1d1d1"
-    frame_color = "#7d7d7d"
-    timeout = 6
+    timeout = 20s
+    background = "#1e1e2e"
+    foreground = "#6c7086"
+    frame_color = "#313244"
 
 [urgency_normal]
-    background = "#121212"
-    foreground = "#d1d1d1"
-    frame_color = "#787bde"
+    timeout = 30s
+    background = "#1e1e2e"
+    foreground = "#cdd6f4"
+    frame_color = "#45475a"
 
 [urgency_critical]
-    background = "#121212"
-    foreground = "#e35f5f"
-    frame_color = "#e35f5f"
+    background = "#1e1e2e"
+    foreground = "#f38ba8"
+    frame_color = "#f38ba8"
+
+# Ghostty sends no app name, so name it in the header.
+[ghostty]
+    desktop_entry = com.mitchellh.ghostty
+    format = "<span size='small' foreground='#6c7086'>Ghostty</span>\n<b>%s</b>\n<span foreground='#45475a'>────────────────────────────────────────</span>\n<span foreground='#bac2de'>%b</span>"
+
+# Notifications that bring no icon get a quiet feather, so every card has one
+# and the text, and with it the rule line, is the same width on all of them.
+[fallback_icon]
+    default_icon = ~/.config/dunst/icons/feather.svg
