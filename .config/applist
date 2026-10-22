@@ -10,10 +10,8 @@ blender
 bun
 cargo-update
 chromium
-cmake
 cuda
 cudnn
-dash
 deno
 devtools
 direnv
@@ -71,11 +69,9 @@ linux-firmware
 man-db
 man-pages
 mangohud
-mediainfo
 mpv
 neovim
 networkmanager
-nmap
 nodejs-lts-krypton
 noto-fonts
 noto-fonts-cjk
