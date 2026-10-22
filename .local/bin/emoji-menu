@@ -38,4 +38,4 @@ chosen=$(awk '
 
 emoji=${chosen%% *}
 printf '%s' "$emoji" | wl-copy
-notify-send "Emoji" "$emoji copied to clipboard"
+notify-send -e "Emoji" "$emoji copied to clipboard"

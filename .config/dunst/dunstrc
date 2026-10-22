@@ -64,14 +64,6 @@
     # notifications reachable with `dunstctl history-pop` afterwards.
     history_length = 1000
 
-    ### Away ###
-
-    # No keyboard or mouse input for this long (the compositor's idle signal)
-    # and notifications stop timing out, so they are
-    # still up on return; the next input restarts their timers. Notifications
-    # marked transient time out regardless.
-    idle_threshold = 2m
-
     ### Menu ###
 
     # The context menu, for picking among a notification's actions and URLs,
@@ -91,9 +83,10 @@
     progress_bar_corner_radius = 3
     highlight = "#b4befe"
 
-# Timeouts are long enough to work through the stack with SUPER+i, oldest
-# first, before cards expire (dunst's default is 10s). Critical stays until
-# dismissed, dunst's default.
+# Normal and critical cards stay until dismissed, with SUPER+i working through
+# them oldest first; critical already does by default. Low ones are quiet by
+# definition (track changes and the like), so they still go by themselves,
+# into history.
 [urgency_low]
     timeout = 20s
     background = "#1e1e2e"
@@ -101,7 +94,7 @@
     frame_color = "#313244"
 
 [urgency_normal]
-    timeout = 30s
+    timeout = 0
     background = "#1e1e2e"
     foreground = "#cdd6f4"
     frame_color = "#45475a"
@@ -110,6 +103,18 @@
     background = "#1e1e2e"
     foreground = "#f38ba8"
     frame_color = "#f38ba8"
+
+# Confirmations (notify-send -e: emoji copied, sink switched) go by themselves
+# so they never pile up waiting for SUPER+i. Critical ones still wait: Mullvad
+# marks all of its cards transient, its errors too.
+[transient]
+    match_transient = yes
+    timeout = 5s
+
+[transient_critical]
+    match_transient = yes
+    msg_urgency = critical
+    timeout = 0
 
 # Ghostty sends no app name, so name it in the header.
 [ghostty]

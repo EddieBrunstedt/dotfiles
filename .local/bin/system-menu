@@ -66,20 +66,20 @@ case "$chosen" in
     # . which would otherwise be read as regex.
     id=$(printf '%s\n' "$sink_map" | awk -F'\t' -v n="$name" '$2 == n { print $1; exit }')
     if [ -n "$id" ] && wpctl set-default "$id"; then
-      notify-send "Audio output" "Default sink: $name"
+      notify-send -e "Audio output" "Default sink: $name"
     else
       notify-send -u critical "Audio output" "Could not switch to $name"
     fi ;;
 
   "Dictation: Start service")
     if systemctl --user start "$dictation_service"; then
-      notify-send "Dictation" "$dictation_service started — hold Super+V to dictate"
+      notify-send -e "Dictation" "$dictation_service started — hold Super+V to dictate"
     else
       notify-send -u critical "Dictation" "Could not start $dictation_service"
     fi ;;
   "Dictation: Stop service")
     if systemctl --user stop "$dictation_service"; then
-      notify-send "Dictation" "$dictation_service stopped"
+      notify-send -e "Dictation" "$dictation_service stopped"
     else
       notify-send -u critical "Dictation" "Could not stop $dictation_service"
     fi ;;
