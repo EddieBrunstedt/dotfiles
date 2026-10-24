@@ -8,15 +8,22 @@ dictation_service=voxtype
 # with ghostty's single-instance daemon).
 term() { exec ghostty -e sh -c "$1"'; printf "\n[finished] press Enter to close "; read -r _'; }
 
-# sink_map is "id<TAB>description"; ● marks the current default.
-sinks=$(wpctl status | sed -n '/Audio/,/Video/p' | sed -n '/Sinks:/,/Sources:/p')
-cur=$(printf '%s\n' "$sinks" | sed -n 's/^[^0-9*]*\*\s*\([0-9]\+\)\..*/\1/p')
-sink_map=$(printf '%s\n' "$sinks" \
-  | sed -n 's/^[^0-9]*\([0-9]\+\)\.\s*\(.*\S\)\s*\[vol.*/\1\t\2/p')
+# sink_map is "id<TAB>description<TAB>is-default", from pw-dump rather than
+# wpctl status: that lists split devices' outputs under Filters and offers the
+# internal node behind them as a sink.
+sink_map=$(pw-dump 2>/dev/null | jq -r '
+  (first(.[] | select(.type == "PipeWire:Interface:Metadata"
+                      and .props["metadata.name"] == "default")
+         | .metadata[] | select(.key == "default.audio.sink") | .value.name) // "") as $default
+  | .[] | select(.type == "PipeWire:Interface:Node"
+                 and .info.props["media.class"] == "Audio/Sink")
+  | .info.props as $p
+  | [.id, ($p["node.description"] // $p["node.name"]), ($p["node.name"] == $default)]
+  | @tsv')
 
+# ● marks the current default.
 rows=$(printf '%s\n' "$sink_map" \
-  | awk -F'\t' -v cur="$cur" \
-      '{printf "Audio: Set output to %s%s\n", $2, ($1 == cur ? " ●" : "")}'
+  | awk -F'\t' '{printf "Audio: Set output to %s%s\n", $2, ($3 == "true" ? " ●" : "")}'
   printf '%s\n' \
     "Dictation: Start service" \
     "Dictation: Stop service" \
