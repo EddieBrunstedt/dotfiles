@@ -93,6 +93,7 @@ protonmail-bridge-core
 python-dbus
 python-gobject
 qbittorrent
+qrencode
 qt5-wayland
 qt6-wayland
 reaper
