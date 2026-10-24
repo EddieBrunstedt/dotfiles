@@ -139,8 +139,7 @@ exec_once = ["uwsm finalize"]
 "SUPER+d" = "setlayout,right_deck"
 "SUPER+SHIFT+d" = "setlayout,deck"
 
-# Scroller
-"ALT+e" = "set_proportion,1.0"
+# Scroller (Alt+E is Ghostty's)
 "ALT+x" = "switch_proportion_preset"
 "ALT+SUPER+CTRL+Left" = "scroller_stack,left"
 "ALT+SUPER+CTRL+Right" = "scroller_stack,right"
