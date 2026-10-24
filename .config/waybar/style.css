@@ -137,6 +137,7 @@ window#waybar.empty #window {
 /* ── Levels (telltale and friends) ──────────────────────────────── */
 /* quiet = grey, normal = default, attention = peach, critical/unknown = red */
 
+#custom-desktop.quiet,
 #custom-dunst.quiet,
 #custom-inbox.quiet,
 #custom-mem.quiet,
@@ -147,6 +148,7 @@ window#waybar.empty #window {
 }
 
 #custom-claude.attention,
+#custom-desktop.attention,
 #custom-disk.attention,
 #custom-dunst.attention,
 #custom-inbox.attention,
@@ -158,6 +160,7 @@ window#waybar.empty #window {
 }
 
 #custom-claude.unknown,
+#custom-desktop.unknown,
 #custom-disk.critical,
 #custom-disk.unknown,
 #custom-inbox.critical,
@@ -171,20 +174,6 @@ window#waybar.empty #window {
 #custom-volume.unknown,
 #custom-units.critical,
 #custom-units.unknown {
-    color: @red;
-}
-
-/* ── Desktop drawer: clean / dirty this boot / dirty since last boot ── */
-
-#custom-desktop.clean {
-    color: @overlay0;
-}
-
-#custom-desktop.fresh {
-    color: @peach;
-}
-
-#custom-desktop.stale {
     color: @red;
 }
 

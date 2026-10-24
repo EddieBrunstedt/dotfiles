@@ -119,12 +119,9 @@
         "on-click-middle": "systemctl --user restart voxtype.service",
         "on-click-right": "systemctl --user stop voxtype.service"
     },
-    // Signalled by desktop-watch; the interval is a fallback.
     "custom/desktop": {
-        "exec": "desktop-status",
+        "exec": "telltale-desktop --watch --format waybar",
         "return-type": "json",
-        "interval": 30,
-        "signal": 6,
         "on-click": "xdg-open ~/desktop",
         "tooltip": true
     },

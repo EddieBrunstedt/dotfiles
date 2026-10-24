@@ -74,7 +74,6 @@ is D-Bus activated, or (MEGAsync) comes from `~/.config/autostart` via uwsm's
 | --- | --- |
 | `waybar.service` | `ExecCondition` matches `XDG_CURRENT_DESKTOP`, so it only runs under mango |
 | `swayidle.service` | locks on `loginctl lock-session` and before sleep; no idle timeout, so locking and blanking are only ever deliberate |
-| `desktop-watch.service` | signals waybar's `~/desktop` segment whenever the folder changes |
 | `wallpaper.service` | swaybg; restart it after repointing the `current` symlink |
 | `filemanager-yazi.service` | `Type=dbus`, activated on demand, exits when idle |
 | `protonmail-bridge.service` | waits for VPN and API reachability first |

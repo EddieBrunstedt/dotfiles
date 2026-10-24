@@ -36,7 +36,6 @@ enable-services:
     systemctl --user daemon-reload
     # ydotool is voxtype's typing backend; voxtype itself is started from waybar.
     systemctl --user enable \
-        desktop-watch.service \
         protonmail-bridge.service \
         swayidle.service \
         vault-cleanup.service \
