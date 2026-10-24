@@ -30,8 +30,8 @@ gap_outer_vertical = 0
 # Can leave panes borderless after merging single-window tags with toggleview.
 no_border_when_single = 1
 
-# Activation requests set urgent instead of switching tags (games re-activate on focus loss).
-focus_on_activate = 0
+# Activation requests switch to the client's tag; games opt out with is_tag_silent below.
+focus_on_activate = 1
 
 # ── Appearance ──
 cursor_size = 24
@@ -267,6 +267,12 @@ is_named_scratchpad = 1
 app_id = "com.ghostty.scratchpad"
 width = 0.8
 height = 0.85
+
+# Games re-activate on focus loss, which snapped the view back after Super+N;
+# tag-silent turns their activation requests into the urgent flag.
+[[rule.window_rule]]
+is_tag_silent = 1
+app_id = "^(steam_app_.*|gamescope)$"
 
 # ── Layers ──
 [[rule.layer_rule]]
