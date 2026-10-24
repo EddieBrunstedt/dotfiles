@@ -6,6 +6,8 @@ function scrub --description 'Strip ALL metadata from image(s): scrub file...'
     end
 
     # -strip removes EXIF/IPTC/XMP/comments AND the ICC color profile.
+    # -auto-orient first: stripping drops the EXIF orientation, so the pixels
+    # must be rotated, or portrait phone photos come out sideways.
     for src in $argv
         if not test -f $src
             echo "scrub: no such file: $src" >&2
@@ -17,7 +19,7 @@ function scrub --description 'Strip ALL metadata from image(s): scrub file...'
         set -l ext (path extension $src)
         set -l dst "$dir/$base-clean$ext"
 
-        magick $src -strip $dst
+        magick $src -auto-orient -strip $dst
         and echo "scrubbed: $dst"
     end
 end
