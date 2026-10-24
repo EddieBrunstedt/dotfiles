@@ -6,7 +6,7 @@ PartOf=graphical-session.target
 
 [Service]
 Type=exec
-ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "wlroots:mango" ""
+ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "mango" ""
 # No idle timeout: locking is always deliberate. before-sleep is a backstop;
 # suspend is disabled system-wide.
 ExecStart=/usr/bin/swayidle -w \

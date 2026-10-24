@@ -3,5 +3,5 @@ Name=Mango (UWSM)
 Comment=MangoWC compositor managed by uwsm
 Exec=uwsm start -- mango.desktop
 TryExec=uwsm
-DesktopNames=mango;wlroots
+DesktopNames=mango
 Type=Application
