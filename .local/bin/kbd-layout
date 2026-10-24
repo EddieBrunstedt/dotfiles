@@ -1,0 +1,53 @@
+#!/bin/sh
+# Keyboard layouts by xkb code (us, se, ...). Mango switches by position in its
+# xkb_rules_layout, and treats an out-of-range position as "next layout", so
+# every script goes through here rather than hardcoding an index.
+#
+#   kbd-layout list       code<TAB>name per layout, in mango's order
+#   kbd-layout current    code of the active layout
+#   kbd-layout set CODE   switch to CODE
+
+config="${XDG_CONFIG_HOME:-$HOME/.config}/mango/config.toml"
+# Same names mango reports, e.g. "English (US)".
+names=/usr/share/X11/xkb/rules/evdev.lst
+
+# One code per line, from: xkb_rules_layout = "us,se,dk"
+codes() {
+    sed -n 's/^[[:space:]]*xkb_rules_layout[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' "$config" |
+        tr ',' '\n' | sed 's/[[:space:]]//g; /^$/d'
+}
+
+list() {
+    codes | awk -v lst="$names" '
+        BEGIN {
+            while ((getline line < lst) > 0) {
+                if (line ~ /^!/) { section = line; continue }
+                if (section != "! layout" || split(line, f, " ") < 2) continue
+                sub(/^[[:space:]]*[^[:space:]]+[[:space:]]+/, "", line)
+                name[f[1]] = line
+            }
+        }
+        { print $0 "\t" (($0 in name) ? name[$0] : $0) }'
+}
+
+case "${1:-}" in
+list)
+    list
+    ;;
+current)
+    now=$(mmsg get keyboardlayout 2>/dev/null | jq -r '.layout // empty')
+    code=$(list | awk -F '\t' -v n="$now" '$2 == n { print $1; exit }')
+    [ -n "$code" ] || exit 1
+    printf '%s\n' "$code"
+    ;;
+set)
+    [ -n "${2:-}" ] || { echo "usage: kbd-layout set CODE" >&2; exit 2; }
+    index=$(codes | grep -nxF -- "$2" | head -n 1 | cut -d: -f1)
+    [ -n "$index" ] || { echo "kbd-layout: $2 is not in xkb_rules_layout" >&2; exit 1; }
+    mmsg dispatch switch_keyboard_layout,"$index" >/dev/null
+    ;;
+*)
+    echo "usage: kbd-layout list | current | set CODE" >&2
+    exit 2
+    ;;
+esac

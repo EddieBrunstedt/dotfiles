@@ -1,16 +1,12 @@
 #!/bin/sh
-# Pick a keyboard layout via rofi. Order must match xkb_rules_layout in mango.
+# Pick a keyboard layout via rofi, from mango's xkb_rules_layout.
 
-list='us (English)
-se (Swedish)
-dk (Danish)'
+rows=$(kbd-layout list | awk -F '\t' '{ printf "%s  %s\n", $1, $2 }')
+[ -n "$rows" ] || exit 1
 
-chosen=$(printf '%s\n' "$list" \
-    | rofi -dmenu -i -no-custom -l "$(printf '%s\n' "$list" | wc -l)" \
+chosen=$(printf '%s\n' "$rows" \
+    | rofi -dmenu -i -no-custom -l "$(printf '%s\n' "$rows" | wc -l)" \
         -p "Keyboard layout") || exit 0
 [ -n "$chosen" ] || exit 0
 
-index=$(printf '%s\n' "$list" | grep -nxF "$chosen" | cut -d: -f1)
-[ -n "$index" ] || exit 1
-
-mmsg dispatch switch_keyboard_layout,"$index" >/dev/null
+exec kbd-layout set "${chosen%% *}"

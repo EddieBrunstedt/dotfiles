@@ -21,9 +21,9 @@ if ! flock -xn 9; then
 fi
 rm -f "$state/ready" || exit 1
 
-# Type the password on US (layout 1). IPC is time-boxed so it can't eat the
+# Type the password on US. IPC is time-boxed so it can't eat the
 # sleep-inhibitor delay, and a failure never blocks the lock.
-if ! timeout -k 0.1s 0.5s mmsg dispatch switch_keyboard_layout,1 >/dev/null; then
+if ! timeout -k 0.1s 0.5s "$HOME/.local/bin/kbd-layout" set us; then
   printf 'lock-screen: could not switch Mango keyboard layout to us\n' >&2
 fi
 

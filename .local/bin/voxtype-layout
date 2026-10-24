@@ -1,40 +1,19 @@
 #!/bin/sh
 # Switch to US while voxtype types (ydotool sends US keycodes), then restore.
-# Indexes follow xkb_rules_layout in mango's config.
 
 state="${XDG_RUNTIME_DIR:-/tmp}/voxtype-layout.prev"
-us='English (US)'
-
-current_layout() {
-    mmsg get keyboardlayout 2>/dev/null |
-        sed -n 's/.*"layout":"\([^"]*\)".*/\1/p'
-}
-
-layout_index() {
-    case "$1" in
-    "$us")    echo 1 ;;
-    'Swedish') echo 2 ;;
-    'Danish')  echo 3 ;;
-    *)         echo '' ;;
-    esac
-}
 
 case "$1" in
 hold)
-    now=$(current_layout)
-    [ -n "$now" ] || exit 0
+    now=$(kbd-layout current) || exit 0
     printf '%s\n' "$now" >"$state"
-    [ "$now" = "$us" ] && exit 0
-    mmsg dispatch switch_keyboard_layout,1 >/dev/null
+    [ "$now" = us ] || kbd-layout set us
     ;;
 release)
     [ -f "$state" ] || exit 0
     prev=$(cat "$state")
     rm -f "$state"
-    [ "$prev" = "$us" ] && exit 0
-    index=$(layout_index "$prev")
-    [ -n "$index" ] || exit 0
-    mmsg dispatch switch_keyboard_layout,"$index" >/dev/null
+    [ -z "$prev" ] || [ "$prev" = us ] || kbd-layout set "$prev"
     ;;
 *)
     echo "usage: ${0##*/} hold|release" >&2

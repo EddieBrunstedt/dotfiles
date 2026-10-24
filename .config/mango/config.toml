@@ -45,6 +45,7 @@ cursor_hide_on_keypress = 1
 repeat_rate = 30
 repeat_delay = 200
 xkb_rules_options = "caps:escape"
+# Scripts switch by code through kbd-layout, which reads this list.
 xkb_rules_layout = "us,se,dk"
 
 # 0=none 1=flat 2=adaptive
