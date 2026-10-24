@@ -101,7 +101,7 @@ window#waybar.empty #window {
 #custom-inbox,
 #custom-claude,
 #custom-mullvad,
-#custom-volume,
+#wireplumber,
 #toggles,
 #clock,
 #tray {
@@ -143,7 +143,7 @@ window#waybar.empty #window {
 #custom-mem.quiet,
 #custom-mullvad.quiet,
 #custom-net.quiet,
-#custom-volume.quiet {
+#wireplumber {
     color: @overlay0;
 }
 
@@ -155,7 +155,7 @@ window#waybar.empty #window {
 #custom-mem.attention,
 #custom-mullvad.attention,
 #custom-net.attention,
-#custom-volume.attention {
+#wireplumber.muted {
     color: @peach;
 }
 
@@ -171,7 +171,6 @@ window#waybar.empty #window {
 #custom-mullvad.unknown,
 #custom-net.critical,
 #custom-net.unknown,
-#custom-volume.unknown,
 #custom-units.critical,
 #custom-units.unknown {
     color: @red;
