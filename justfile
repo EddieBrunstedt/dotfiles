@@ -62,11 +62,13 @@ enable-forgejo:
 clean-orphans:
     @find $HOME -xdev \
         -path "$HOME/.local/share/Trash" -prune -o \
+        -type d ! -readable -prune -o \
         -xtype l -lname '*dotfiles*' -print
 
 # Delete the broken symlinks listed by `clean-orphans`
+# (rm rather than -delete, which implies -depth and disables -prune)
 clean-orphans-apply:
     @find $HOME -xdev \
-        -xtype l -lname '*dotfiles*' \
-        -not -path "$HOME/.local/share/Trash/*" \
-        -print -delete
+        -path "$HOME/.local/share/Trash" -prune -o \
+        -type d ! -readable -prune -o \
+        -xtype l -lname '*dotfiles*' -print -exec rm -- {} +
