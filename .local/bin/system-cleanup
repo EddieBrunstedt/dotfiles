@@ -107,7 +107,6 @@ run_step 'Stopped containers and unused Docker images, networks and build cache'
 run_step 'Unused anonymous Docker volumes' docker volume prune --force
 run_step 'Unreferenced pnpm store packages' pnpm store prune
 run_step 'npm cache verification and garbage collection' npm cache verify
-run_step 'Go build and test caches' go clean -cache -testcache
 run_step 'tldr cache' tldr --clear-cache
 # kondo skips hidden directories (~/.cargo, ~/.local/share).
 run_step 'Project build artifacts (kondo)' kondo --all "$HOME"

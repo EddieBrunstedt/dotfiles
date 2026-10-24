@@ -127,8 +127,8 @@ the installed version of each cached Pacman package (`sudo paccache`; older ones
 remain on the Arch Linux Archive) and drops archives of uninstalled packages,
 removes devtools build chroots, runs `docker system prune --all --force` and
 prunes anonymous Docker volumes, prunes the pnpm store, verifies/garbage-collects
-the npm cache, clears Go build/test and tldr caches, removes project build
-artifacts under `~` with `kondo --all`, and clears the Doorman CI build cache.
+the npm cache, clears the tldr cache, removes project build artifacts under `~`
+with `kondo --all`, and clears the Doorman CI build cache.
 Steps that would race a running devtools build or Forgejo CI job are skipped
 and reported as failed. Named Docker volumes, application caches and Paru build
 trees are left alone. Everything removed can be rebuilt or re-downloaded;
