@@ -15,7 +15,9 @@ while :; do
         def cells: (. + "   ")[:3];
         # Pango markup; & first.
         def esc: gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;");
-        ((.details | objects | .location | objects) // {}) as $l
+        # listen also streams the relay list on every refresh; skip non-states.
+        select(type == "object" and has("state"))
+        | ((.details | objects | .location | objects) // {}) as $l
         | ($l.hostname // "" | (split("-")[0] // "") | ascii_upcase) as $code
         | "\($l.city // "unknown city"), \($l.country // "unknown country") (\($l.hostname // "unknown relay"))" as $where
         | if .state == "connected" then
