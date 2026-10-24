@@ -28,11 +28,8 @@ fi
 # wlopm (output power) rather than disabling the output, so mango keeps the layout.
 wlopm --off '*'
 
-# $$ survives exec, so this is swayidle's pid.
-pidfile=$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/lock-blank.XXXXXX") || exit 1
-printf '%s\n' "$$" >"$pidfile"
-
 # One-shot: the 1s timeout arms resume, which restores the panel and exits.
+# $$ survives exec, so it is swayidle's own pid.
 exec swayidle -w \
   timeout 1 'true' \
-  resume "/usr/bin/wlopm --on '*'; rm -f '$pidfile'; kill $$"
+  resume "/usr/bin/wlopm --on '*'; kill $$"
