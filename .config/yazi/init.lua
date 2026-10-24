@@ -9,6 +9,23 @@ local stock = { layout = Tab.layout, build = Tab.build, rails = Rails.build }
 
 local function stacked(c) return c[3].y > c[2].y end
 
+-- Yazi cuts every folder's `window` to the preview's height, which only holds
+-- while the columns sit side by side. Stacked, the file columns are taller than
+-- the preview, so the bottom rows stayed blank while the cursor could still move
+-- into them; rebuild the window from the component's own height.
+local function fit(comp)
+	local folder = comp._folder
+	if not folder then
+		return comp
+	end
+	local files, window = folder.files, {}
+	for i = folder.offset + 1, math.min(#files, folder.offset + comp._area.h) do
+		window[#window + 1] = files[i]
+	end
+	comp._folder = setmetatable({ window = window }, { __index = folder })
+	return comp
+end
+
 function Tab:layout()
 	if self._area.w >= STACK_BELOW then
 		return stock.layout(self)
@@ -33,8 +50,8 @@ function Tab:build()
 	end
 	local p = c[2].w > 0 and 0 or 1
 	self._children = {
-		Parent:new(c[1]:pad(ui.Pad(0, p, 0, 1)), self._tab),
-		Current:new(c[2]:pad(ui.Pad.x(1)), self._tab),
+		fit(Parent:new(c[1]:pad(ui.Pad(0, p, 0, 1)), self._tab)),
+		fit(Current:new(c[2]:pad(ui.Pad.x(1)), self._tab)),
 		Preview:new(c[3]:pad(ui.Pad(1, 1, 0, 1)), self._tab),
 		Rails:new(c, self._tab),
 		Markers:new(c, self._tab),
