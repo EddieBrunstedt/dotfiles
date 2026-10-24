@@ -6,7 +6,7 @@ gui:
   expandFocusedSidePanel: true
   showBranchCommitHash: true
   nerdFontsVersion: "3"
-  timeFormat: '1985-02-16'
+  timeFormat: '2006-01-02'
   shortTimeFormat: '15:04'
   theme:
     selectedLineBgColor:
