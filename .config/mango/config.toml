@@ -15,6 +15,8 @@ allow_lock_transparent = 0
 
 # ── Animations ──
 animation_type_open = "zoom"
+# Off in mango's built-in defaults; /etc/mango/config.toml turns it on but isn't read.
+layer_animations = 1
 zoom_initial_ratio = 0.3
 animation_duration_move = 100
 animation_duration_open = 100
@@ -282,3 +284,12 @@ layer_name = "rofi"
 [[rule.layer_rule]]
 animation_type_close = "zoom"
 layer_name = "rofi"
+
+# Dunst slides in from the right edge and back out.
+[[rule.layer_rule]]
+animation_type_open = "slide"
+layer_name = "notifications"
+
+[[rule.layer_rule]]
+animation_type_close = "slide"
+layer_name = "notifications"
