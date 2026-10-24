@@ -2,5 +2,5 @@
 Type=Application
 Name=Image viewer
 NoDisplay=true
-MimeType=image/gif;image/jpeg;image/png;image/x-tga;
+MimeType=image/avif;image/bmp;image/gif;image/heif;image/jpeg;image/jxl;image/png;image/svg+xml;image/tiff;image/webp;image/x-tga;
 Exec=uwsm app -- swayimg %f
