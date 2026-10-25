@@ -34,15 +34,17 @@ install-session:
 # Enable user systemd services (once per machine, after `install`)
 enable-services:
     systemctl --user daemon-reload
-    # ydotool is voxtype's typing backend; voxtype itself is started from waybar.
     systemctl --user enable \
         protonmail-bridge.service \
         swayidle.service \
         vault-cleanup.service \
         wallpaper.service \
-        waybar.service \
-        ydotool.service
+        waybar.service
     systemctl --user add-wants graphical-session.target soteria.service
+    # ydotool is voxtype's typing backend; voxtype itself is started from waybar.
+    # /dev/uinput is only writable once logged in (uaccess), so not at boot.
+    systemctl --user disable ydotool.service
+    systemctl --user add-wants graphical-session.target ydotool.service
     # default.target units only start at boot with lingering on.
     loginctl enable-linger $USER
 
