@@ -19,14 +19,16 @@ id=${window%% *}
 label=$title
 [ "$label" = "Claude Code" ] && label="Claude Code · $(basename "$(jq -r '.cwd // empty' <<<"$input")")"
 
-# First line of the reply, or the permission request in peach.
+# Start of the reply (4 lines, 300 chars, … if cut), or the permission request in peach.
 case $(jq -r .hook_event_name <<<"$input") in
   Notification)
     body=$(jq -r '.message // "Needs attention"' <<<"$input") colour='#fab387' ;;
   *)
-    body=$(jq -r '.last_assistant_message // empty' <<<"$input" |
-      sed -E '/^[[:space:]]*$/d; s/^[#>*+-]+ +//; s/\*\*|`//g' | head -1)
-    [ ${#body} -gt 140 ] && body="${body:0:139}…"
+    text=$(jq -r '.last_assistant_message // empty' <<<"$input" |
+      sed -E '/^[[:space:]]*(```.*)?$/d; s/^[#>*+-]+ +//; s/\*\*|`//g')
+    body=$(head -4 <<<"$text")
+    [ ${#body} -gt 300 ] && body=${body:0:299}
+    [ "$body" != "$text" ] && body+="…"
     body=${body:-Done} colour= ;;
 esac
 
