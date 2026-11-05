@@ -78,7 +78,6 @@ is D-Bus activated, or (MEGAsync) comes from `~/.config/autostart` via uwsm's
 | `filemanager-yazi.service` | `Type=dbus`, activated on demand, exits when idle |
 | `protonmail-bridge.service` | waits for VPN and API reachability first |
 | `vault-cleanup.service` | clears a dangling `~/vault` symlink at login |
-| `forgejo-runner.service` | `background.slice`, outlives the session — see below |
 
 Most session-bound processes live in `app-graphical.slice`, which is
 `PartOf=graphical-session.target`, so they stop at logout. Slice placement and
@@ -127,10 +126,9 @@ the installed version of each cached Pacman package (`sudo paccache`; older ones
 remain on the Arch Linux Archive) and drops archives of uninstalled packages,
 removes devtools build chroots, runs `docker system prune --all --force` and
 prunes anonymous Docker volumes, prunes the pnpm store, verifies/garbage-collects
-the npm cache, clears the tldr cache, removes project build artifacts under `~`
-with `kondo --all`, and clears the Doorman CI build cache.
-Steps that would race a running devtools build or Forgejo CI job are skipped
-and reported as failed. Named Docker volumes, application caches and Paru build
+the npm cache, clears the tldr cache and removes project build artifacts under
+`~` with `kondo --all`. A step that would race a running devtools build is
+skipped and reported as failed. Named Docker volumes, application caches and Paru build
 trees are left alone. Everything removed can be rebuilt or re-downloaded;
 `pacman-contrib` supplies `paccache`.
 See [Docker's prune documentation](https://docs.docker.com/reference/cli/docker/system/prune/).
@@ -158,15 +156,10 @@ Things a fresh machine needs that these files cannot provide:
   business and is deliberately not tracked here.
 - **System services** — `greetd`, `NetworkManager`, `docker` and `atd`, each
   `sudo systemctl enable --now`. `just enable-services` only touches _user_
-  units. Docker also wants your user in the `docker` group; and because a user
-  unit cannot order itself against a system one, the forgejo runner cannot pull
-  Docker up on its own.
+  units. Docker also wants your user in the `docker` group.
 - **Telltale** — the `telltale-*` gauges on waybar, installed to
   `~/.cargo/bin` with `cargo install --path ~/projects/telltale`.
   Self-maintained; not yet tracked by any applist.
-- **`~/.config/forgejo-runner/runner-token`** — a registration secret. Run
-  `just enable-forgejo` rather than `enable-services`; it checks for the token
-  and explains how to register if it is missing.
 - **The age identity** in the login keyring, without which no secret decrypts.
 - **The OpenPGP secret key used for Git commit signing.** `.gitconfig` tracks
   the public identity, key fingerprint and mandatory-signing policy, but never

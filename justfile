@@ -48,18 +48,6 @@ enable-services:
     # default.target units only start at boot with lingering on.
     loginctl enable-linger $USER
 
-# Enable the Forgejo Actions runner (this machine only; needs a runner token)
-enable-forgejo:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    token=~/.config/forgejo-runner/runner-token
-    if [[ ! -s $token ]]; then
-        echo "No runner token at $token." >&2
-        echo "Register the runner first: forgejo-runner register --instance https://codeberg.org/" >&2
-        exit 1
-    fi
-    systemctl --user enable --now forgejo-runner.service
-
 # List broken symlinks pointing into the dotfiles repo
 clean-orphans:
     @find $HOME -xdev \

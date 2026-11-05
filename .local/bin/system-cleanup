@@ -35,29 +35,6 @@ run_step() {
     fi
 }
 
-# Native-label CI jobs run in the runner's cgroup, so more than one process = busy.
-runner_busy() {
-    cgroup=$(systemctl --user show -p ControlGroup --value forgejo-runner.service 2>/dev/null) ||
-        return 1
-    procs=/sys/fs/cgroup$cgroup/cgroup.procs
-    [ -n "$cgroup" ] && [ -r "$procs" ] || return 1
-    [ "$(wc -l < "$procs")" -gt 1 ]
-}
-
-# Doorman CI's CARGO_TARGET_DIR; nothing else ever trims it.
-clear_doorman_ci_cache() {
-    target=$HOME/.cache/doorman-ci/target
-    if [ ! -e "$target" ]; then
-        printf 'Nothing to remove.\n'
-        return 0
-    fi
-    if runner_busy; then
-        printf 'A Forgejo CI job is running; rerun once it finishes.\n' >&2
-        return 1
-    fi
-    rm -rf -- "$target"
-}
-
 # pkgctl build chroots; the next build recreates them.
 clear_archbuild() {
     dir=/var/lib/archbuild
@@ -110,7 +87,6 @@ run_step 'npm cache verification and garbage collection' npm cache verify
 run_step 'tldr cache' tldr --clear-cache
 # kondo skips hidden directories (~/.cargo, ~/.local/share).
 run_step 'Project build artifacts (kondo)' kondo --all "$HOME"
-run_step 'Doorman CI build cache' clear_doorman_ci_cache
 
 after_kb=$(available_kb)
 difference_kb=$((after_kb - before_kb))
