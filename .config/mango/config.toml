@@ -237,7 +237,7 @@ exec_once = ["uwsm finalize"]
 "q" = ["spawn,~/.local/bin/power-menu", "setkeymode,default"]  # power
 "r" = ["spawn,~/.local/bin/ghostty-retro", "setkeymode,default"]  # retro
 "s" = ["spawn,~/.local/bin/ghostty-shader-menu", "setkeymode,default"]  # shader
-"t" = ["spawn,~/.local/bin/whitetemp", "setkeymode,default"]  # white temperature
+"t" = ["spawn,~/.local/bin/whitetemp", "setkeymode,default"]  # white point
 "v" = ["spawn,~/.local/bin/mullvad-menu", "setkeymode,default"]  # vpn
 
 # Layout mode: Super+a, then one key
