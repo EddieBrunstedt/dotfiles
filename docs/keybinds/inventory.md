@@ -225,9 +225,9 @@ Prefix families: `<leader>s` search, `<leader>h` git, `<leader>t` toggles, `<lea
 `S` Flash; `ys/ds/cs/gS` surround; `[`/`]` + b/d/f/i/j/l/o/q/t/u/w/x/y (mini.bracketed), c (gitsigns);
 `-` oil; `gl` line diagnostics.
 
-### Claude Code
+### Claude Code, reviewed 2026-11-07
 
-User overrides (`~/.claude/keybindings.json`):
+User overrides (`.claude/keybindings.json`, stowed):
 
 | Context | Key | Action |
 |---|---|---|
@@ -236,6 +236,7 @@ User overrides (`~/.claude/keybindings.json`):
 | Chat | Ctrl+y | unbound (default: switch to newer model) |
 | Scroll | Ctrl+b / Ctrl+f | page up / down |
 | Scroll | Ctrl+y / Ctrl+e | line up / down |
+| Autocomplete | Ctrl+y / Ctrl+n / Ctrl+p | accept / next / previous (shared vocabulary; Tab and arrows still work) |
 
 Defaults with modifiers (the ones that matter for conflicts):
 
@@ -254,7 +255,7 @@ Defaults with modifiers (the ones that matter for conflicts):
 | Ctrl+Enter, Ctrl+x Ctrl+s | send now |
 | Ctrl+x Enter | queue submit |
 | Ctrl+x Ctrl+k | kill agents |
-| Ctrl+_ / Ctrl+- | undo (Ctrl+- shadowed by Ghostty) |
+| Ctrl+_ / Ctrl+- | undo |
 | Ctrl+g, Ctrl+x Ctrl+e | external editor |
 | Ctrl+s | stash |
 | Ctrl+v | paste image |
@@ -265,7 +266,7 @@ Defaults with modifiers (the ones that matter for conflicts):
 | Ctrl+Shift+c | copy selection (fullscreen) |
 | Shift+arrows / Shift+Home/End | extend selection (fullscreen) |
 
-### yazi
+### yazi, reviewed 2026-11-07 (no changes needed)
 
 User: Ctrl+n = drag out (dragon); `;` + letter = bookmarks; `q`, `gc`, `gd`, `gh` disabled.
 
@@ -279,5 +280,5 @@ Defaults with modifiers:
 | mgr | Ctrl+s | cancel search |
 | mgr, tasks, etc. | Ctrl+c, Ctrl+[ | close / escape |
 | input | Ctrl+a / e / b / f / h / d / k / w / u | readline-style editing |
-| input | **Alt+b / Alt+f / Alt+d** | word back / forward / kill; **lost to Ghostty** |
+| input | Alt+b / Alt+f / Alt+d | word back / forward / kill |
 | cmp | Alt+k / Alt+j (and Ctrl+p / Ctrl+n) | previous / next completion |
