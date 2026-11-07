@@ -25,7 +25,7 @@ animation_duration_close = 100
 
 # ── Layout ──
 # What Super+n cycles through; the rest are in the Super+a layout mode.
-circle_layout = "right_tile,fair,right_deck"
+circle_layout = ["right_tile", "fair", "right_deck"]
 smart_gaps = 1
 gap_inner_horizontal = 0
 gap_inner_vertical = 0
@@ -58,6 +58,9 @@ enable_border_resize = 0
 
 # ── Monitor ──
 allow_tearing = 1
+
+# Super-held twins and cancel keys for the key modes; see scripts/keymodes.
+source = ["./keymodes.toml"]
 
 # ── Autostart ──
 # Everything else is a systemd user unit, D-Bus activated or XDG autostart.
@@ -213,49 +216,53 @@ exec_once = ["uwsm finalize"]
 [bind.default.release.conflict]
 "SUPER+v" = "spawn,voxtype record stop"
 
-# ── Launcher mode: Super+x, then one key ──
-# Each key returns to the default mode, so the mode lasts one keypress.
+# ── Key modes ──
+# Each key returns to the default mode, so a mode lasts one keypress.
+# The "# label" comments are what the keymode-hint card shows.
+# After changing a mode, rerun scripts/keymodes (Super twins, cancel keys).
+
+# Launcher mode: Super+x, then one key
 [bind.launch]
-"Escape" = "setkeymode,default"
+"Escape" = "setkeymode,default"  # cancel
 "SUPER+x" = "setkeymode,default"
 
 [bind.launch.conflict]
-"a" = ["spawn,ghostty -e wiremix -s compat -v output", "setkeymode,default"]
-"e" = ["spawn,~/.local/bin/emoji-menu", "setkeymode,default"]
-"k" = ["spawn,~/.local/bin/keyboard-layout-menu", "setkeymode,default"]
-"l" = ["spawn,~/.local/bin/lock-screen", "setkeymode,default"]
-"m" = ["spawn,~/.local/bin/system-menu", "setkeymode,default"]
-"n" = ["spawn,~/.local/bin/dunst-toggle", "setkeymode,default"]
-"p" = ["spawn,env SHELL=/usr/bin/sh ~/.local/bin/ord_prompts", "setkeymode,default"]
-"q" = ["spawn,~/.local/bin/power-menu", "setkeymode,default"]
-"r" = ["spawn,~/.local/bin/ghostty-retro", "setkeymode,default"]
-"s" = ["spawn,~/.local/bin/ghostty-shader-menu", "setkeymode,default"]
-"t" = ["spawn,~/.local/bin/whitetemp", "setkeymode,default"]
-"v" = ["spawn,~/.local/bin/mullvad-menu", "setkeymode,default"]
+"a" = ["spawn,ghostty -e wiremix -s compat -v output", "setkeymode,default"]  # audio
+"e" = ["spawn,~/.local/bin/emoji-menu", "setkeymode,default"]  # emoji
+"k" = ["spawn,~/.local/bin/keyboard-layout-menu", "setkeymode,default"]  # keyboard layout
+"l" = ["spawn,~/.local/bin/lock-screen", "setkeymode,default"]  # lock
+"m" = ["spawn,~/.local/bin/system-menu", "setkeymode,default"]  # system menu
+"n" = ["spawn,~/.local/bin/dunst-toggle", "setkeymode,default"]  # do not disturb
+"p" = ["spawn,env SHELL=/usr/bin/sh ~/.local/bin/ord_prompts", "setkeymode,default"]  # prompts
+"q" = ["spawn,~/.local/bin/power-menu", "setkeymode,default"]  # power
+"r" = ["spawn,~/.local/bin/ghostty-retro", "setkeymode,default"]  # retro
+"s" = ["spawn,~/.local/bin/ghostty-shader-menu", "setkeymode,default"]  # shader
+"t" = ["spawn,~/.local/bin/whitetemp", "setkeymode,default"]  # white temperature
+"v" = ["spawn,~/.local/bin/mullvad-menu", "setkeymode,default"]  # vpn
 
-# ── Layout mode: Super+a, then one key ──
+# Layout mode: Super+a, then one key
 [bind.layout]
-"Escape" = "setkeymode,default"
+"Escape" = "setkeymode,default"  # cancel
 "SUPER+a" = "setkeymode,default"
 
 [bind.layout.conflict]
-"t" = ["setlayout,right_tile", "setkeymode,default"]
-"SHIFT+t" = ["setlayout,tile", "setkeymode,default"]
-"v" = ["setlayout,vertical_tile", "setkeymode,default"]
-"c" = ["setlayout,center_tile", "setkeymode,default"]
-"f" = ["setlayout,fair", "setkeymode,default"]
-"SHIFT+f" = ["setlayout,vertical_fair", "setkeymode,default"]
-"d" = ["setlayout,right_deck", "setkeymode,default"]
-"SHIFT+d" = ["setlayout,deck", "setkeymode,default"]
-"g" = ["setlayout,grid", "setkeymode,default"]
-"m" = ["setlayout,monocle", "setkeymode,default"]
-"s" = ["setlayout,scroller", "setkeymode,default"]
-"x" = ["switch_proportion_preset", "setkeymode,default"]
-"i" = ["incnmaster,+1", "setkeymode,default"]
-"SHIFT+i" = ["incnmaster,-1", "setkeymode,default"]
-"minus" = ["incgaps,-5", "setkeymode,default"]
-"equal" = ["incgaps,5", "setkeymode,default"]
-"0" = ["togglegaps", "setkeymode,default"]
+"t" = ["setlayout,right_tile", "setkeymode,default"]  # right tile
+"SHIFT+t" = ["setlayout,tile", "setkeymode,default"]  # tile
+"v" = ["setlayout,vertical_tile", "setkeymode,default"]  # vertical tile
+"c" = ["setlayout,center_tile", "setkeymode,default"]  # center tile
+"f" = ["setlayout,fair", "setkeymode,default"]  # fair
+"SHIFT+f" = ["setlayout,vertical_fair", "setkeymode,default"]  # vertical fair
+"d" = ["setlayout,right_deck", "setkeymode,default"]  # right deck
+"SHIFT+d" = ["setlayout,deck", "setkeymode,default"]  # deck
+"g" = ["setlayout,grid", "setkeymode,default"]  # grid
+"m" = ["setlayout,monocle", "setkeymode,default"]  # monocle
+"s" = ["setlayout,scroller", "setkeymode,default"]  # scroller
+"x" = ["switch_proportion_preset", "setkeymode,default"]  # proportion
+"i" = ["incnmaster,+1", "setkeymode,default"]  # more masters
+"SHIFT+i" = ["incnmaster,-1", "setkeymode,default"]  # fewer masters
+"minus" = ["incgaps,-5", "setkeymode,default"]  # smaller gaps
+"equal" = ["incgaps,5", "setkeymode,default"]  # larger gaps
+"0" = ["togglegaps", "setkeymode,default"]  # toggle gaps
 
 # ── Mouse ──
 [mousebind.default]

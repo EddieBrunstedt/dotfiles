@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# Shows the keys of the active mango key mode in a dunst card, which-key style:
+# it appears once a mode has been open for $KEYMODE_HINT_DELAY seconds and
+# closes the moment the mode ends. The keys and labels are the "# label"
+# comments on the mode's binds in config.toml.
+set -u
+
+id=91700
+delay=${KEYMODE_HINT_DELAY:-0.3}
+config=${XDG_CONFIG_HOME:-$HOME/.config}/mango/config.toml
+timer=
+
+# card MODE: the mode's labelled keys as two columns of pango markup.
+card() {
+	awk -v mode="$1" '
+		/^\[/ {
+			inmode = $0 ~ "^\\[bind\\." mode "(\\.conflict)?\\]"
+			next
+		}
+		inmode && /^"[^"]+" *=.* # / {
+			key = $0; sub(/^"/, "", key); sub(/".*/, "", key)
+			label = $0; sub(/.* # /, "", label)
+			if (key ~ /^SHIFT\+.$/) key = toupper(substr(key, 7))
+			else if (key == "minus") key = "-"
+			else if (key == "equal") key = "="
+			else if (key == "Escape") key = "esc"
+			gsub(/&/, "\\&amp;", label); gsub(/</, "\\&lt;", label)
+			if (key == "esc") { esc = label; next }
+			k[++n] = key; l[n] = label
+		}
+		END {
+			if (esc != "") { k[++n] = "esc"; l[n] = esc }
+			rows = int((n + 1) / 2)
+			for (r = 1; r <= rows; r++) {
+				line = sprintf("<b>%-3s</b> %-17s", k[r], l[r])
+				if (r + rows <= n) line = line sprintf(" <b>%-3s</b> %s", k[r + rows], l[r + rows])
+				sub(/ +$/, "", line)
+				print line
+			}
+		}
+	' "$config"
+}
+
+show() {
+	local body
+	body=$(card "$1")
+	[ -n "$body" ] || return 0
+	dunstify -a "mango keys" -r "$id" -t 0 "${1^} mode" "$body"
+}
+
+# Kill a pending card before closing, so a late one can't outlive its mode.
+hide() {
+	if [ -n "$timer" ]; then
+		kill "$timer" 2>/dev/null
+		wait "$timer" 2>/dev/null
+		timer=
+	fi
+	dunstify -C "$id"
+}
+
+hide
+current=default
+while IFS= read -r line; do
+	mode=${line#*\"keymode\":\"}
+	mode=${mode%%\"*}
+	[ "$mode" = "$current" ] && continue
+	hide
+	current=$mode
+	[ "$mode" = default ] && continue
+	{ sleep "$delay" && show "$mode"; } &
+	timer=$!
+done < <(mmsg watch keymode)
+hide

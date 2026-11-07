@@ -84,6 +84,14 @@
     desktop_entry = com.mitchellh.ghostty
     format = "<span size='small' foreground='#6c7086'>Ghostty</span>\n<b>%s</b>\n<span foreground='#45475a'>────────────────────────────────────────</span>\n<span foreground='#bac2de'>%b</span>"
 
+# Key hints for mango key modes (keymode-hint): shown during do-not-disturb,
+# kept out of history; the script closes them when the mode ends.
+[mango_keys]
+    appname = "mango keys"
+    override_pause_level = 100
+    history_ignore = yes
+    timeout = 0
+
 # Every card gets an icon, so text width (and the rule line) is constant.
 [fallback_icon]
     default_icon = ~/.config/dunst/icons/feather.svg

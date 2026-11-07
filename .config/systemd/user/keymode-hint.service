@@ -1,0 +1,17 @@
+[Unit]
+Description=Key hints for mango key modes (dunst)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=exec
+ExecStart=%h/.local/bin/keymode-hint
+# The card has no timeout; never leave one behind.
+ExecStopPost=/usr/bin/dunstify -C 91700
+Slice=app-graphical.slice
+# mmsg exits when mango restarts.
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=graphical-session.target
