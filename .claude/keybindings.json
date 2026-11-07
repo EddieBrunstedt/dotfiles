@@ -1,0 +1,31 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-keybindings.json",
+  "$docs": "https://code.claude.com/docs/en/keybindings",
+  "bindings": [
+    {
+      "context": "Chat",
+      "bindings": {
+        "escape": null,
+        "ctrl+k": "chat:cancel",
+        "ctrl+y": null
+      }
+    },
+    {
+      "context": "Scroll",
+      "bindings": {
+        "ctrl+b": "scroll:pageUp",
+        "ctrl+f": "scroll:pageDown",
+        "ctrl+y": "scroll:lineUp",
+        "ctrl+e": "scroll:lineDown"
+      }
+    },
+    {
+      "context": "Autocomplete",
+      "bindings": {
+        "ctrl+y": "autocomplete:accept",
+        "ctrl+n": "autocomplete:next",
+        "ctrl+p": "autocomplete:previous"
+      }
+    }
+  ]
+}
