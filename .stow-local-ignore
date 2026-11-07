@@ -8,6 +8,7 @@
 ^/README.*$
 ^/LICENSE.*$
 ^/COPYING$
+^/docs$
 
 ^/justfile$
 ^/\.stowrc$
