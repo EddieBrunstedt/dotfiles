@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Shows the keys of the active mango key mode in a dunst card, which-key style:
-# it appears once a mode has been open for $KEYMODE_HINT_DELAY seconds and
+# it appears when a mode opens (after $KEYMODE_HINT_DELAY seconds, if set) and
 # closes the moment the mode ends. The keys and labels are the "# label"
 # comments on the mode's binds in config.toml.
 set -u
 
 id=91700
-delay=${KEYMODE_HINT_DELAY:-0.3}
+delay=${KEYMODE_HINT_DELAY:-0}
 config=${XDG_CONFIG_HOME:-$HOME/.config}/mango/config.toml
 timer=
 
