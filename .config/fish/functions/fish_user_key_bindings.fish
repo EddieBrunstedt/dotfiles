@@ -12,7 +12,8 @@ function fish_user_key_bindings
     bind -M default ctrl-d delete-char
     bind -M insert ctrl-d delete-char
 
-    # Explain the typed (or last) command. Alt-e is taken by Ghostty.
-    bind -M default ctrl-e explain
-    bind -M insert ctrl-e explain
+    # Explain the typed (or last) command, beside alt-h (man) and alt-w (whatis).
+    # Its default, edit_command_buffer, stays on alt-v.
+    bind -M default alt-e explain
+    bind -M insert alt-e explain
 end
