@@ -98,11 +98,11 @@ exec_once = ["uwsm finalize"]
 "XF86AudioRaiseVolume" = "spawn,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+"
 "XF86AudioLowerVolume" = "spawn,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%-"
 
-# ── Windows: j/k run through the stack (decks have no direction), h/l go sideways ──
+# ── Windows: j/k run through the stack, h/l size the master (dwm) ──
 "SUPER+j" = "focusstack,next"
 "SUPER+k" = "focusstack,prev"
-"SUPER+h" = "focusdir,left"
-"SUPER+l" = "focusdir,right"
+"SUPER+h" = "setmfact,-0.05"
+"SUPER+l" = "setmfact,+0.05"
 "SUPER+space" = "focus_first_tiled"
 "SUPER+Return" = "zoom"
 
@@ -111,7 +111,7 @@ exec_once = ["uwsm finalize"]
 "SUPER+SHIFT+h" = "move_client,left"
 "SUPER+SHIFT+l" = "move_client,right"
 
-# Tiled windows too: sideways moves the master/stack split.
+# The focused window, floating or tiled (a stack window's height, say).
 "SUPER+CTRL+h" = "resizewin,-50,+0"
 "SUPER+CTRL+l" = "resizewin,+50,+0"
 "SUPER+CTRL+j" = "resizewin,+0,+50"
@@ -146,9 +146,14 @@ exec_once = ["uwsm finalize"]
 "SUPER+Up" = "toggleoverview"
 "SUPER+Down" = "togglejump"
 
-# ── Layouts: Super+n cycles circle_layout, Super+a opens the layout mode ──
+# ── Layouts: Super+n cycles circle_layout, Super+m opens the layout mode ──
 "SUPER+n" = "switch_layout"
-"SUPER+a" = "setkeymode,layout"
+"SUPER+m" = "setkeymode,layout"
+
+# ── Gaps ──
+"SUPER+minus" = "incgaps,-5"
+"SUPER+equal" = "incgaps,5"
+"SUPER+SHIFT+equal" = "togglegaps"
 
 # ── Tags ──
 "SUPER+Tab" = "view,-1"
@@ -240,10 +245,10 @@ exec_once = ["uwsm finalize"]
 "t" = ["spawn,~/.local/bin/whitetemp", "setkeymode,default"]  # white point
 "v" = ["spawn,~/.local/bin/mullvad-menu", "setkeymode,default"]  # vpn
 
-# Layout mode: Super+a, then one key
+# Layout mode: Super+m, then one key. No Super+m to close it: m is monocle,
+# and Super+m, m should work with Super still held.
 [bind.layout]
 "Escape" = "setkeymode,default"  # cancel
-"SUPER+a" = "setkeymode,default"
 
 [bind.layout.conflict]
 "t" = ["setlayout,right_tile", "setkeymode,default"]  # right tile
@@ -256,13 +261,8 @@ exec_once = ["uwsm finalize"]
 "SHIFT+d" = ["setlayout,deck", "setkeymode,default"]  # deck
 "g" = ["setlayout,grid", "setkeymode,default"]  # grid
 "m" = ["setlayout,monocle", "setkeymode,default"]  # monocle
-"s" = ["setlayout,scroller", "setkeymode,default"]  # scroller
-"x" = ["switch_proportion_preset", "setkeymode,default"]  # proportion
 "i" = ["incnmaster,+1", "setkeymode,default"]  # more masters
 "SHIFT+i" = ["incnmaster,-1", "setkeymode,default"]  # fewer masters
-"minus" = ["incgaps,-5", "setkeymode,default"]  # smaller gaps
-"equal" = ["incgaps,5", "setkeymode,default"]  # larger gaps
-"0" = ["togglegaps", "setkeymode,default"]  # toggle gaps
 
 # ── Mouse ──
 [mousebind.default]

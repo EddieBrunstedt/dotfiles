@@ -222,6 +222,7 @@
 [bind.layout]
 "SUPER+Escape" = "setkeymode,default"
 "a" = "setkeymode,default"
+"SUPER+a" = "setkeymode,default"
 "SHIFT+a" = "setkeymode,default"
 "SUPER+SHIFT+a" = "setkeymode,default"
 "b" = "setkeymode,default"
@@ -274,6 +275,8 @@
 "SUPER+r" = "setkeymode,default"
 "SHIFT+r" = "setkeymode,default"
 "SUPER+SHIFT+r" = "setkeymode,default"
+"s" = "setkeymode,default"
+"SUPER+s" = "setkeymode,default"
 "SHIFT+s" = "setkeymode,default"
 "SUPER+SHIFT+s" = "setkeymode,default"
 "u" = "setkeymode,default"
@@ -286,6 +289,8 @@
 "SUPER+w" = "setkeymode,default"
 "SHIFT+w" = "setkeymode,default"
 "SUPER+SHIFT+w" = "setkeymode,default"
+"x" = "setkeymode,default"
+"SUPER+x" = "setkeymode,default"
 "SHIFT+x" = "setkeymode,default"
 "SUPER+SHIFT+x" = "setkeymode,default"
 "y" = "setkeymode,default"
@@ -296,6 +301,8 @@
 "SUPER+z" = "setkeymode,default"
 "SHIFT+z" = "setkeymode,default"
 "SUPER+SHIFT+z" = "setkeymode,default"
+"0" = "setkeymode,default"
+"SUPER+0" = "setkeymode,default"
 "SHIFT+0" = "setkeymode,default"
 "SUPER+SHIFT+0" = "setkeymode,default"
 "1" = "setkeymode,default"
@@ -334,8 +341,12 @@
 "SUPER+9" = "setkeymode,default"
 "SHIFT+9" = "setkeymode,default"
 "SUPER+SHIFT+9" = "setkeymode,default"
+"minus" = "setkeymode,default"
+"SUPER+minus" = "setkeymode,default"
 "SHIFT+minus" = "setkeymode,default"
 "SUPER+SHIFT+minus" = "setkeymode,default"
+"equal" = "setkeymode,default"
+"SUPER+equal" = "setkeymode,default"
 "SHIFT+equal" = "setkeymode,default"
 "SUPER+SHIFT+equal" = "setkeymode,default"
 "bracketleft" = "setkeymode,default"
@@ -424,10 +435,5 @@
 "SUPER+SHIFT+d" = ["setlayout,deck", "setkeymode,default"]
 "SUPER+g" = ["setlayout,grid", "setkeymode,default"]
 "SUPER+m" = ["setlayout,monocle", "setkeymode,default"]
-"SUPER+s" = ["setlayout,scroller", "setkeymode,default"]
-"SUPER+x" = ["switch_proportion_preset", "setkeymode,default"]
 "SUPER+i" = ["incnmaster,+1", "setkeymode,default"]
 "SUPER+SHIFT+i" = ["incnmaster,-1", "setkeymode,default"]
-"SUPER+minus" = ["incgaps,-5", "setkeymode,default"]
-"SUPER+equal" = ["incgaps,5", "setkeymode,default"]
-"SUPER+0" = ["togglegaps", "setkeymode,default"]

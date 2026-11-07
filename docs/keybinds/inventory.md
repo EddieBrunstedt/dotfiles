@@ -99,10 +99,11 @@ The only binds without Super are Print, the XF86 keys, and the hardcoded Ctrl+Al
 | Super+Return / Super+Shift+Return | swap with master / Ghostty |
 | Super+Space | focus master (first tiled window) |
 | Super+j/k | focus next / previous in the stack |
-| Super+h/l | focus the left / right column |
+| Super+h/l | master smaller / bigger (setmfact, as in dwm) |
 | Super+Shift+j/k | move the window down / up the stack |
 | Super+Shift+h/l | move the window left / right |
-| Super+Ctrl+h/j/k/l | resize (tiled windows too) |
+| Super+Ctrl+h/j/k/l | resize the focused window (floating, or a tiled one's share) |
+| Super+- / = / Shift+= | gaps smaller / larger / toggle |
 | Super+Alt+h/j/k/l | join group; Super+[ / ] focus within it, Super+Alt+g leave |
 | Super+q / Super+Shift+q | close / force-kill |
 | Super+f / Super+Shift+f | fullscreen / fake fullscreen |
@@ -119,13 +120,14 @@ The only binds without Super are Print, the XF86 keys, and the hardcoded Ctrl+Al
 | Super+r | reload config |
 | Super+n | cycle right_tile → fair → right_deck |
 | Super+x, then a key | launcher mode |
-| Super+a, then a key | layout mode |
+| Super+m, then a key | layout mode |
 
 **Key modes.** A dunst card lists each mode's keys while the mode is open (`keymode-hint`). Each key works with
 Super still held. Any key a mode doesn't use cancels it, and so does Esc.
 - **Super+x launcher mode:** audio, emoji, keyboard layout, lock, system menu, do not disturb, prompts,
   power, retro, shader, white point, VPN.
-- **Super+a layout mode:** the layouts (monocle on m), the number of master windows, gaps, scroller proportion.
+- **Super+m layout mode:** right tile, tile, vertical tile, center tile, fair, vertical fair, right deck, deck,
+  grid, monocle (m, so Super+m, m works), and the number of master windows.
 
 ## Layer 2: Ghostty (redesigned 2026-11-07)
 
