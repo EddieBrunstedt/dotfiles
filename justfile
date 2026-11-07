@@ -36,6 +36,7 @@ enable-services:
     systemctl --user daemon-reload
     systemctl --user enable \
         protonmail-bridge.service \
+        keymode-hint.service \
         swayidle.service \
         vault-cleanup.service \
         wallpaper.service \

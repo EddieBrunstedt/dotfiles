@@ -28,10 +28,10 @@ These are the actionable findings. Everything after this section is reference ma
 | Alt+e | Ghostty (u) scroll line down | fish `edit_command_buffer` | Your fish config notes this and moved `explain` to Ctrl+e. Alt+v still opens the editor in fish. |
 | Alt+y | Ghostty (u) scroll line up | fish `yank-pop` | |
 | Alt+1…9 | Ghostty (d) goto_tab | any app's Alt+digit | Only useful if you use Ghostty tabs. |
-| Ctrl+Alt+arrows | mango (u) resizewin | Ghostty (d) goto_split, and any app | Ghostty's split navigation can never fire. |
-| Alt+Tab, Alt+Shift+Tab, Alt+\`, Alt+Shift+\` | mango (u) overcircle / switcher | every app | Breaks the "Super = mango" rule. |
-| Alt+x | mango (u) switch_proportion_preset | every app (Emacs/readline M-x) | Breaks the rule. |
-| Alt+Shift+Return | mango (u) dwindle split direction | every app | Breaks the rule. |
+| Ctrl+Alt+arrows | mango (u) resizewin | Ghostty (d) goto_split, and any app | Ghostty's split navigation can never fire. **Fixed: mango gave up Alt.** |
+| Alt+Tab, Alt+Shift+Tab, Alt+\`, Alt+Shift+\` | mango (u) overcircle / switcher | every app | Breaks the "Super = mango" rule. **Fixed: mango gave up Alt.** |
+| Alt+x | mango (u) switch_proportion_preset | every app (Emacs/readline M-x) | Breaks the rule. **Fixed: mango gave up Alt.** |
+| Alt+Shift+Return | mango (u) dwindle split direction | every app | Breaks the rule. **Fixed: mango gave up Alt.** |
 | Ctrl+Alt+F1…F12 | mango (hardcoded) VT switch | everything | Can't be changed. Keep it in mind. |
 | Ctrl+- | Ghostty (d) decrease_font_size | Claude Code `chat:undo` | Claude's undo probably still works on Ctrl+_. |
 | Ctrl+= / Ctrl++ / Ctrl+0 | Ghostty (d) font size | apps | Rarely matters. |
@@ -60,7 +60,7 @@ them.
 
 ### Ergonomic and design notes
 
-- **Super+Shift+l locks the screen**, one Shift away from Super+l (grow master).
+- **Fixed:** Super+Shift+l locked the screen, one Shift away from Super+l. Lock now lives in launcher mode.
 - **Super+Shift is crowded**, with 15 launchers. Super+Shift+h/k/l are launchers, so moving windows had to go
   to Super+Shift+arrows instead of Super+Shift+hjkl.
 - **mango supports keymodes** (`[bind.<mode>]` + `setkeymode`) and physical-key binds (`code:NN`). Both are
@@ -88,81 +88,47 @@ them.
 | Print | `screenshot` (u, mango) |
 | XF86AudioRaise/LowerVolume | wpctl ±5% (u, mango) |
 
-## Layer 1: mango (all user-defined; the only built-in binds are the Ctrl+Alt+F-key VT switches)
+## Layer 1: mango (redesigned 2026-11-07)
 
-### Super
+Source of truth: `.config/mango/config.toml`. Everything is under Super:
+- Super+key: act or focus.
+- Super+Shift+key: take the window along.
+- Super+Ctrl+key: the variant.
 
-| Key | Action |
+The only binds without Super are Print, the XF86 keys, and the hardcoded Ctrl+Alt+F-key VT switches.
+
+| Keys | Action |
 |---|---|
-| Super+Return | zoom (swap with master) **(fixed)** |
-| Super+Shift+Return | ghostty **(fixed)** |
-| Super+r | reload_config |
-| Super+Shift+c | killclient |
-| Super+p | rofi drun |
-| Super+e | librewolf |
-| Super+y | dir-menu |
-| Super+q | power-menu |
-| Super+v (press / release) | voxtype push-to-talk |
-| Super+i / Shift+i / Ctrl+i | dunst act / close all / history |
-| Super+Shift+n | dunst toggle |
-| Super+j / k | focusstack next / prev |
-| Super+h / l | mfact −/+ 0.05 |
-| Super+space | focus_first_tiled |
-| Super+Tab | previous tag |
-| Super+\` | overview |
-| Super+s / Shift+s / Ctrl+s | special tag: toggle / move to / move silently |
-| Super+[ / ] | groupfocus prev / next |
-| Super+Alt+arrows | groupjoin |
-| Super+Alt+g | groupleave |
-| Super+n | switch_layout |
-| Super+t / Shift+t | right_tile / tile |
-| Super+m | vertical_tile |
-| Super+u | center_tile |
-| Super+w / Shift+w | fair / vertical_fair |
-| Super+d / Shift+d | right_deck / deck |
-| Super+Shift+arrows | exchange_client |
-| Super+Shift+space | togglefloating |
-| Super+f / Shift+f | fullscreen / fake fullscreen |
-| Super+a | maximize |
-| Super+g | toggleglobal |
-| Super+o | toggleoverlay |
-| Super+\\ | Ghostty scratchpad |
-| Super+Left / Right | view tag left / right |
-| Super+Ctrl+Left / Right | move window to tag left / right |
-| Super+1…9 | view tag |
-| Super+Ctrl+1…9 | toggleview tag |
-| Super+Shift+1…9 | move window to tag (silent) |
-| Super+- / = / Shift+= | gaps −5 / +5 / toggle |
-| Super+, / . | focus monitor left / right |
-| Super+Shift+, / . | move window to monitor left / right |
-| Super+Ctrl+Alt+arrows | scroller_stack |
-| Super+LMB / RMB drag | move / resize |
-| Super+scroll up / down | previous / next occupied tag |
+| Super+Return / Super+Shift+Return | swap with master / Ghostty |
+| Super+Space | focus master (first tiled window) |
+| Super+j/k | focus next / previous in the stack |
+| Super+h/l | focus the left / right column |
+| Super+Shift+j/k | move the window down / up the stack |
+| Super+Shift+h/l | move the window left / right |
+| Super+Ctrl+h/j/k/l | resize (tiled windows too) |
+| Super+Alt+h/j/k/l | join group; Super+[ / ] focus within it, Super+Alt+g leave |
+| Super+q / Super+Shift+q | close / force-kill |
+| Super+f / Super+Shift+f | fullscreen / fake fullscreen |
+| Super+Shift+Space, Super+g, Super+o | float, global, overlay |
+| Super+s / Shift+s / Ctrl+s | special workspace: toggle / send / send silently |
+| Super+1–9 / Shift / Ctrl / Ctrl+Shift | view / send / add to view / also show on that tag |
+| Super+0, Super+Tab | all tags, previous tag |
+| Super+Left/Right (+Shift, +Ctrl) | adjacent tag (take window along, skip empty tags) |
+| Super+\` (+Shift), Super+Ctrl+\` (+Shift) | switcher, overcircle (hold Super, tap) |
+| Super+Up / Super+Down | overview / overview with jump labels |
+| Super+, / . (+Shift) | focus monitor / send window to monitor |
+| Super+p, b, y, \\, v | rofi, browser, dir-menu, scratchpad, Voxtype (hold) |
+| Super+i / Shift+i / Ctrl+i | notifications: act / close all / history |
+| Super+r | reload config |
+| Super+n | cycle right_tile → fair → right_deck |
+| Super+x, then a key | launcher mode |
+| Super+a, then a key | layout mode |
 
-### Super+Shift launchers
-
-| Key | Launches |
-|---|---|
-| Super+Shift+a | wiremix (audio) |
-| Super+Shift+e | emoji-menu |
-| Super+Shift+g | whitetemp |
-| Super+Shift+h | ghostty-shader-menu |
-| Super+Shift+k | keyboard-layout-menu |
-| Super+Shift+l | lock-screen |
-| Super+Shift+m | system-menu |
-| Super+Shift+p | ord_prompts |
-| Super+Shift+r | ghostty-retro |
-| Super+Shift+v | mullvad-menu |
-
-### Non-Super (breaks the rule)
-
-| Key | Action |
-|---|---|
-| Alt+Tab / Alt+Shift+Tab | overcircle next / prev |
-| Alt+\` / Alt+Shift+\` | switcher all next / prev |
-| Alt+x | switch_proportion_preset (scroller) |
-| Alt+Shift+Return | dwindle toggle split direction |
-| Ctrl+Alt+arrows | resizewin ±50 |
+**Key modes.** A dunst card lists each mode's keys while the mode is open (`keymode-hint`). Each key works with
+Super still held. Any key a mode doesn't use cancels it, and so does Esc.
+- **Super+x launcher mode:** audio, emoji, keyboard layout, lock, system menu, do not disturb, prompts,
+  power, retro, shader, white point, VPN.
+- **Super+a layout mode:** the layouts (monocle on m), the number of master windows, gaps, scroller proportion.
 
 ## Layer 2: Ghostty
 
