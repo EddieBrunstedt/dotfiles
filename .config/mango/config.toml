@@ -64,29 +64,23 @@ exec_once = ["uwsm finalize"]
 # ══════════════════════════════════════════════════════════════════════════════
 # Key bindings — "MODS+key" = "action,args"; key names from `wev`
 # ══════════════════════════════════════════════════════════════════════════════
+# Everything is under Super; Alt and Ctrl belong to the apps (docs/keybinds/).
+# Super+key acts or focuses, +Shift takes the window along, +Ctrl is the variant.
 
 [bind.default]
 
 # ── Session ──
 "SUPER+r" = "reload_config"
-"SUPER+SHIFT+c" = "killclient"
+"SUPER+q" = "killclient"
+"SUPER+SHIFT+q" = "killclient,force"
 
-# ── Launchers and menus ──
+# ── Launchers ──
 "SUPER+p" = "spawn,rofi -show drun"
 "SUPER+SHIFT+Return" = "spawn,ghostty"
-"SUPER+e" = "spawn,librewolf"
+"SUPER+b" = "spawn,librewolf"
 "SUPER+y" = "spawn,~/.local/bin/dir-menu"
-"SUPER+q" = "spawn,~/.local/bin/power-menu"
-"SUPER+SHIFT+l" = "spawn,~/.local/bin/lock-screen"
-"SUPER+SHIFT+a" = "spawn,ghostty -e wiremix -s compat -v output"
-"SUPER+SHIFT+g" = "spawn,~/.local/bin/whitetemp"
-"SUPER+SHIFT+r" = "spawn,~/.local/bin/ghostty-retro"
-"SUPER+SHIFT+h" = "spawn,~/.local/bin/ghostty-shader-menu"
-"SUPER+SHIFT+k" = "spawn,~/.local/bin/keyboard-layout-menu"
-"SUPER+SHIFT+v" = "spawn,~/.local/bin/mullvad-menu"
-"SUPER+SHIFT+e" = "spawn,~/.local/bin/emoji-menu"
-"SUPER+SHIFT+p" = "spawn,env SHELL=/usr/bin/sh ~/.local/bin/ord_prompts"
-"SUPER+SHIFT+m" = "spawn,~/.local/bin/system-menu"
+"SUPER+backslash" = "toggle_named_scratchpad,com.ghostty.scratchpad,none,~/.local/bin/ghostty-scratchpad"
+"SUPER+x" = "setkeymode,launch"
 "XF86PowerOff" = "spawn,~/.local/bin/lock-blank"
 "Print" = "spawn,~/.local/bin/screenshot"
 
@@ -94,22 +88,37 @@ exec_once = ["uwsm finalize"]
 "SUPER+i" = "spawn,~/.local/bin/dunst-act"
 "SUPER+SHIFT+i" = "spawn,dunstctl close-all"
 "SUPER+CTRL+i" = "spawn,~/.local/bin/dunst-history"
-"SUPER+SHIFT+n" = "spawn,~/.local/bin/dunst-toggle"
 
 # ── Volume ──
 "XF86AudioRaiseVolume" = "spawn,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+"
 "XF86AudioLowerVolume" = "spawn,wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%-"
 
-# ── Focus ──
+# ── Windows: j/k run through the stack (decks have no direction), h/l go sideways ──
 "SUPER+j" = "focusstack,next"
 "SUPER+k" = "focusstack,prev"
+"SUPER+h" = "focusdir,left"
+"SUPER+l" = "focusdir,right"
 "SUPER+space" = "focus_first_tiled"
-"SUPER+Tab" = "view,-1"
-"SUPER+grave" = "toggleoverview"
-"ALT+Tab" = "overcircle,next"
-"ALT+SHIFT+Tab" = "overcircle,prev"
-"ALT+grave" = "switcher,all_next"
-"ALT+SHIFT+grave" = "switcher,all_prev"
+"SUPER+Return" = "zoom"
+
+"SUPER+SHIFT+j" = "exchange_stack_client,next"
+"SUPER+SHIFT+k" = "exchange_stack_client,prev"
+"SUPER+SHIFT+h" = "move_client,left"
+"SUPER+SHIFT+l" = "move_client,right"
+
+# Tiled windows too: sideways moves the master/stack split.
+"SUPER+CTRL+h" = "resizewin,-50,+0"
+"SUPER+CTRL+l" = "resizewin,+50,+0"
+"SUPER+CTRL+j" = "resizewin,+0,+50"
+"SUPER+CTRL+k" = "resizewin,+0,-50"
+
+# ── Window state ──
+"SUPER+f" = "togglefullscreen"
+"SUPER+SHIFT+f" = "togglefakefullscreen"
+"SUPER+a" = "togglemaximizescreen"
+"SUPER+SHIFT+space" = "togglefloating"
+"SUPER+g" = "toggleglobal"
+"SUPER+o" = "toggleoverlay"
 
 # ── Special workspace ──
 "SUPER+s" = "toggle_special_tag"
@@ -117,18 +126,23 @@ exec_once = ["uwsm finalize"]
 "SUPER+CTRL+s" = "tag_special_silent"
 
 # ── Window groups ──
-"SUPER+ALT+Left" = "groupjoin,left"
-"SUPER+ALT+Right" = "groupjoin,right"
-"SUPER+ALT+Up" = "groupjoin,up"
-"SUPER+ALT+Down" = "groupjoin,down"
+"SUPER+ALT+h" = "groupjoin,left"
+"SUPER+ALT+j" = "groupjoin,down"
+"SUPER+ALT+k" = "groupjoin,up"
+"SUPER+ALT+l" = "groupjoin,right"
 "SUPER+bracketleft" = "groupfocus,prev"
 "SUPER+bracketright" = "groupfocus,next"
 "SUPER+ALT+g" = "groupleave"
 
-# ── Layouts ──
-"SUPER+h" = "setmfact,-0.05"
-"SUPER+l" = "setmfact,+0.05"
-"SUPER+Return" = "zoom"
+# ── Switchers: hold Super, tap, release to pick ──
+"SUPER+grave" = "switcher,all_next"
+"SUPER+SHIFT+grave" = "switcher,all_prev"
+"SUPER+CTRL+grave" = "overcircle,next"
+"SUPER+CTRL+SHIFT+grave" = "overcircle,prev"
+"SUPER+Up" = "toggleoverview"
+"SUPER+Down" = "togglejump"
+
+# ── Layouts (undecided; kept as they were) ──
 "SUPER+n" = "switch_layout"
 "SUPER+t" = "setlayout,right_tile"
 "SUPER+SHIFT+t" = "setlayout,tile"
@@ -139,40 +153,20 @@ exec_once = ["uwsm finalize"]
 "SUPER+d" = "setlayout,right_deck"
 "SUPER+SHIFT+d" = "setlayout,deck"
 
-# Scroller (Alt+E is Ghostty's)
-"ALT+x" = "switch_proportion_preset"
-"ALT+SUPER+CTRL+Left" = "scroller_stack,left"
-"ALT+SUPER+CTRL+Right" = "scroller_stack,right"
-"ALT+SUPER+CTRL+Up" = "scroller_stack,up"
-"ALT+SUPER+CTRL+Down" = "scroller_stack,down"
-
-# Dwindle
-"ALT+SHIFT+Return" = "dwindle_toggle_split_direction"
-
-# ── Window state ──
-"SUPER+SHIFT+Up" = "exchange_client,up"
-"SUPER+SHIFT+Down" = "exchange_client,down"
-"SUPER+SHIFT+Left" = "exchange_client,left"
-"SUPER+SHIFT+Right" = "exchange_client,right"
-"SUPER+SHIFT+space" = "togglefloating"
-"SUPER+f" = "togglefullscreen"
-"SUPER+SHIFT+f" = "togglefakefullscreen"
-"SUPER+a" = "togglemaximizescreen"
-"SUPER+g" = "toggleglobal"
-"SUPER+o" = "toggleoverlay"
-"SUPER+backslash" = "toggle_named_scratchpad,com.ghostty.scratchpad,none,~/.local/bin/ghostty-scratchpad"
-
-# movewin stays unbound: Ctrl+Shift+arrows belongs to text editing.
-"CTRL+ALT+Up" = "resizewin,+0,-50"
-"CTRL+ALT+Down" = "resizewin,+0,+50"
-"CTRL+ALT+Left" = "resizewin,-50,+0"
-"CTRL+ALT+Right" = "resizewin,+50,+0"
+# ── Gaps ──
+"SUPER+minus" = "incgaps,-5"
+"SUPER+equal" = "incgaps,5"
+"SUPER+SHIFT+equal" = "togglegaps"
 
 # ── Tags ──
+"SUPER+Tab" = "view,-1"
+"SUPER+0" = "view,00,0"
 "SUPER+Left" = "viewtoleft,0"
 "SUPER+Right" = "viewtoright,0"
-"CTRL+SUPER+Left" = "tagtoleft,0"
-"CTRL+SUPER+Right" = "tagtoright,0"
+"SUPER+SHIFT+Left" = "tagtoleft,0"
+"SUPER+SHIFT+Right" = "tagtoright,0"
+"SUPER+CTRL+Left" = "viewtoleft_have_client,0"
+"SUPER+CTRL+Right" = "viewtoright_have_client,0"
 
 "SUPER+1" = "view,1,0"
 "SUPER+2" = "view,2,0"
@@ -184,16 +178,6 @@ exec_once = ["uwsm finalize"]
 "SUPER+8" = "view,8,0"
 "SUPER+9" = "view,9,0"
 
-"SUPER+CTRL+1" = "toggleview,1"
-"SUPER+CTRL+2" = "toggleview,2"
-"SUPER+CTRL+3" = "toggleview,3"
-"SUPER+CTRL+4" = "toggleview,4"
-"SUPER+CTRL+5" = "toggleview,5"
-"SUPER+CTRL+6" = "toggleview,6"
-"SUPER+CTRL+7" = "toggleview,7"
-"SUPER+CTRL+8" = "toggleview,8"
-"SUPER+CTRL+9" = "toggleview,9"
-
 "SUPER+SHIFT+1" = "tagsilent,1,0"
 "SUPER+SHIFT+2" = "tagsilent,2,0"
 "SUPER+SHIFT+3" = "tagsilent,3,0"
@@ -204,10 +188,26 @@ exec_once = ["uwsm finalize"]
 "SUPER+SHIFT+8" = "tagsilent,8,0"
 "SUPER+SHIFT+9" = "tagsilent,9,0"
 
-# ── Gaps ──
-"SUPER+minus" = "incgaps,-5"
-"SUPER+equal" = "incgaps,5"
-"SUPER+SHIFT+equal" = "togglegaps"
+"SUPER+CTRL+1" = "toggleview,1"
+"SUPER+CTRL+2" = "toggleview,2"
+"SUPER+CTRL+3" = "toggleview,3"
+"SUPER+CTRL+4" = "toggleview,4"
+"SUPER+CTRL+5" = "toggleview,5"
+"SUPER+CTRL+6" = "toggleview,6"
+"SUPER+CTRL+7" = "toggleview,7"
+"SUPER+CTRL+8" = "toggleview,8"
+"SUPER+CTRL+9" = "toggleview,9"
+
+# Window shows on that tag as well.
+"SUPER+CTRL+SHIFT+1" = "toggletag,1"
+"SUPER+CTRL+SHIFT+2" = "toggletag,2"
+"SUPER+CTRL+SHIFT+3" = "toggletag,3"
+"SUPER+CTRL+SHIFT+4" = "toggletag,4"
+"SUPER+CTRL+SHIFT+5" = "toggletag,5"
+"SUPER+CTRL+SHIFT+6" = "toggletag,6"
+"SUPER+CTRL+SHIFT+7" = "toggletag,7"
+"SUPER+CTRL+SHIFT+8" = "toggletag,8"
+"SUPER+CTRL+SHIFT+9" = "toggletag,9"
 
 # ── Monitors ──
 "SUPER+comma" = "focusmon,left"
@@ -223,6 +223,26 @@ exec_once = ["uwsm finalize"]
 
 [bind.default.release.conflict]
 "SUPER+v" = "spawn,voxtype record stop"
+
+# ── Launcher mode: Super+x, then one key ──
+# Each key returns to the default mode, so the mode lasts one keypress.
+[bind.launch]
+"Escape" = "setkeymode,default"
+"SUPER+x" = "setkeymode,default"
+
+[bind.launch.conflict]
+"a" = ["spawn,ghostty -e wiremix -s compat -v output", "setkeymode,default"]
+"e" = ["spawn,~/.local/bin/emoji-menu", "setkeymode,default"]
+"k" = ["spawn,~/.local/bin/keyboard-layout-menu", "setkeymode,default"]
+"l" = ["spawn,~/.local/bin/lock-screen", "setkeymode,default"]
+"m" = ["spawn,~/.local/bin/system-menu", "setkeymode,default"]
+"n" = ["spawn,~/.local/bin/dunst-toggle", "setkeymode,default"]
+"p" = ["spawn,env SHELL=/usr/bin/sh ~/.local/bin/ord_prompts", "setkeymode,default"]
+"q" = ["spawn,~/.local/bin/power-menu", "setkeymode,default"]
+"r" = ["spawn,~/.local/bin/ghostty-retro", "setkeymode,default"]
+"s" = ["spawn,~/.local/bin/ghostty-shader-menu", "setkeymode,default"]
+"t" = ["spawn,~/.local/bin/whitetemp", "setkeymode,default"]
+"v" = ["spawn,~/.local/bin/mullvad-menu", "setkeymode,default"]
 
 # ── Mouse ──
 [mousebind.default]
