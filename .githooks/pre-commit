@@ -1,0 +1,30 @@
+#!/bin/sh
+# Refuses commits on the integration branch. It is recreated from master and
+# the topic branches, so a commit made on it would be lost at the next rebuild.
+# Merge commits pass: they are how the branch is built, including the commit
+# that concludes a merge after its conflicts are resolved.
+
+branch=$(git symbolic-ref --short -q HEAD) || exit 0
+[ "$branch" = integration ] || exit 0
+git rev-parse -q --verify MERGE_HEAD >/dev/null && exit 0
+
+topics=$(git branch --format='    %(refname:short)' --no-merged master | grep -vx '    integration')
+
+cat >&2 <<EOF
+error: refusing to commit on 'integration'.
+
+'integration' is master with every unfinished topic branch merged on top, so
+they can be used together from ~/.dotfiles, the checkout stow links into. It is
+never updated, only recreated, and recreating it discards anything committed
+here:
+
+    git switch -C integration master
+    git merge --no-edit <topic>      # once per topic branch
+
+Commit on the topic branch the change belongs to instead, in its own worktree
+(git worktree add ../dotfiles-<topic> <topic>), then recreate integration.
+
+Topic branches not yet merged into master:
+${topics:-    (none)}
+EOF
+exit 1

@@ -4,10 +4,11 @@ set ignore-comments := true
 default:
     @just --list
 
-# Symlink dotfiles into $HOME, then fetch the yazi plugins pinned in package.toml
+# Symlink dotfiles into $HOME, fetch the yazi plugins pinned in package.toml, use the repo's git hooks
 install:
     stow .
     ya pkg install
+    git config core.hooksPath .githooks
 
 # Re-symlink, cleaning up stale links
 restow:
