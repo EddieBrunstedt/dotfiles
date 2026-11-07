@@ -52,7 +52,7 @@ These are the actionable findings. Everything after this section is reference ma
 | fish | Ctrl+v | **Fixed:** variable search moved to Ctrl+Alt+v, so Ctrl+v pastes again. |
 | fish | Ctrl+y | Your accept-autosuggestion replaces vi-mode's `yank`. Intended. |
 | fish | Ctrl+d | Your `delete-char` replaces `delete-or-exit`. Intended. |
-| Neovim (oil buffers) | Ctrl+l | oil's default `refresh` replaces your window-right navigation in oil buffers. You already disabled oil's C-s/C-h/C-t for this reason. |
+| Neovim (oil buffers) | Ctrl+l | **Fixed:** oil's Ctrl+l is disabled, so window navigation works in oil buffers too. |
 | Claude Code | Escape | Unbound in Chat, so `chat:cancel` is on Ctrl+k only. |
 
 ### Ergonomic and design notes
@@ -200,30 +200,40 @@ Modifier binds in insert mode. Normal mode follows vi.
 | Alt+h / w / l / o / p / s / # (d) | man page / whatis / list token / preview file / paginate / prepend sudo / toggle comment |
 | Normal mode: y / p / P (u) | via system clipboard |
 
-### Neovim (leader = Space)
+### Neovim (leader = Space), redesigned 2026-11-07
 
-Modifier keys (everything else is leader, `s` LSP, `[`/`]` bracketed, or `g` prefixes):
+Source of truth: `~/.config/nvim` (its own repo, `keybinds` branch). Neovim's defaults come first, then each
+plugin's documented keys, then kickstart.nvim's conventions.
 
-| Key | Mode | Action | Source |
-|---|---|---|---|
-| Ctrl+s | n, i, x, s | write buffer | keymaps.lua |
-| Ctrl+s | c | toggle Flash search | flash.lua |
-| Ctrl+h/j/k/l | n | window focus | keymaps.lua |
-| Esc | n | nohlsearch | keymaps.lua |
-| Esc Esc | t | leave terminal mode | keymaps.lua |
-| Ctrl+Space / e / y / n / p / b / f / k | i | blink.cmp `default` preset: show / hide / accept / next / prev / scroll docs / signature | completion.lua |
-| Ctrl+Space / e / y / n / p, Tab / S-Tab | c | blink.cmp cmdline | completion.lua |
-| Tab / S-Tab | i, s | snippet jump | (d) |
-| Ctrl+a / Ctrl+x / Ctrl+r / u | n | wrapped by mini.bracketed (still increment/decrement/redo/undo) | mini.lua |
-| F1 / F2 / F3 / F5 / F7 | n | DAP step into / over / out / continue / UI | debug.lua |
-| mini.pick (in picker) | | C-n/p move, C-f/b scroll, C-h/l scroll sideways, C-x mark, C-a mark all, C-s/C-v/C-t open in split/vsplit/tab, C-Space refine, **M-Space** refine marked, **M-CR** choose marked, Tab preview, S-Tab info | (d) |
-| oil (in buffer) | | C-p preview, C-c close, **C-l refresh** (C-s/C-h/C-t disabled) | (d) |
+| Keys | Action | Origin |
+|---|---|---|
+| grn / gra / grx, K | rename / code action / codelens, hover | Neovim |
+| grr / gri / grt / gO | references / implementation / type definition / document symbols, in mini.pick | Neovim keys |
+| grd / grD / grR / gW | definition / declaration / references in this file / workspace symbols | kickstart |
+| s / S | flash jump / flash treesitter (S only in normal and operator-pending) | flash README |
+| r / R (operator-pending, visual), Ctrl+s (cmdline) | remote flash / treesitter search / toggle flash search | flash README |
+| ys / ds / cs / yss, visual S | surround add / delete / replace / line, surround the selection | vim-surround |
+| [ ] + b d q l t a (and capitals, Ctrl variants), [ / ] + Space | buffers, diagnostics, quickfix, loclist, tags, args, blank lines | Neovim |
+| ]c / [c, ih | git hunks, hunk text object | gitsigns README |
+| Ctrl+w d | diagnostic float (also opens on ]d / [d) | Neovim |
+| Ctrl+h/j/k/l | window focus (oil no longer takes Ctrl+l) | kickstart |
+| Ctrl+s | save (n, i, x); signature help is blink's Ctrl+k | user |
+| Esc, Esc Esc (terminal) | clear search highlight, leave terminal mode | kickstart |
+| aa / ii | mini.ai "next" text objects (an/in belong to Neovim 0.12) | user |
+| blink: Ctrl+Space / e / y / n / p / b / f / k | completion: show / hide / accept / next / prev / scroll docs / signature | blink default |
+| F5 / F1 / F2 / F3 / F7, leader b / B | debug continue / step into / step over / step out / UI, breakpoints | kickstart |
 
-Prefix families: `<leader>s` search, `<leader>h` git, `<leader>t` toggles, `<leader>x` diagnostics,
-`<leader>y` yank, `<leader>f` format, `<leader>b/B` breakpoints, `<leader>q/l` quickfix/loclist,
-`<leader>/` buffer lines, `<leader><Tab>` alternate buffer; `s` = LSP (sd/sD/si/sr/sR/st/ss/sS/sa/sn/sx/sh);
-`S` Flash; `ys/ds/cs/gS` surround; `[`/`]` + b/d/f/i/j/l/o/q/t/u/w/x/y (mini.bracketed), c (gitsigns);
-`-` oil; `gl` line diagnostics.
+Leader groups:
+- `s` search: files, grep (both with hidden variants), help, keymaps, diagnostics, resume, recent files,
+  buffers, lines.
+- `h` git: gitsigns README.
+- `t` toggles: inlay hints, format on save, tailwind, zen, blame, word diff, equalize splits.
+- `x` diagnostics to the loclist / quickfix list.
+- `y` yank the buffer or the file path.
+- Single keys: `f` format, `/` buffer lines, `<Tab>` alternate buffer, `q` / `l` quickfix / loclist.
+
+Removed: the `s` LSP prefix, `gl`, visual `gS`, and mini.bracketed. Its `[`/`]` pairs duplicated
+Neovim's, replaced `]t`, and wrapped `u` and `Ctrl+r`.
 
 ### Claude Code, reviewed 2026-11-07
 
