@@ -148,7 +148,7 @@ key when they can act; otherwise the key goes to the app.
 | Ctrl+Shift+Space | view mode (key table `view`) |
 
 **View mode:**
-- j/k scroll a line, d/u half a page, f/b a page; the Ctrl+e/y/d/u/f/b versions work too.
+- j/k scroll a line, d/u half a page, f/b a page.
 - g/G go to the top / bottom.
 - / searches, and n/N go to the next / previous match.
 - y copies the selection.

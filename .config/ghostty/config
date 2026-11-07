@@ -75,12 +75,6 @@ keybind = view/d=scroll_page_fractional:0.5
 keybind = view/u=scroll_page_fractional:-0.5
 keybind = view/f=scroll_page_down
 keybind = view/b=scroll_page_up
-keybind = view/ctrl+e=scroll_page_lines:1
-keybind = view/ctrl+y=scroll_page_lines:-1
-keybind = view/ctrl+d=scroll_page_fractional:0.5
-keybind = view/ctrl+u=scroll_page_fractional:-0.5
-keybind = view/ctrl+f=scroll_page_down
-keybind = view/ctrl+b=scroll_page_up
 keybind = view/g=scroll_to_top
 keybind = view/shift+g=scroll_to_bottom
 keybind = view/slash=start_search
