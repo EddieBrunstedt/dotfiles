@@ -1,6 +1,17 @@
+# Packages for every machine running this desktop. One per line:
+#
+#   name [optdep] [manual]  # why, optional
+#
+#   optdep  kept as an optional dependency of something installed; installed
+#           --asdeps, so it becomes an orphan once nothing wants it
+#   manual  built by hand with makepkg; pkgs install never touches it
+#
+# Edit with `pkgs add` and `pkgs drop`. See the Packages section of the README.
+
 7zip
 age
 anki
+aspnet-targeting-pack optdep  # ASP.NET Core for dotnet-sdk
 at
 base
 base-devel
@@ -10,6 +21,7 @@ blender
 bun
 cargo-update
 chromium
+claude-code
 cuda
 cudnn
 deno
@@ -20,7 +32,9 @@ docker-buildx
 docker-compose
 doggo
 dosfstools
+dotnet-sdk
 dprint
+dragon-drop
 duf
 dunst
 dust
@@ -29,6 +43,7 @@ element-desktop
 eslint
 eza
 fd
+ffmpeg-sofa manual
 firefox-developer-edition
 fish
 fisher
@@ -57,6 +72,7 @@ kondo
 krita
 lazygit
 lib32-gamemode
+lib32-harfbuzz optdep
 lib32-mangohud
 librewolf
 libsecret
@@ -65,28 +81,41 @@ linux-firmware
 man-db
 man-pages
 mangohud
+mangowm-local manual
+maplemono-nf
+maplemono-nf-cn
+megasync-bin
 mpv
+mullvad-vpn-beta-bin
+mullvad-vpn-daemon-beta-bin
 neovim
 networkmanager
-nodejs-lts-krypton
+nodejs
 noto-fonts
 noto-fonts-cjk
 noto-fonts-emoji
 npm
 nvtop
 obsidian
+oldschool-pc-fonts
 openai-codex
 opencode
 openresolv
 openssh
+ord
+otf-departure-mono-nerd
 pacman-contrib
 papirus-icon-theme
+paru
 perl-file-mimeinfo
+phinger-cursors
 pipewire
 pipewire-alsa
 pipewire-jack
 pipewire-pulse
 pnpm
+poppler optdep
+proton-drive-cli-bin
 protonmail-bridge-core
 python-dbus
 python-gobject
@@ -99,6 +128,7 @@ resvg
 ripgrep
 rofi
 rsync
+rtkit optdep
 rust-analyzer
 rustup
 satty
@@ -106,9 +136,12 @@ seatd
 shellcheck
 signal-desktop
 sops
+soteria-bin
+spotify
 starship
 steam
 stow
+surge-xt
 swaybg
 swayidle
 swayimg
@@ -118,17 +151,25 @@ tenacity
 terminus-font
 time
 tokei
+topgrade-bin
 torbrowser-launcher
 trash-cli
 tree-sitter-cli
 treemd
 ttf-fira-sans
+ttf-fixedsys-excelsior-linux
+ttf-literata
+ttf-noto-emoji-monochrome
 udisks2
 unrar
 unzip
+uv
 uwsm
 veracrypt
+vesktop-bin
+voxtype-bin
 watchexec
+waybar-git
 wayland-protocols
 wget
 wireguard-tools

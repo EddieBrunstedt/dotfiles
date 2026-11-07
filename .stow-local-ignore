@@ -16,4 +16,5 @@
 # Root-owned; installed by `just install-session`
 ^/system$
 
-^/\.config/applist-machine\.example$
+# Read from the repo by `pkgs`, not linked into $HOME
+^/packages$

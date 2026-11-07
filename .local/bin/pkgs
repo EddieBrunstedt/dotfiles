@@ -1,0 +1,786 @@
+#!/usr/bin/env bash
+#
+# pkgs: the packages this desktop wants, and how the installed system differs.
+# Lists live in the repo's packages/ directory; see the Packages section of the
+# dotfiles README.
+
+set -Eeuo pipefail
+
+usage() {
+	cat <<'EOF'
+Usage: pkgs [COMMAND] [OPTIONS]
+
+Commands:
+  report                 Compare the system with the lists (the default)
+      --audit              also check that listed packages still exist (contacts the AUR)
+  install                Install everything listed for this machine
+  add [OPTIONS] NAME...  List packages, installing them if needed
+      --host               this machine only (packages/hosts/HOSTNAME)
+      --private            the encrypted list (*.sops.yaml)
+      --optdep             kept as an optional dependency; installed --asdeps
+      --manual             built by hand; never installed by pkgs
+      -m, --message TEXT   a comment saying why
+  drop [OPTIONS] NAME... Unlist packages and uninstall them (pacman -Rns)
+      --keep               only unlist them
+  fix                    Correct install reasons: listed packages explicit,
+                         optdep entries as dependencies
+  edit [--host] [--private]
+                         Open a list in $EDITOR (sops for a private list)
+
+  -y, --yes              Do not ask for confirmation (pacman/paru --noconfirm)
+  -h, --help
+
+Lists, for host HOSTNAME (uname -n):
+  packages/common                     every machine
+  packages/common.sops.yaml           every machine, encrypted
+  packages/hosts/HOSTNAME             this machine
+  packages/hosts/HOSTNAME.sops.yaml   this machine, encrypted
+
+One package per line: NAME [optdep] [manual]  # comment
+EOF
+}
+
+self=$(readlink -f -- "${BASH_SOURCE[0]}")
+repo=$(cd -- "${self%/*}/../.." && pwd)
+readonly PKGS_DIR=${PKGS_DIR:-$repo/packages}
+# Recipients for new private lists; shared with the secrets in .secret/.
+readonly PKGS_SOPS_CONFIG=${PKGS_SOPS_CONFIG:-$repo/.secret/.sops.yaml}
+readonly HOST=${PKGS_HOST:-$(uname -n)}
+readonly LISTS=(common common.sops.yaml "hosts/$HOST" "hosts/$HOST.sops.yaml")
+readonly NAME_RE='^[[:alnum:]@_+][[:alnum:]@._+-]*$'
+readonly PACMAN_LOG=/var/log/pacman.log
+
+RED=$'\033[0;31m'
+GREEN=$'\033[0;32m'
+YELLOW=$'\033[1;33m'
+BOLD=$'\033[1m'
+DIM=$'\033[2m'
+NC=$'\033[0m'
+
+if [[ ! -t 1 || -v NO_COLOR ]]; then RED='' GREEN='' YELLOW='' BOLD='' DIM='' NC=''; fi
+
+die() {
+	printf '%spkgs: %s%s\n' "$RED" "$*" "$NC" >&2
+	exit 2
+}
+warn() { printf '%spkgs: %s%s\n' "$YELLOW" "$*" "$NC" >&2; }
+note() { printf '%s%s%s\n' "$GREEN" "$*" "$NC"; }
+
+trim() {
+	local s=$1
+	s=${s#"${s%%[![:space:]]*}"}
+	printf '%s' "${s%"${s##*[![:space:]]}"}"
+}
+
+is_private() { [[ $1 == *.sops.yaml ]]; }
+
+list_for() {
+	local host=$1 private=$2 id=common
+	if $host; then id=hosts/$HOST; fi
+	if $private; then id+=.sops.yaml; fi
+	printf '%s' "$id"
+}
+
+# The lists ------------------------------------------------------------------
+
+declare -a entries=()        # every listed package, in load order
+declare -A entry_list=()     # package -> list id
+declare -A entry_tags=()     # package -> "optdep manual"
+declare -A list_size=()      # list id -> entries
+declare -a list_problems=()  # "package|detail"
+declare -a unreadable=()     # "list id|reason"
+private_count=0              # private lists present, readable or not
+
+# parse_entry LINE WHERE: sets parsed_name, parsed_tags. Returns 1 for a line
+# with no entry (blank or comment only); exits on anything malformed.
+parse_entry() {
+	local text=${1%$'\r'} where=$2 tag
+	local -a words
+	text=${text%%#*}
+	read -ra words <<<"$text"
+	parsed_name=${words[0]:-}
+	parsed_tags=''
+	[[ -n $parsed_name ]] || return 1
+	[[ $parsed_name =~ $NAME_RE ]] || die "$where: invalid package name '$parsed_name'"
+	for tag in "${words[@]:1}"; do
+		case $tag in
+		optdep | manual) parsed_tags+=" $tag" ;;
+		*) die "$where: unknown tag '$tag' (known: optdep, manual)" ;;
+		esac
+	done
+	parsed_tags=${parsed_tags# }
+}
+
+has_tag() { [[ " ${entry_tags[$1]:-} " == *" $2 "* ]]; }
+
+# Prints a private list's lines, or the reason it cannot be decrypted and
+# fails.
+private_lines() {
+	local out
+	if ! command -v sops >/dev/null 2>&1; then
+		echo 'sops is not installed'
+		return 1
+	fi
+	if ! out=$(sops decrypt --extract '["packages"]' -- "$1" 2>&1); then
+		echo "cannot decrypt (${out%%$'\n'*}); is the age identity in the keyring?"
+		return 1
+	fi
+	printf '%s\n' "$out"
+}
+
+add_loaded() {
+	local name=$1 tags=$2 id=$3
+	if [[ -n ${entry_list[$name]+x} ]]; then
+		if [[ ${entry_list[$name]} == "$id" ]]; then
+			list_problems+=("$name|twice in $id")
+		else
+			list_problems+=("$name|in ${entry_list[$name]} and $id")
+		fi
+		return
+	fi
+	entries+=("$name")
+	entry_list[$name]=$id
+	entry_tags[$name]=$tags
+	list_size[$id]=$((${list_size[$id]:-0} + 1))
+}
+
+load_lists() {
+	local id file line n lines
+	[[ -f $PKGS_DIR/common ]] || die "$PKGS_DIR/common not found"
+	for id in "${LISTS[@]}"; do
+		file=$PKGS_DIR/$id
+		[[ -f $file ]] || continue
+		n=0
+		if is_private "$id"; then
+			private_count=$((private_count + 1))
+			if ! lines=$(private_lines "$file"); then
+				unreadable+=("$id|$lines")
+				continue
+			fi
+			list_size[$id]=0
+			while IFS= read -r line; do
+				n=$((n + 1))
+				parse_entry "$line" "$id entry $n" || continue
+				add_loaded "$parsed_name" "$parsed_tags" "$id"
+			done <<<"$lines"
+		else
+			list_size[$id]=0
+			while IFS= read -r line || [[ -n $line ]]; do
+				n=$((n + 1))
+				parse_entry "$line" "$id:$n" || continue
+				add_loaded "$parsed_name" "$parsed_tags" "$id"
+			done <"$file"
+		fi
+	done
+}
+
+# Editing lists ----------------------------------------------------------------
+
+json_string() {
+	local s=$1
+	s=${s//\\/\\\\}
+	s=${s//\"/\\\"}
+	s=${s//$'\n'/\\n}
+	s=${s//$'\t'/\\t}
+	s=${s//$'\r'/\\r}
+	printf '"%s"' "$s"
+}
+
+# Entry lines minus NAME, plus NEW_LINE if given, sorted by name.
+merged_lines() {
+	local name=$1 new_line=$2 line
+	{
+		while IFS= read -r line; do
+			[[ -n $line ]] || continue
+			if parse_entry "$line" "$3" && [[ $parsed_name == "$name" ]]; then continue; fi
+			printf '%s\n' "$line"
+		done
+		if [[ -n $new_line ]]; then printf '%s\n' "$new_line"; fi
+	} | LC_ALL=C sort
+}
+
+# set_entry LIST NAME [LINE]: remove NAME from LIST, then add LINE if given.
+# Public lists keep their order and comments: the line goes in front of the
+# first entry that sorts after it.
+set_entry() {
+	local id=$1 name=$2 new_line=${3:-} file=$PKGS_DIR/$1 content
+	if is_private "$id"; then
+		if [[ -f $file ]]; then
+			content=$(private_lines "$file" | merged_lines "$name" "$new_line" "$id")
+		else
+			content=$(merged_lines "$name" "$new_line" "$id" </dev/null)
+		fi
+		if [[ -z $content ]]; then
+			rm -f -- "$file"
+		elif [[ -f $file ]]; then
+			json_string "$content" | sops set --value-stdin "$file" '["packages"]'
+		else
+			mkdir -p -- "${file%/*}"
+			printf '{"packages": %s}' "$(json_string "$content")" |
+				sops --config "$PKGS_SOPS_CONFIG" encrypt --filename-override "$file" \
+					--input-type json --output-type yaml >"$file.tmp"
+			mv -- "$file.tmp" "$file"
+		fi
+		return
+	fi
+
+	if [[ ! -f $file ]]; then
+		mkdir -p -- "${file%/*}"
+		printf '# Packages for %s only. Same format as ../common.\n\n' "$HOST" >"$file"
+	fi
+	content=$(LC_ALL=C awk -v name="$name" -v line="$new_line" '
+		function entry_name(s) { sub(/#.*/, "", s); split(s, f, /[[:space:]]+/); return f[1] != "" ? f[1] : f[2] }
+		/^[[:space:]]*[^#[:space:]]/ {
+			n = entry_name($0)
+			if (n == name) next
+			if (line != "" && !done && n > name) { print line; done = 1 }
+		}
+		{ print }
+		END { if (line != "" && !done) print line }' "$file")
+	printf '%s\n' "$content" >"$file"
+}
+
+entry_text() {
+	local name=$1 tags=$2 comment=$3 text=$1
+	if [[ -n $tags ]]; then text+=" $tags"; fi
+	if [[ -n $comment ]]; then text+="  # $comment"; fi
+	printf '%s' "$text"
+}
+
+# The system -------------------------------------------------------------------
+
+declare -A installed_set=() explicit_set=() foreign_set=() orphan_set=() optional_set=()
+
+load_system() {
+	local p
+	while IFS= read -r p; do installed_set[$p]=1; done < <(pacman -Qq)
+	while IFS= read -r p; do explicit_set[$p]=1; done < <(pacman -Qqe)
+	while IFS= read -r p; do foreign_set[$p]=1; done < <(pacman -Qqm || true)
+	# pacman exits 1 when there is nothing to list.
+	while IFS= read -r p; do orphan_set[$p]=1; done < <(pacman -Qqdt || true)
+	# -tt adds dependencies that something lists only as optional.
+	while IFS= read -r p; do optional_set[$p]=1; done < <(pacman -Qqdtt || true)
+}
+
+declare -A optional_for=() required_by=()
+
+# Fills optional_for and required_by for the given packages.
+load_relations() {
+	(($#)) || return 0
+	local line field='' name='' value
+	while IFS= read -r line; do
+		if [[ $line =~ ^([A-Za-z][A-Za-z\ ]*[A-Za-z])[[:space:]]*:[[:space:]]?(.*)$ ]]; then
+			field=${BASH_REMATCH[1]}
+			value=${BASH_REMATCH[2]}
+			case $field in
+			Name) name=$value ;;
+			'Optional For') optional_for[$name]=$value ;;
+			'Required By') required_by[$name]=$value ;;
+			esac
+		elif [[ $line == [[:space:]]* ]]; then
+			# pacman wraps long fields onto indented lines.
+			case $field in
+			'Optional For') optional_for[$name]+=" $line" ;;
+			'Required By') required_by[$name]+=" $line" ;;
+			esac
+		fi
+	done < <(LC_ALL=C pacman -Qi -- "$@")
+}
+
+# The first three names, then a count: glibc alone is required by hundreds.
+summarize() {
+	local -a names
+	read -ra names <<<"$1"
+	local out=${names[*]:0:3}
+	out=${out// /, }
+	if ((${#names[@]} > 3)); then out+=" +$((${#names[@]} - 3)) more"; fi
+	printf '%s' "$out"
+}
+
+declare -A installed_on=() installed_by=()
+
+# When each package was last installed, and the pacman command that did it.
+load_install_history() {
+	(($#)) && [[ -r $PACMAN_LOG ]] || return 0
+	local name date cmd
+	while IFS=$'\t' read -r name date cmd; do
+		installed_on[$name]=$date
+		installed_by[$name]=$(describe_command "$cmd")
+	done < <(awk -v want="$(printf '%s\n' "$@")" '
+		BEGIN { n = split(want, w, "\n"); for (i = 1; i <= n; i++) wanted[w[i]] = 1 }
+		/\] \[PACMAN\] Running / { cmd = $0; sub(/^[^]]*\] \[PACMAN\] Running \047/, "", cmd); sub(/\047$/, "", cmd); next }
+		$2 == "[ALPM]" && $3 == "installed" && ($4 in wanted) { last[$4] = substr($1, 2, 10) "\t" cmd }
+		END { for (n in last) print n "\t" last[n] }' "$PACMAN_LOG")
+}
+
+describe_command() {
+	local cmd=${1//\/usr\/bin\//}
+	if [[ $cmd =~ /paru/clone/([^/]+)/ ]]; then
+		printf 'paru, AUR build of %s' "${BASH_REMATCH[1]}"
+		return
+	fi
+	if [[ $cmd == *'--sync -u '* || $cmd == *' -Syu'* || $cmd == *' -Su'* ]]; then
+		printf 'a system upgrade'
+		return
+	fi
+	cmd=${cmd// --noconfirm/}
+	cmd=${cmd// --needed/}
+	cmd=${cmd// -- / }
+	if ((${#cmd} > 50)); then cmd="${cmd:0:47}..."; fi
+	printf '%s' "$cmd"
+}
+
+# Report -------------------------------------------------------------------------
+
+declare -a row_names=() row_details=() row_fixes=()
+issue_count=0
+
+add_item() {
+	row_names+=("$1")
+	row_details+=("${2:-}")
+	row_fixes+=("${3:-}")
+}
+
+# print_row LABEL [HINT]: ✓ when the row is empty, otherwise ✗, a count and one
+# line per package.
+print_row() {
+	local label=$1 hint=${2:-} i name_width=0 detail_width=0 fix line
+	if ((${#row_names[@]} == 0)); then
+		printf '  %s✓%s %s\n' "$GREEN" "$NC" "$label"
+		return 0
+	fi
+	issue_count=$((issue_count + ${#row_names[@]}))
+	printf '  %s✗%s %-16s%s%d%s\n' "$YELLOW" "$NC" "$label" "$YELLOW" "${#row_names[@]}" "$NC"
+	for i in "${!row_names[@]}"; do
+		if ((${#row_names[i]} > name_width)); then name_width=${#row_names[i]}; fi
+		if ((${#row_details[i]} > detail_width)); then detail_width=${#row_details[i]}; fi
+	done
+	for i in "${!row_names[@]}"; do
+		fix=${row_fixes[i]:+  → ${row_fixes[i]}}
+		printf -v line '      %-*s  %s%s%s%*s%s' "$name_width" "${row_names[i]}" \
+			"$DIM" "${row_details[i]}" "$NC" $((detail_width - ${#row_details[i]})) '' "$fix"
+		[[ -n $fix ]] || line=${line%"${line##*[! ]}"}
+		printf '%s\n' "$line"
+	done
+	if [[ -n $hint ]]; then printf '      → %s\n' "$hint"; fi
+	row_names=() row_details=() row_fixes=()
+}
+
+cmd_report() {
+	local audit=false
+	while (($#)); do
+		case $1 in
+		--audit) audit=true ;;
+		*) die "report: unknown option '$1'" ;;
+		esac
+		shift
+	done
+
+	load_lists
+	load_system
+
+	local p id
+	local -a untracked=() missing=() not_explicit=() not_dep=() orphans=()
+	local -a optional_unlisted=() optdep_unused=() optdep_required=()
+	local -a gone=() manual_available=() audit_unknown=() audit_errors=()
+
+	for p in "${!explicit_set[@]}"; do
+		[[ -n ${entry_list[$p]+x} ]] || untracked+=("$p")
+	done
+	mapfile -t untracked < <(printf '%s\n' "${untracked[@]}" | LC_ALL=C sort | sed '/^$/d')
+
+	for p in "${entries[@]}"; do
+		if [[ -z ${installed_set[$p]+x} ]]; then
+			missing+=("$p")
+		elif has_tag "$p" optdep; then
+			if [[ -n ${explicit_set[$p]+x} ]]; then
+				not_dep+=("$p")
+			elif [[ -n ${orphan_set[$p]+x} ]]; then
+				optdep_unused+=("$p")
+			elif [[ -z ${optional_set[$p]+x} ]]; then
+				optdep_required+=("$p")
+			fi
+		elif [[ -z ${explicit_set[$p]+x} ]]; then
+			not_explicit+=("$p")
+		fi
+	done
+
+	for p in "${!orphan_set[@]}"; do
+		[[ -n ${entry_list[$p]+x} ]] || orphans+=("$p")
+	done
+	for p in "${!optional_set[@]}"; do
+		[[ -n ${orphan_set[$p]+x} || -n ${entry_list[$p]+x} ]] || optional_unlisted+=("$p")
+	done
+	mapfile -t orphans < <(printf '%s\n' "${orphans[@]}" | LC_ALL=C sort | sed '/^$/d')
+	mapfile -t optional_unlisted < <(printf '%s\n' "${optional_unlisted[@]}" | LC_ALL=C sort | sed '/^$/d')
+
+	load_relations "${optional_unlisted[@]}" "${optdep_required[@]}"
+	load_install_history "${untracked[@]}"
+
+	if $audit; then
+		command -v paru >/dev/null 2>&1 || die 'report --audit needs paru'
+		local -A in_repos=() in_aur=()
+		local -a ask_aur=()
+		local line errfile
+		while IFS= read -r p; do in_repos[$p]=1; done < <(pacman -Slq)
+		for p in "${entries[@]}"; do
+			[[ -n ${in_repos[$p]+x} ]] || ask_aur+=("$p")
+		done
+		if ((${#ask_aur[@]})); then
+			errfile=$(mktemp)
+			while IFS= read -r line; do
+				if [[ $line =~ ^Name[[:space:]]*:[[:space:]]*(.+)$ ]]; then in_aur[${BASH_REMATCH[1]}]=1; fi
+			done < <(LC_ALL=C paru -Si --aur -- "${ask_aur[@]}" 2>"$errfile" || true)
+			while IFS= read -r line; do
+				[[ -z $line || $line == "error: package '"*"' was not found" ]] || audit_errors+=("$line")
+			done <"$errfile"
+			rm -f -- "$errfile"
+		fi
+		for p in "${entries[@]}"; do
+			local where=''
+			if [[ -n ${in_repos[$p]+x} ]]; then where='the repos'; elif [[ -n ${in_aur[$p]+x} ]]; then where='the AUR'; fi
+			if has_tag "$p" manual; then
+				if [[ -n $where ]]; then manual_available+=("$p|$where"); fi
+			elif [[ -z $where ]]; then
+				if ((${#audit_errors[@]})); then audit_unknown+=("$p"); else gone+=("$p"); fi
+			fi
+		done
+	fi
+
+	# Header: one count per list.
+	local -a counts=()
+	for id in "${LISTS[@]}"; do
+		if [[ -n ${list_size[$id]+x} ]]; then
+			counts+=("$id ${list_size[$id]}")
+		elif is_private "$id" && [[ -f $PKGS_DIR/$id ]]; then
+			counts+=("$id ?")
+		fi
+	done
+	local summary
+	summary=$(printf '%s · ' "${counts[@]}")
+	printf '%sPackages%s  %d listed  %s%s%s\n\n' "$BOLD" "$NC" "${#entries[@]}" "$DIM" "${summary% · }" "$NC"
+
+	local entry
+	for entry in "${unreadable[@]}"; do
+		add_item "${entry%%|*}" "${entry#*|}"
+	done
+	if ((private_count)); then
+		print_row 'Private lists' "${unreadable:+their packages show up as untracked below}"
+	fi
+
+	local detail
+	for p in "${untracked[@]}"; do
+		if [[ -n ${foreign_set[$p]+x} ]]; then detail='foreign'; else detail='repo'; fi
+		if [[ -n ${installed_on[$p]:-} ]]; then detail+=", ${installed_on[$p]} by ${installed_by[$p]}"; fi
+		add_item "$p" "$detail"
+	done
+	print_row 'Untracked' \
+		'pkgs add [--host] [--private] NAME, or pkgs drop NAME'
+
+	for p in "${missing[@]}"; do
+		if has_tag "$p" manual; then detail='manual: build it with makepkg'; else detail=''; fi
+		add_item "$p" "in ${entry_list[$p]}" "$detail"
+	done
+	print_row 'Not installed' 'pkgs install, or pkgs drop NAME'
+
+	for p in "${not_explicit[@]}"; do add_item "$p" 'listed, but installed as a dependency'; done
+	for p in "${not_dep[@]}"; do add_item "$p" 'optdep, but installed explicitly'; done
+	print_row 'Install reason' 'pkgs fix'
+
+	for p in "${orphans[@]}"; do add_item "$p"; done
+	print_row 'Orphans' 'pkgs drop NAME'
+
+	for p in "${optional_unlisted[@]}"; do
+		add_item "$p" "optional for $(summarize "${optional_for[$p]:-}")" \
+			'pkgs add --optdep [--host] [--private], or pkgs drop'
+	done
+	for p in "${optdep_unused[@]}"; do add_item "$p" 'optdep, but nothing uses it' 'pkgs drop'; done
+	for p in "${optdep_required[@]}"; do
+		add_item "$p" "optdep, but required by $(summarize "${required_by[$p]:-}")" 'pkgs drop --keep'
+	done
+	print_row 'Optional deps'
+
+	if ((${#list_problems[@]})); then
+		for entry in "${list_problems[@]}"; do add_item "${entry%%|*}" "${entry#*|}" 'keep one'; done
+		print_row 'List entries'
+	fi
+
+	if $audit; then
+		for p in "${gone[@]}"; do add_item "$p" "in ${entry_list[$p]}, gone from the repos and the AUR" 'replace or drop it'; done
+		for entry in "${manual_available[@]}"; do
+			add_item "${entry%%|*}" "manual, but now in ${entry#*|}" 'drop the manual tag'
+		done
+		for p in "${audit_unknown[@]}"; do add_item "$p" 'unknown: the AUR query failed'; done
+		print_row 'Sources'
+		for entry in "${audit_errors[@]}"; do printf '      %s%s%s\n' "$RED" "$entry" "$NC"; done
+	fi
+
+	printf '\n'
+	if ((issue_count == 0)); then
+		printf '%sAll in order.%s\n' "$GREEN" "$NC"
+	else
+		printf '%s%d to look at.%s\n' "$YELLOW" "$issue_count" "$NC"
+	fi
+	if $audit && ((${#audit_errors[@]})); then exit 2; fi
+	return 0
+}
+
+# Commands that change things ----------------------------------------------------
+
+confirm_flag=()
+
+ensure_paru() {
+	if command -v paru >/dev/null 2>&1 && paru --version >/dev/null 2>&1; then return; fi
+	note 'paru is not installed; bootstrapping it from the AUR...'
+	sudo pacman -S --needed "${confirm_flag[@]}" base-devel git
+	(
+		build_dir=$(mktemp -d)
+		trap 'rm -rf -- "$build_dir"' EXIT
+		git clone --depth 1 https://aur.archlinux.org/paru.git "$build_dir/paru"
+		cd "$build_dir/paru"
+		makepkg -si --needed "${confirm_flag[@]}"
+	)
+	command -v paru >/dev/null 2>&1 || die 'paru installation did not complete'
+}
+
+cmd_install() {
+	(($# == 0)) || die "install: unknown option '$1'"
+	((EUID != 0)) || die 'run pkgs as a regular user, not as root'
+	load_lists
+	local entry p
+	for entry in "${unreadable[@]}"; do
+		warn "skipping ${entry%%|*}: ${entry#*|}"
+	done
+
+	local -a explicit=() optdeps=() manual=()
+	for p in "${entries[@]}"; do
+		if has_tag "$p" manual; then
+			manual+=("$p")
+		elif has_tag "$p" optdep; then
+			optdeps+=("$p")
+		else
+			explicit+=("$p")
+		fi
+	done
+
+	ensure_paru
+	if ((${#explicit[@]})); then
+		note "Installing ${#explicit[@]} packages..."
+		paru -S --needed "${confirm_flag[@]}" -- "${explicit[@]}"
+	fi
+	if ((${#optdeps[@]})); then
+		note "Installing ${#optdeps[@]} optional dependencies..."
+		paru -S --needed --asdeps "${confirm_flag[@]}" -- "${optdeps[@]}"
+	fi
+
+	local -a unbuilt=()
+	for p in "${manual[@]}"; do
+		pacman -Qq -- "$p" >/dev/null 2>&1 || unbuilt+=("$p")
+	done
+	if ((${#unbuilt[@]})); then
+		warn "not installed, and built by hand with makepkg: ${unbuilt[*]}"
+	fi
+	if ((${#unreadable[@]})); then
+		warn 'run pkgs install again once the private lists can be decrypted'
+	fi
+	note 'Done.'
+}
+
+cmd_add() {
+	local host=false private=false comment='' tags=''
+	local as_optdep=false as_manual=false
+	local -a names=()
+	while (($#)); do
+		case $1 in
+		--host) host=true ;;
+		--private) private=true ;;
+		--optdep) as_optdep=true ;;
+		--manual) as_manual=true ;;
+		-m | --message)
+			(($# > 1)) || die "add: $1 needs a value"
+			comment=$2
+			shift
+			;;
+		-*) die "add: unknown option '$1'" ;;
+		*) names+=("$1") ;;
+		esac
+		shift
+	done
+	((${#names[@]})) || die 'add: no package names given'
+	if $as_optdep; then tags+=' optdep'; fi
+	if $as_manual; then tags+=' manual'; fi
+	tags=${tags# }
+	[[ $comment != *$'\n'* ]] || die 'add: the comment must be one line'
+
+	local target p
+	target=$(list_for "$host" "$private")
+	load_lists
+	local entry
+	for entry in "${unreadable[@]}"; do
+		[[ ${entry%%|*} != "$target" ]] || die "cannot add to $target: ${entry#*|}"
+		warn "could not check ${entry%%|*} for existing entries: ${entry#*|}"
+	done
+
+	local -a to_install=() to_explicit=() to_deps=()
+	for p in "${names[@]}"; do
+		[[ $p =~ $NAME_RE ]] || die "add: invalid package name '$p'"
+		if pacman -Qq -- "$p" >/dev/null 2>&1; then
+			if $as_optdep && pacman -Qqe -- "$p" >/dev/null 2>&1; then to_deps+=("$p"); fi
+			if ! $as_optdep && ! pacman -Qqe -- "$p" >/dev/null 2>&1; then to_explicit+=("$p"); fi
+		elif ! $as_manual; then
+			pacman -Si -- "$p" >/dev/null 2>&1 || paru -Si --aur -- "$p" >/dev/null 2>&1 ||
+				die "add: '$p' is in neither the repos nor the AUR (use --manual for a hand-built package)"
+			to_install+=("$p")
+		fi
+	done
+
+	if ((${#to_install[@]})); then
+		ensure_paru
+		if $as_optdep; then
+			paru -S --needed --asdeps "${confirm_flag[@]}" -- "${to_install[@]}"
+		else
+			paru -S --needed "${confirm_flag[@]}" -- "${to_install[@]}"
+		fi
+	fi
+	if ((${#to_explicit[@]})); then sudo pacman -D --asexplicit -- "${to_explicit[@]}" >/dev/null; fi
+	if ((${#to_deps[@]})); then sudo pacman -D --asdeps -- "${to_deps[@]}" >/dev/null; fi
+
+	local line old
+	for p in "${names[@]}"; do
+		line=$(entry_text "$p" "$tags" "$comment")
+		old=${entry_list[$p]:-}
+		if [[ -n $old && $old != "$target" ]]; then
+			set_entry "$old" "$p"
+			note "$p: moved from $old to $target"
+		elif [[ -n $old ]]; then
+			note "$p: updated in $target"
+		else
+			note "$p: added to $target"
+		fi
+		set_entry "$target" "$p" "$line"
+	done
+	for p in "${to_explicit[@]}"; do note "$p: marked as explicitly installed"; done
+	for p in "${to_deps[@]}"; do note "$p: marked as a dependency"; done
+}
+
+cmd_drop() {
+	local keep=false p entry
+	local -a names=()
+	while (($#)); do
+		case $1 in
+		--keep) keep=true ;;
+		-*) die "drop: unknown option '$1'" ;;
+		*) names+=("$1") ;;
+		esac
+		shift
+	done
+	((${#names[@]})) || die 'drop: no package names given'
+
+	load_lists
+	for entry in "${unreadable[@]}"; do
+		warn "could not check ${entry%%|*}: ${entry#*|}"
+	done
+
+	local -a remove=()
+	for p in "${names[@]}"; do
+		if ! $keep && pacman -Qq -- "$p" >/dev/null 2>&1; then remove+=("$p"); fi
+		if [[ -z ${entry_list[$p]+x} ]] && { $keep || ! pacman -Qq -- "$p" >/dev/null 2>&1; }; then
+			warn "$p is neither listed nor installed"
+		fi
+	done
+
+	# Uninstall first, so a refused removal leaves the lists untouched.
+	if ((${#remove[@]})); then
+		sudo pacman -Rns "${confirm_flag[@]}" -- "${remove[@]}"
+	fi
+	for p in "${names[@]}"; do
+		if [[ -n ${entry_list[$p]+x} ]]; then
+			set_entry "${entry_list[$p]}" "$p"
+			note "$p: removed from ${entry_list[$p]}"
+		fi
+	done
+}
+
+cmd_fix() {
+	(($# == 0)) || die "fix: unknown option '$1'"
+	load_lists
+	load_system
+	local p
+	local -a to_explicit=() to_deps=()
+	for p in "${entries[@]}"; do
+		[[ -n ${installed_set[$p]+x} ]] || continue
+		if has_tag "$p" optdep; then
+			if [[ -n ${explicit_set[$p]+x} ]]; then to_deps+=("$p"); fi
+		elif [[ -z ${explicit_set[$p]+x} ]]; then
+			to_explicit+=("$p")
+		fi
+	done
+	if ((${#to_explicit[@]})); then
+		sudo pacman -D --asexplicit -- "${to_explicit[@]}" >/dev/null
+		note "Marked explicit: ${to_explicit[*]}"
+	fi
+	if ((${#to_deps[@]})); then
+		sudo pacman -D --asdeps -- "${to_deps[@]}" >/dev/null
+		note "Marked as dependencies: ${to_deps[*]}"
+	fi
+	if ((${#to_explicit[@]} + ${#to_deps[@]} == 0)); then note 'Install reasons already match the lists.'; fi
+}
+
+cmd_edit() {
+	local host=false private=false
+	while (($#)); do
+		case $1 in
+		--host) host=true ;;
+		--private) private=true ;;
+		*) die "edit: unknown option '$1'" ;;
+		esac
+		shift
+	done
+	local id file
+	id=$(list_for "$host" "$private")
+	file=$PKGS_DIR/$id
+	if $private; then
+		[[ -f $file ]] || die "$id does not exist yet; create it with pkgs add --private$($host && echo ' --host') NAME"
+		local status=0
+		sops edit -- "$file" || status=$?
+		# 200: the editor made no change.
+		((status == 0 || status == 200)) || exit "$status"
+	else
+		[[ -f $file ]] || printf '# Packages for %s only. Same format as ../common.\n\n' "$HOST" >"$file"
+		"${EDITOR:-vi}" "$file"
+	fi
+	# Fail now, not at the next report, if the edit broke the format.
+	entries=() entry_list=() entry_tags=() list_size=() list_problems=() unreadable=()
+	private_count=0
+	load_lists
+	note "$id: ${list_size[$id]:-0} entries"
+}
+
+# Main ---------------------------------------------------------------------------
+
+command=report
+case ${1:-} in
+report | install | add | drop | fix | edit)
+	command=$1
+	shift
+	;;
+-h | --help | help)
+	usage
+	exit 0
+	;;
+esac
+
+declare -a args=()
+for arg in "$@"; do
+	case $arg in
+	-y | --yes) confirm_flag=(--noconfirm) ;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*) args+=("$arg") ;;
+	esac
+done
+
+command -v pacman >/dev/null 2>&1 || die 'pacman is required'
+"cmd_$command" "${args[@]}"

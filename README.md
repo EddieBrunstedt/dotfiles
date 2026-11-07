@@ -17,15 +17,15 @@ just restow           # after adding or removing a file
 Where the boundary sits: this repo describes a desktop, not a machine. The
 bootloader, microcode, GPU driver, network hardware and the greeter belong to
 whoever built the box — they are already installed by the time anything here is
-cloned. `.config/applist-machine` names them so `package_report` stays quiet;
-nothing installs them.
+cloned. `packages/hosts/<hostname>` names them so `pkgs` stays quiet; on a
+machine that already has them, `pkgs install` leaves them alone.
 
 Given a machine that boots and has a greeter, in order:
 
 ```sh
 sudo pacman -S --needed git just stow  # 1. what the rest of this needs
-./.local/bin/package_install -b        # 2. official, AUR, optdeps; not on $PATH yet
-                                       # 3. build .config/applist-local by hand
+./.local/bin/pkgs install              # 2. everything listed; not on $PATH yet
+                                       # 3. build the `manual` entries by hand
 just install                           # 4. symlink into $HOME
 just install-session                   # 5. root-owned: uwsm session entry, no-sleep, power key
 just enable-services                   # 6. user units, then log out and back in
@@ -90,33 +90,65 @@ session — it also holds the D-Bus, PipeWire and keyring sockets.
 
 ## Packages
 
-Five lists under `.config/`, all reconciled by `package_report`:
+What this desktop wants installed lives in `packages/`, one file per scope.
+`pkgs` reads it straight from the repo (it is not linked into `$HOME`), so it
+works before `just install`.
 
-| List | Contents |
+| List | Holds |
 | --- | --- |
-| `applist` | official repos |
-| `applist-aur` | AUR |
-| `applist-local` | built by hand; `package_install` never touches these |
-| `applist-machine` | boot, firmware, hardware, greeter — gitignored, per machine |
-| `applist-optdeps` | optional dependencies kept on purpose; installed `--asdeps` |
+| `packages/common` | every machine |
+| `packages/hosts/<hostname>` | this machine only: boot, firmware, GPU, and whatever this box does that others don't |
+| `…/*.sops.yaml` beside either | the same, encrypted: packages that shouldn't be visible in a public repo |
 
-```sh
-package_report            # both directions: untracked, and listed-but-missing
-package_report --audit    # also check for packages that moved or disappeared
-package_install -b        # official + AUR, then optdeps
+`<hostname>` is `uname -n`. Each list is one package per line, with optional
+tags and a comment:
+
+```
+neovim
+poppler        optdep  # PDF previews in yazi
+mangowm-local  manual  # built by hand with makepkg
 ```
 
-`applist`, `applist-aur` and `applist-optdeps` are installable. `applist-local` holds packages that
-exist in no repository, and `applist-machine` describes hardware a machine must
-already have to have booted at all — and being gitignored, it does not exist on
-a fresh clone. Both exist so `package_report` counts those packages as tracked
-rather than reporting them as untracked noise.
+- **`optdep`**: kept as an optional dependency of something installed
+  (`pacman -Qi`'s "Optional For"). Installed `--asdeps`, so removing whatever
+  wants it turns it into an orphan instead of leaving it behind.
+- **`manual`**: exists in no repository; built with `makepkg`. `pkgs install`
+  skips it, and `pkgs report --audit` says if it ever turns up in the repos or
+  the AUR.
 
-`applist-optdeps` is for packages that something lists only as an optional
-dependency (`pacman -Qi`'s "Optional For") and that you want anyway. They stay
-marked as dependencies rather than explicit, so removing the program that wants
-them turns them into orphans instead of leaving them behind. Any other package
-installed only as an optional dependency is reported as needing a decision.
+Repo and AUR packages share a list; `paru` installs both.
+
+```sh
+pkgs                                   # report: untracked, missing, wrong install reason, orphans
+pkgs report --audit                    # also: listed packages that no longer exist anywhere
+pkgs add [--host] [--private] NAME     # list it, installing it if needed
+pkgs add --optdep NAME -m "why"        # tags and a comment
+pkgs drop NAME                         # unlist and uninstall (pacman -Rns); --keep only unlists
+pkgs fix                               # install reasons back in line with the lists
+pkgs edit [--host] [--private]         # $EDITOR, or sops for a private list
+pkgs install                           # everything listed for this machine
+```
+
+`add` moves a package that is already listed elsewhere, so
+`pkgs add --host --private NAME` is also how something becomes private. For
+each untracked package the report shows when it was installed and by which
+command, from `/var/log/pacman.log`.
+
+The plain report only compares the lists with the local pacman database, so it
+is instant and offline; run it after installing or removing anything.
+`--audit` also checks the lists against the repos (as of the last sync) and the
+AUR (online), catching a listed package that was renamed or removed upstream,
+which your installed copy hides until `pkgs install` fails on a fresh machine.
+Run it now and then, after a large upgrade, and before relying on the lists for
+a new install.
+
+**Private lists** are encrypted with the same sops/age setup as
+[Secrets](#secrets); their recipients are the `packages/` rules in
+`.secret/.sops.yaml`. The whole list is one encrypted string, so the repo shows
+that a private list exists, when it changed and its total length, but not how
+many entries it has or what they are. Reading one needs the age identity in the
+keyring: until then `pkgs` reports it as unreadable and `pkgs install` skips it,
+so run `pkgs install` again once [Secrets](#secrets) works.
 
 ## Disk cleanup
 
@@ -159,7 +191,7 @@ Things a fresh machine needs that these files cannot provide:
   units. Docker also wants your user in the `docker` group.
 - **Telltale** — the `telltale-*` gauges on waybar, installed to
   `~/.cargo/bin` with `cargo install --path ~/projects/telltale`.
-  Self-maintained; not yet tracked by any applist.
+  Self-maintained; `pkgs` only tracks pacman packages.
 - **The age identity** in the login keyring, without which no secret decrypts.
 - **The OpenPGP secret key used for Git commit signing.** `.gitconfig` tracks
   the public identity, key fingerprint and mandatory-signing policy, but never

@@ -1,6 +1,0 @@
-# Optional dependencies kept on purpose. Installed --asdeps, so each becomes
-# an orphan once nothing lists it as optional; package_report shows what for.
-
-lib32-harfbuzz
-libxnvctrl
-rtkit

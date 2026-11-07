@@ -8,8 +8,20 @@
 #   3. add its public key to the env.shared rule below (comma-separated)
 #   4. from THIS machine: sops updatekeys .secret/env.shared.sops.yaml
 #      (rewraps the data key; encrypted values are untouched)
+#   5. same for the private package lists: a rule for
+#      packages/hosts/<newhost>.sops.yaml, the new key on the common rule, and
+#      sops updatekeys packages/common.sops.yaml if it exists
+#
+# The packages/ rules are read by `pkgs`, which passes this file as --config
+# when it creates a private list.
 
 creation_rules:
+  - path_regex: packages/hosts/optimusprime\.sops\.yaml$
+    age: age1ra4z6lrcms8msguavep6lwmfa9462zqjlgeshlckdauv0w5dwg3qcs2sqq
+
+  - path_regex: packages/common\.sops\.yaml$
+    age: age1ra4z6lrcms8msguavep6lwmfa9462zqjlgeshlckdauv0w5dwg3qcs2sqq
+
   - path_regex: env\.optimusprime\.sops\.yaml$
     age: age1ra4z6lrcms8msguavep6lwmfa9462zqjlgeshlckdauv0w5dwg3qcs2sqq
 

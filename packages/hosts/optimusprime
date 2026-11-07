@@ -1,0 +1,17 @@
+# Packages for optimusprime only: boot, firmware and hardware, plus whatever
+# this machine does that others don't. Same format as ../common.
+
+alpaca-ai
+efibootmgr
+greetd
+greetd-tuigreet
+grub
+intel-ucode
+iwd
+libva-nvidia-driver
+libxnvctrl optdep  # NVIDIA support for mangohud
+nvidia-open
+nvidia-settings
+ollama-cuda
+python-pandas optdep  # alpaca-ai needs it; its PKGBUILD doesn't list it
+sof-firmware
