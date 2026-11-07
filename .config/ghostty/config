@@ -34,14 +34,72 @@ scrollback-limit = 50000000
 shell-integration-features = cursor,sudo,title,ssh-terminfo,path
 
 # ── Keys ──
-keybind = ctrl+enter=unbind
+# Ghostty owns Ctrl+Shift and Shift+paging; Alt, plain Ctrl and Super belong to
+# others (docs/keybinds/contract.md). Every binding is listed, defaults included.
+# performable: only takes the key when the action can run, else the app gets it.
+keybind = clear
 
-keybind = alt+y=scroll_page_lines:-1
-keybind = alt+e=scroll_page_lines:1
-keybind = alt+u=scroll_page_fractional:-0.5
-keybind = alt+d=scroll_page_fractional:0.5
-keybind = alt+b=scroll_page_up
-keybind = alt+f=scroll_page_down
+keybind = performable:ctrl+shift+c=copy_to_clipboard:mixed
+keybind = ctrl+shift+v=paste_from_clipboard
+keybind = performable:copy=copy_to_clipboard:mixed
+keybind = paste=paste_from_clipboard
+keybind = shift+insert=paste_from_selection
+keybind = ctrl+shift+a=select_all
+keybind = performable:shift+arrow_left=adjust_selection:left
+keybind = performable:shift+arrow_right=adjust_selection:right
+keybind = performable:shift+arrow_up=adjust_selection:up
+keybind = performable:shift+arrow_down=adjust_selection:down
+
+keybind = ctrl+shift+f=start_search
+keybind = performable:escape=end_search
+
+keybind = shift+page_up=scroll_page_up
+keybind = shift+page_down=scroll_page_down
+keybind = shift+home=scroll_to_top
+keybind = shift+end=scroll_to_bottom
+keybind = ctrl+shift+arrow_up=jump_to_prompt:-1
+keybind = ctrl+shift+arrow_down=jump_to_prompt:1
+
+keybind = ctrl+shift+p=toggle_command_palette
+keybind = ctrl+shift+comma=reload_config
+keybind = ctrl+shift+i=inspector:toggle
+keybind = ctrl+shift+n=new_window
+keybind = ctrl+shift+j=write_screen_file:paste,plain
+
+# View mode: Ctrl+Shift+Space, then vim keys to read scrollback. Esc or q leaves;
+# any other key leaves too and still reaches the program, so typing is never lost.
+keybind = ctrl+shift+space=activate_key_table:view
+keybind = view/j=scroll_page_lines:1
+keybind = view/k=scroll_page_lines:-1
+keybind = view/d=scroll_page_fractional:0.5
+keybind = view/u=scroll_page_fractional:-0.5
+keybind = view/f=scroll_page_down
+keybind = view/b=scroll_page_up
+keybind = view/ctrl+e=scroll_page_lines:1
+keybind = view/ctrl+y=scroll_page_lines:-1
+keybind = view/ctrl+d=scroll_page_fractional:0.5
+keybind = view/ctrl+u=scroll_page_fractional:-0.5
+keybind = view/ctrl+f=scroll_page_down
+keybind = view/ctrl+b=scroll_page_up
+keybind = view/g=scroll_to_top
+keybind = view/shift+g=scroll_to_bottom
+keybind = view/slash=start_search
+keybind = view/n=navigate_search:next
+keybind = view/shift+n=navigate_search:previous
+keybind = view/y=copy_to_clipboard:mixed
+keybind = view/ctrl+shift+c=copy_to_clipboard:mixed
+keybind = view/equal=increase_font_size:1
+keybind = view/shift+equal=increase_font_size:1
+keybind = view/minus=decrease_font_size:1
+keybind = view/digit_0=reset_font_size
+keybind = view/escape=deactivate_key_table
+keybind = chain=scroll_to_bottom
+keybind = view/q=deactivate_key_table
+keybind = chain=scroll_to_bottom
+keybind = view/ctrl+shift+space=deactivate_key_table
+keybind = chain=scroll_to_bottom
+keybind = view/unconsumed:catch_all=deactivate_key_table
+keybind = chain=scroll_to_bottom
 
 # ── Toggles (symlinks managed by ghostty-retro and ghostty-shader-menu) ──
 # Shader last so it replaces the retro one rather than stacking.
