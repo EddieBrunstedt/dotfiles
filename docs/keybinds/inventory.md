@@ -23,30 +23,27 @@ These are the actionable findings. Everything after this section is reference ma
 
 | Key | Taken by | Lost in | Notes |
 |---|---|---|---|
-| Alt+b / Alt+f | Ghostty (u) scroll page | fish (back/forward word), yazi input (word motion), readline everywhere (bash, python, psql…) | |
-| Alt+d | Ghostty (u) half page down | fish (kill word), yazi input (kill word) | |
-| Alt+e | Ghostty (u) scroll line down | fish `edit_command_buffer` | Your fish config notes this and moved `explain` to Ctrl+e. Alt+v still opens the editor in fish. |
-| Alt+y | Ghostty (u) scroll line up | fish `yank-pop` | |
-| Alt+1…9 | Ghostty (d) goto_tab | any app's Alt+digit | Only useful if you use Ghostty tabs. |
+| Alt+b / Alt+f | Ghostty (u) scroll page | fish (back/forward word), yazi input (word motion), readline everywhere (bash, python, psql…) **Fixed: Ghostty gave up Alt.** |
+| Alt+d | Ghostty (u) half page down | fish (kill word), yazi input (kill word) **Fixed: Ghostty gave up Alt.** |
+| Alt+e | Ghostty (u) scroll line down | fish `edit_command_buffer` | Your fish config notes this and moved `explain` to Ctrl+e. Alt+v still opens the editor in fish. **Fixed: Ghostty gave up Alt.** |
+| Alt+y | Ghostty (u) scroll line up | fish `yank-pop` **Fixed: Ghostty gave up Alt.** |
+| Alt+1…9 | Ghostty (d) goto_tab | any app's Alt+digit | Only useful if you use Ghostty tabs. **Fixed: tabs unbound.** |
 | Ctrl+Alt+arrows | mango (u) resizewin | Ghostty (d) goto_split, and any app | Ghostty's split navigation can never fire. **Fixed: mango gave up Alt.** |
 | Alt+Tab, Alt+Shift+Tab, Alt+\`, Alt+Shift+\` | mango (u) overcircle / switcher | every app | Breaks the "Super = mango" rule. **Fixed: mango gave up Alt.** |
 | Alt+x | mango (u) switch_proportion_preset | every app (Emacs/readline M-x) | Breaks the rule. **Fixed: mango gave up Alt.** |
 | Alt+Shift+Return | mango (u) dwindle split direction | every app | Breaks the rule. **Fixed: mango gave up Alt.** |
 | Ctrl+Alt+F1…F12 | mango (hardcoded) VT switch | everything | Can't be changed. Keep it in mind. |
-| Ctrl+- | Ghostty (d) decrease_font_size | Claude Code `chat:undo` | Claude's undo probably still works on Ctrl+_. |
-| Ctrl+= / Ctrl++ / Ctrl+0 | Ghostty (d) font size | apps | Rarely matters. |
-| Ctrl+, | Ghostty (d) open_config | apps | Rarely matters. |
-| Ctrl+Tab / Ctrl+Shift+Tab / Ctrl+PgUp/PgDn | Ghostty (d) tabs | apps | |
-| Ctrl+Shift+Left/Right | Ghostty (d) previous/next tab | text selection in apps | mango's comment says "Ctrl+Shift+arrows belongs to text editing", but Ghostty takes Left/Right. |
+| Ctrl+- | Ghostty (d) decrease_font_size | Claude Code `chat:undo` | Claude's undo probably still works on Ctrl+_. **Fixed: font size moved to view mode.** |
+| Ctrl+= / Ctrl++ / Ctrl+0 | Ghostty (d) font size | apps | Rarely matters. **Fixed: font size moved to view mode.** |
+| Ctrl+, | Ghostty (d) open_config | apps | Rarely matters. **Fixed: unbound.** |
+| Ctrl+Tab / Ctrl+Shift+Tab / Ctrl+PgUp/PgDn | Ghostty (d) tabs | apps **Fixed: tabs unbound.** |
+| Ctrl+Shift+Left/Right | Ghostty (d) previous/next tab | text selection in apps | mango's comment says "Ctrl+Shift+arrows belongs to text editing", but Ghostty takes Left/Right. **Fixed: tabs unbound.** |
 | Ctrl+Shift+Up/Down | Ghostty (d) jump_to_prompt | apps | Useful with shell integration. |
 | Shift+arrows, Shift+PgUp/PgDn/Home/End | Ghostty (d) selection / scrollback | apps | Standard terminal behavior. |
 
 ### Ghostty uses Super
 
-Ghostty claims `super+ctrl+[` / `]` (goto_split), `super+ctrl+shift+arrows` (resize_split) and
-`super+ctrl+shift+j` (write_screen_file). mango doesn't currently use any of these, so nothing is broken
-today. But they break "Super = system", and the compositor would silently take them if mango ever bound
-them.
+**Fixed:** Ghostty no longer binds any Super keys.
 
 ### Inside one layer
 
@@ -130,30 +127,42 @@ Super still held. Any key a mode doesn't use cancels it, and so does Esc.
   power, retro, shader, white point, VPN.
 - **Super+a layout mode:** the layouts (monocle on m), the number of master windows, gaps, scroller proportion.
 
-## Layer 2: Ghostty
+## Layer 2: Ghostty (redesigned 2026-11-07)
 
-### User
+Source of truth: `.config/ghostty/config`. It starts with `keybind = clear`, so every binding Ghostty has is
+listed there. Ghostty only uses Ctrl+Shift and Shift+paging keys. Copy, Esc and Shift+arrows only take the
+key when they can act; otherwise the key goes to the app.
 
-| Key | Action |
+| Keys | Action |
 |---|---|
-| Alt+y / Alt+e | scroll 1 line up / down |
-| Alt+u / Alt+d | scroll half page up / down |
-| Alt+b / Alt+f | scroll page up / down |
-| Ctrl+Enter | unbound (default: toggle fullscreen) |
+| Ctrl+Shift+c / v, Copy / Paste keys | copy (when there's a selection) / paste |
+| Shift+Insert | paste the primary selection |
+| Ctrl+Shift+a | select all |
+| Shift+arrows | extend a selection (only when one exists) |
+| Ctrl+Shift+f, Esc | search, close search (only while searching) |
+| Shift+PgUp/PgDn/Home/End | scroll page / top / bottom |
+| Ctrl+Shift+Up / Down | previous / next prompt |
+| Ctrl+Shift+p, Ctrl+Shift+, , Ctrl+Shift+i | command palette, reload config, inspector |
+| Ctrl+Shift+n | new window |
+| Ctrl+Shift+j | paste the path of a file containing the screen's contents |
+| Ctrl+Shift+Space | view mode (key table `view`) |
 
-### Defaults still active
+**View mode:**
+- j/k scroll a line, d/u half a page, f/b a page; the Ctrl+e/y/d/u/f/b versions work too.
+- g/G go to the top / bottom.
+- / searches, and n/N go to the next / previous match.
+- y copies the selection.
+- + (or =), - and 0 make the font bigger, smaller, or reset it.
+- Esc, q or Ctrl+Shift+Space leave and jump to the bottom.
+- Any other key leaves and still reaches the program.
 
-| Group | Keys |
-|---|---|
-| Clipboard | Ctrl+Shift+c / v, Ctrl+Insert, Shift+Insert (paste selection), Ctrl+Shift+a (select all) |
-| Config | Ctrl+Shift+, (reload), Ctrl+, (open), Ctrl+Shift+p (command palette), Ctrl+Shift+i (inspector) |
-| Font | Ctrl+= / Ctrl++ / Ctrl+- / Ctrl+0 |
-| Scrollback | Shift+PgUp/PgDn/Home/End, Ctrl+Shift+Up/Down (jump to prompt), Ctrl+Shift+f (search), Esc (end search) |
-| Selection | Shift+arrows |
-| Screen dump | Ctrl+Shift+j (paste), Super+Ctrl+Shift+j (copy), Ctrl+Alt+Shift+j (open) |
-| Windows | Ctrl+Shift+n (new), Ctrl+Shift+q (quit), Alt+F4 (close) |
-| Tabs | Ctrl+Shift+t (new), Ctrl+Shift+w (close), Ctrl+Tab / Ctrl+Shift+Tab, Ctrl+PgUp/PgDn, Ctrl+Shift+Left/Right, Ctrl+Shift+PgUp/PgDn (move), Alt+1…8, Alt+9 (last) |
-| Splits | Ctrl+Shift+o (right), Ctrl+Shift+e (down), Super+Ctrl+[ / ] (prev/next), Ctrl+Alt+arrows (goto; **dead, mango has it**), Super+Ctrl+Shift+arrows (resize), Ctrl+Shift+Enter (zoom) |
+**Removed:**
+- the Alt scroll keys
+- Alt+1–9 and Alt+F4
+- font size on plain Ctrl, Ctrl+, , Ctrl+Tab, Ctrl+PgUp/PgDn and Ctrl+Insert
+- all tab and split keys, including the Super and Ctrl+Alt ones
+- the Super and Ctrl+Alt screen-dump variants
+- Ctrl+Shift+q (quit, which closes every window of the shared Ghostty process)
 
 ## Layer 3: apps inside the terminal
 
