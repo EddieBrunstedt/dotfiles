@@ -127,7 +127,7 @@ Super still held. Any key a mode doesn't use cancels it, and so does Esc.
 - **Super+x launcher mode:** audio, emoji, keyboard layout, lock, system menu, do not disturb, prompts,
   power, retro, shader, white point, VPN.
 - **Super+m layout mode:** right tile, tile, vertical tile, center tile, fair, vertical fair, right deck, deck,
-  grid, monocle (m, so Super+m, m works), and the number of master windows.
+  grid, and monocle (m, so Super+m, m works).
 
 ## Layer 2: Ghostty (redesigned 2026-11-07)
 

@@ -261,8 +261,6 @@ exec_once = ["uwsm finalize"]
 "SHIFT+d" = ["setlayout,deck", "setkeymode,default"]  # deck
 "g" = ["setlayout,grid", "setkeymode,default"]  # grid
 "m" = ["setlayout,monocle", "setkeymode,default"]  # monocle
-"i" = ["incnmaster,+1", "setkeymode,default"]  # more masters
-"SHIFT+i" = ["incnmaster,-1", "setkeymode,default"]  # fewer masters
 
 # ── Mouse ──
 [mousebind.default]

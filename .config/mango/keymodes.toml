@@ -241,6 +241,10 @@
 "SUPER+h" = "setkeymode,default"
 "SHIFT+h" = "setkeymode,default"
 "SUPER+SHIFT+h" = "setkeymode,default"
+"i" = "setkeymode,default"
+"SUPER+i" = "setkeymode,default"
+"SHIFT+i" = "setkeymode,default"
+"SUPER+SHIFT+i" = "setkeymode,default"
 "j" = "setkeymode,default"
 "SUPER+j" = "setkeymode,default"
 "SHIFT+j" = "setkeymode,default"
@@ -435,5 +439,3 @@
 "SUPER+SHIFT+d" = ["setlayout,deck", "setkeymode,default"]
 "SUPER+g" = ["setlayout,grid", "setkeymode,default"]
 "SUPER+m" = ["setlayout,monocle", "setkeymode,default"]
-"SUPER+i" = ["incnmaster,+1", "setkeymode,default"]
-"SUPER+SHIFT+i" = ["incnmaster,-1", "setkeymode,default"]
