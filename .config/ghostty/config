@@ -98,6 +98,32 @@ keybind = view/q=deactivate_key_table
 keybind = chain=scroll_to_bottom
 keybind = view/ctrl+shift+space=deactivate_key_table
 keybind = chain=scroll_to_bottom
+# A modifier pressed on its own is a key too: ignore it, or catch_all below
+# would leave view mode before Ctrl+d, Shift+g and the like arrive.
+keybind = view/control_left=ignore
+keybind = view/ctrl+control_left=ignore
+keybind = view/shift+control_left=ignore
+keybind = view/ctrl+shift+control_left=ignore
+keybind = view/shift_left=ignore
+keybind = view/ctrl+shift_left=ignore
+keybind = view/shift+shift_left=ignore
+keybind = view/ctrl+shift+shift_left=ignore
+keybind = view/alt_left=ignore
+keybind = view/alt+alt_left=ignore
+keybind = view/meta_left=ignore
+keybind = view/super+meta_left=ignore
+keybind = view/control_right=ignore
+keybind = view/ctrl+control_right=ignore
+keybind = view/shift+control_right=ignore
+keybind = view/ctrl+shift+control_right=ignore
+keybind = view/shift_right=ignore
+keybind = view/ctrl+shift_right=ignore
+keybind = view/shift+shift_right=ignore
+keybind = view/ctrl+shift+shift_right=ignore
+keybind = view/alt_right=ignore
+keybind = view/alt+alt_right=ignore
+keybind = view/meta_right=ignore
+keybind = view/super+meta_right=ignore
 keybind = view/unconsumed:catch_all=deactivate_key_table
 keybind = chain=scroll_to_bottom
 
