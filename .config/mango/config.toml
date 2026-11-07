@@ -24,6 +24,8 @@ animation_duration_tag = 100
 animation_duration_close = 100
 
 # ── Layout ──
+# What Super+n cycles through; the rest are in the Super+a layout mode.
+circle_layout = "right_tile,fair,right_deck"
 smart_gaps = 1
 gap_inner_horizontal = 0
 gap_inner_vertical = 0
@@ -115,7 +117,6 @@ exec_once = ["uwsm finalize"]
 # ── Window state ──
 "SUPER+f" = "togglefullscreen"
 "SUPER+SHIFT+f" = "togglefakefullscreen"
-"SUPER+a" = "togglemaximizescreen"
 "SUPER+SHIFT+space" = "togglefloating"
 "SUPER+g" = "toggleglobal"
 "SUPER+o" = "toggleoverlay"
@@ -142,21 +143,9 @@ exec_once = ["uwsm finalize"]
 "SUPER+Up" = "toggleoverview"
 "SUPER+Down" = "togglejump"
 
-# ── Layouts (undecided; kept as they were) ──
+# ── Layouts: Super+n cycles circle_layout, Super+a opens the layout mode ──
 "SUPER+n" = "switch_layout"
-"SUPER+t" = "setlayout,right_tile"
-"SUPER+SHIFT+t" = "setlayout,tile"
-"SUPER+m" = "setlayout,vertical_tile"
-"SUPER+u" = "setlayout,center_tile"
-"SUPER+w" = "setlayout,fair"
-"SUPER+SHIFT+w" = "setlayout,vertical_fair"
-"SUPER+d" = "setlayout,right_deck"
-"SUPER+SHIFT+d" = "setlayout,deck"
-
-# ── Gaps ──
-"SUPER+minus" = "incgaps,-5"
-"SUPER+equal" = "incgaps,5"
-"SUPER+SHIFT+equal" = "togglegaps"
+"SUPER+a" = "setkeymode,layout"
 
 # ── Tags ──
 "SUPER+Tab" = "view,-1"
@@ -243,6 +232,30 @@ exec_once = ["uwsm finalize"]
 "s" = ["spawn,~/.local/bin/ghostty-shader-menu", "setkeymode,default"]
 "t" = ["spawn,~/.local/bin/whitetemp", "setkeymode,default"]
 "v" = ["spawn,~/.local/bin/mullvad-menu", "setkeymode,default"]
+
+# ── Layout mode: Super+a, then one key ──
+[bind.layout]
+"Escape" = "setkeymode,default"
+"SUPER+a" = "setkeymode,default"
+
+[bind.layout.conflict]
+"t" = ["setlayout,right_tile", "setkeymode,default"]
+"SHIFT+t" = ["setlayout,tile", "setkeymode,default"]
+"v" = ["setlayout,vertical_tile", "setkeymode,default"]
+"c" = ["setlayout,center_tile", "setkeymode,default"]
+"f" = ["setlayout,fair", "setkeymode,default"]
+"SHIFT+f" = ["setlayout,vertical_fair", "setkeymode,default"]
+"d" = ["setlayout,right_deck", "setkeymode,default"]
+"SHIFT+d" = ["setlayout,deck", "setkeymode,default"]
+"g" = ["setlayout,grid", "setkeymode,default"]
+"m" = ["setlayout,monocle", "setkeymode,default"]
+"s" = ["setlayout,scroller", "setkeymode,default"]
+"x" = ["switch_proportion_preset", "setkeymode,default"]
+"i" = ["incnmaster,+1", "setkeymode,default"]
+"SHIFT+i" = ["incnmaster,-1", "setkeymode,default"]
+"minus" = ["incgaps,-5", "setkeymode,default"]
+"equal" = ["incgaps,5", "setkeymode,default"]
+"0" = ["togglegaps", "setkeymode,default"]
 
 # ── Mouse ──
 [mousebind.default]
