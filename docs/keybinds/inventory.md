@@ -49,7 +49,7 @@ These are the actionable findings. Everything after this section is reference ma
 
 | Layer | Key | What happens |
 |---|---|---|
-| fish | Ctrl+v | fzf.fish's variable search replaces fish's clipboard paste. Ctrl+Shift+V in Ghostty still pastes. |
+| fish | Ctrl+v | **Fixed:** variable search moved to Ctrl+Alt+v, so Ctrl+v pastes again. |
 | fish | Ctrl+y | Your accept-autosuggestion replaces vi-mode's `yank`. Intended. |
 | fish | Ctrl+d | Your `delete-char` replaces `delete-or-exit`. Intended. |
 | Neovim (oil buffers) | Ctrl+l | oil's default `refresh` replaces your window-right navigation in oil buffers. You already disabled oil's C-s/C-h/C-t for this reason. |
@@ -168,18 +168,19 @@ key when they can act; otherwise the key goes to the app.
 
 These never compete with each other because only one has focus at a time.
 
-### fish (vi mode + fzf.fish)
+### fish (vi mode + fzf.fish), reviewed 2026-11-07
 
 Modifier binds in insert mode. Normal mode follows vi.
 
 | Key | Action |
 |---|---|
 | Ctrl+y (u) | accept autosuggestion (insert + normal) |
-| Ctrl+e (u) | `explain` (insert + normal) |
+| Alt+e (u) | `explain` (insert + normal), beside Alt+h and Alt+w |
 | Ctrl+d (u) | delete-char, never exits |
 | Ctrl+r (u, fzf) | history search |
 | Ctrl+t (u, fzf) | directory search |
-| Ctrl+v (fzf d) | variable search (replaces paste) |
+| Ctrl+Alt+v (fzf, u) | variable search |
+| Ctrl+v (d) | paste |
 | Ctrl+Alt+l / p / s (fzf d) | git log / processes / git status |
 | Ctrl+n (d) | accept autosuggestion |
 | Ctrl+s (d) | pager search |
@@ -190,10 +191,10 @@ Modifier binds in insert mode. Normal mode follows vi.
 | Ctrl+l (d) | clear screen |
 | Ctrl+c (d) | clear commandline |
 | Ctrl+Left/Right (d) | token back / forward |
-| Alt+b/f, Alt+Left/Right (d) | word back / forward (or prevd/nextd on empty line); **Alt+b/f lost to Ghostty** |
-| Alt+d (d) | kill word; **lost to Ghostty** |
-| Alt+e / Alt+v (d) | edit commandline in $EDITOR; **Alt+e lost to Ghostty** |
-| Alt+y (d) | yank-pop; **lost to Ghostty** |
+| Alt+b/f, Alt+Left/Right (d) | word back / forward (or prevd/nextd on empty line) |
+| Alt+d (d) | kill word |
+| Alt+v (d) | edit commandline in $EDITOR (Alt+e is `explain`) |
+| Alt+y (d) | yank-pop |
 | Alt+Up/Down, Alt+. (d) | history token search |
 | Alt+Enter (d) | insert newline |
 | Alt+h / w / l / o / p / s / # (d) | man page / whatis / list token / preview file / paginate / prepend sudo / toggle comment |
